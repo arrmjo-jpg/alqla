@@ -1,22 +1,15 @@
-# ── AlphaCMS — self-hosted production topology (Docker, Cloudflare in front) ────
-# Build: docker compose build
-# Migrate (once per deploy): docker compose run --rm backend php artisan migrate --force
-# Up: docker compose up -d
-# Roles share ONE backend image (php-fpm API, queue workers, scheduler); different commands.
-# Secrets come from ./.env (Laravel) + compose interpolation (${...}); never commit real secrets.
+
+# ── AlphaCMS — Coolify Production ─────────────────────────
 
 x-backend-common: &backend-common
   image: alphacms-backend:latest
   env_file: ./.env
   restart: unless-stopped
-depends_on: []
   volumes:
     - media:/var/www/html/storage/app/public
 
 services:
-  
 
-  # Laravel API (php-fpm). Builds the shared backend image.
   backend:
     <<: *backend-common
     build:
@@ -25,7 +18,6 @@ services:
     expose:
       - "9000"
 
-  # Default + light named queues (notifications/mail/search/sitemap/ai/analytics).
   worker:
     <<: *backend-common
     command: php artisan queue:work redis --queue=default,notifications,mail,search,sitemap,ai,analytics --tries=3 --backoff=10 --sleep=1 --max-time=3600
@@ -35,17 +27,14 @@ services:
       timeout: 5s
       retries: 3
 
-  # Heavy media transcode (ffmpeg). Separate connection: long retry_after (3600s) > job timeout.
   worker-media:
     <<: *backend-common
     command: php artisan queue:work redis-media --queue=media --tries=2 --timeout=2520 --sleep=2 --max-time=3600
 
-  # Scheduler — schedule:work runs the registry crons + health/heartbeat checks every minute.
   scheduler:
     <<: *backend-common
     command: php artisan schedule:work
 
-  # Public site — Next.js standalone. CLIENT is baked at build (one image per client).
   frontend:
     build:
       context: ./frontend
@@ -55,9 +44,9 @@ services:
     image: alphacms-frontend:${CLIENT:-shaabjo}
     restart: unless-stopped
     environment:
-      API_BASE_URL: ${API_BASE_URL:?set API_BASE_URL}
-      SITE_URL: ${SITE_URL:?set SITE_URL}
-      REVALIDATE_SECRET: ${REVALIDATE_SECRET:?set REVALIDATE_SECRET}
+      API_BASE_URL: ${API_BASE_URL}
+      SITE_URL: ${SITE_URL}
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET}
     volumes:
       - frontend-cache:/app/.next/cache
     expose:
@@ -65,7 +54,6 @@ services:
     depends_on:
       - backend
 
-  # Edge reverse proxy (behind Cloudflare). Serves the site, the API front controller, and media.
   nginx:
     image: nginx:1.27-alpine
     restart: unless-stopped
@@ -78,20 +66,18 @@ services:
       - frontend
       - backend
 
-  # Search engine (Scout). Optional: `docker compose --profile search up -d`.
   meilisearch:
     image: getmeili/meilisearch:v1.16
-    profiles: ["search"]
+    profiles:
+      - search
     restart: unless-stopped
     environment:
-      MEILI_MASTER_KEY: ${MEILISEARCH_KEY:?set MEILISEARCH_KEY}
+      MEILI_MASTER_KEY: ${MEILISEARCH_KEY}
       MEILI_ENV: production
     volumes:
       - meili-data:/meili_data
 
 volumes:
-  mysql-data:
-  redis-data:
   media:
   frontend-cache:
   meili-data:
