@@ -1,0 +1,1133 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   القلعة نيوز — كسوة التصميم الجديد (Skin)
+   كل شيء مُنطّق تحت .qalah-skin: لا يمسّ /account ولا بقيّة التطبيق.
+   التراجع: احذف صنف qalah-skin من غلاف (site)/layout + احذف هذا الملف ومكوّنات qalah/.
+   مصدر التصميم: D:\alqalahnews\src\app\globals.css (بلا الـ * reset وبلا body override).
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.qalah-skin {
+  /* متغيّرات التصميم الأصليّة */
+  --primary-color: #850000;
+  --primary-hover: #a60000;
+  --primary-light: #c20000;
+  --bg-darker: #080808;
+  --bg-dark: #121212;
+  --bg-card: #1c1c1c;
+  --text-primary: #ffffff;
+  --text-secondary: #adadad;
+  --text-muted: #6e6e6e;
+  --yellow-accent: #f4c22b;
+  --yellow-hover: #d3a31c;
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* إعادة وسم هويّة الموقع العامّ داخل الكسوة فقط (يلتقطها كل utilities الموجودة:
+     text-primary / bg-primary …) — أحمر التصميم الجديد + خط Cairo. */
+  --color-primary: #850000;
+  --color-primary-foreground: #ffffff;
+  --font-display: var(--font-cairo), system-ui, sans-serif;
+  --font-heading: var(--font-cairo), system-ui, sans-serif;
+  --font-body: var(--font-cairo), system-ui, sans-serif;
+  --font-sans: var(--font-cairo), system-ui, sans-serif;
+
+  font-family: var(--font-cairo), sans-serif;
+}
+
+/* إطار الموقع 1450px بحدود حمراء جانبيّة (توقيع التصميم) */
+.qalah-skin.site-frame {
+  width: 1450px;
+  max-width: 100%;
+  margin: 0 auto;
+  border-left: 5px solid var(--primary-color);
+  border-right: 5px solid var(--primary-color);
+  background-color: #fafafa;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.15);
+}
+
+/* تمديد المحتوى الداخليّ لعرض الإطار: كل المحتوى كان محصورًا بـ max-w-[1200px]
+   (مكوّن Container + الاستخدامات المضمّنة). داخل الكسوة نرفع السقف ليملأ الإطار 1450px،
+   مع هامش بسيط عن الحدّين الأحمرين. الحشوة الجانبيّة للحاويات (px) تبقى كما هي. */
+.qalah-skin .max-w-\[1200px\] {
+  max-width: 1410px;
+}
+
+/* ─── الشريط العلويّ الأسود (Navbar) ─────────────────────────────────────── */
+.qalah-skin .navbar {
+  height: 40px;
+  background-color: #000000;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 0 2rem;
+}
+.qalah-skin .navbar-nav {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+  height: 100%;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+/* أيقونات السوشال في الشريط الأسود العلويّ (جهة البداية، ديسكتوب) — outline فاتح احترافيّ */
+.qalah-skin .navbar-socials {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  justify-self: start;
+}
+.qalah-skin .navbar-socials a {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+}
+.qalah-skin .navbar-socials a:hover {
+  border-color: var(--primary-color);
+  background-color: var(--primary-color);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+/* صفّ السوشال الأبيض بالهيدر: على الديسكتوب صار في الشريط العلويّ ⇒ يُخفى؛ يبقى على الجوّال (أكشن + سوشال) */
+@media (min-width: 1024px) {
+  .qalah-skin .site-header .header-top-row {
+    display: none;
+  }
+}
+.qalah-skin .navbar-item a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: var(--transition-smooth);
+  position: relative;
+  padding: 0.25rem 0;
+}
+.qalah-skin .navbar-item a:hover,
+.qalah-skin .navbar-item.active a {
+  color: var(--text-primary);
+}
+.qalah-skin .navbar-item a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--primary-color);
+  transition: var(--transition-smooth);
+}
+.qalah-skin .navbar-item a:hover::after,
+.qalah-skin .navbar-item.active a::after {
+  width: 100%;
+}
+
+/* ─── الهيدر الأبيض ───────────────────────────────────────────────────────── */
+.qalah-skin .site-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0.5rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  color: #171717;
+}
+.qalah-skin .header-top-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding-bottom: 0.5rem;
+}
+.qalah-skin .header-socials {
+  display: flex;
+  gap: 0.5rem;
+}
+.qalah-skin .header-socials a {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: transparent;
+  border: 1.5px solid var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+  color: var(--primary-color);
+}
+.qalah-skin .header-socials a:hover {
+  background-color: var(--primary-color);
+  color: #ffffff;
+  transform: scale(1.1);
+}
+.qalah-skin .header-main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.qalah-skin .header-logo-group {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.qalah-skin .hamburger-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #111111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  transition: var(--transition-smooth);
+}
+.qalah-skin .hamburger-btn:hover {
+  opacity: 0.7;
+}
+.qalah-skin .header-logo-link {
+  display: block;
+}
+.qalah-skin .header-logo-img {
+  height: 78px;
+  width: auto;
+  object-fit: contain;
+}
+.qalah-skin .header-action-group {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+.qalah-skin .header-live-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--primary-color);
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.875rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  transition: var(--transition-smooth);
+  box-shadow: 0 4px 10px rgba(133, 0, 0, 0.15);
+}
+.qalah-skin .header-live-btn:hover {
+  background-color: var(--primary-hover);
+  box-shadow: 0 6px 15px rgba(133, 0, 0, 0.25);
+  transform: translateY(-1px);
+}
+.qalah-skin .live-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  position: relative;
+  display: inline-block;
+}
+.qalah-skin .live-dot::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  animation: qn-pulse 1.5s infinite;
+}
+@keyframes qn-pulse {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+.qalah-skin .header-search-wrap {
+  display: flex;
+  align-items: center;
+  background-color: #f1f1f1;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 9999px;
+  padding: 0.25rem 1rem;
+  width: 200px;
+  transition: var(--transition-smooth);
+}
+.qalah-skin .header-search-wrap:focus-within {
+  background-color: #ffffff;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 8px rgba(133, 0, 0, 0.1);
+  width: 250px;
+}
+.qalah-skin .header-search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: #111111;
+  width: 100%;
+}
+.qalah-skin .header-search-icon {
+  color: #777777;
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.qalah-skin .header-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #333333;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+}
+.qalah-skin .header-icon-btn:hover {
+  color: var(--primary-color);
+}
+.qalah-skin .red-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+}
+.qalah-skin .header-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+.qalah-skin .header-nav-row {
+  display: flex;
+  align-items: center;
+  padding-top: 0.25rem;
+}
+.qalah-skin .header-nav-list {
+  display: flex;
+  list-style: none;
+  gap: 1.25rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  width: 100%;
+  padding-bottom: 0.25rem;
+  margin: 0;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.qalah-skin .header-nav-list::-webkit-scrollbar {
+  display: none;
+}
+.qalah-skin .header-nav-item a {
+  color: #333333;
+  text-decoration: none;
+  font-size: 1.15rem;
+  font-weight: 700;
+  transition: var(--transition-smooth);
+  padding: 0.25rem 0;
+}
+.qalah-skin .header-nav-item a:hover {
+  color: var(--primary-color);
+}
+
+/* مجموعة أكشن الموبايل (بحث/إشعارات/حساب) داخل الصفّ العلويّ — مخفيّة على سطح المكتب */
+.qalah-skin .qn-mobile-actions {
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* مودال البحث (الموبايل) */
+.qalah-skin .qn-search-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 5.5rem 1rem 1rem;
+}
+.qalah-skin .qn-search-panel {
+  position: relative;
+  background: #ffffff;
+  width: 100%;
+  max-width: 560px;
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+.qalah-skin .qn-search-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.qalah-skin .qn-search-field {
+  flex: 1;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 9999px;
+  padding: 0.8rem 1.25rem;
+  font-size: 1rem;
+  outline: none;
+  color: #111111;
+  font-family: inherit;
+}
+.qalah-skin .qn-search-field:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(133, 0, 0, 0.12);
+}
+.qalah-skin .qn-search-submit {
+  background: var(--primary-color);
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  padding: 0.8rem 1.6rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.qalah-skin .qn-search-submit:hover {
+  background: var(--primary-hover);
+}
+.qalah-skin .qn-search-close {
+  position: absolute;
+  top: -2.75rem;
+  inset-inline-end: 0;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+/* ─── الفوتر الغامق ───────────────────────────────────────────────────────── */
+.qalah-skin .footer {
+  position: relative;
+  background-color: #0d0d0d;
+  color: var(--text-secondary);
+  padding: 3.5rem 3rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.9rem;
+}
+/* خطّ الهويّة العلويّ المتدرّج (يبدأ من اليمين في RTL) */
+.qalah-skin .footer-accent {
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 3px;
+  background: linear-gradient(to left, var(--primary-color), var(--primary-color) 35%, transparent);
+}
+.qalah-skin .footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.4fr; /* العلامة (أوّل عمود) = اليمين في RTL */
+  gap: 2.5rem 2rem;
+  margin-bottom: 2.5rem;
+}
+@media (max-width: 1200px) {
+  .qalah-skin .footer-grid { grid-template-columns: 1.4fr 1fr 1fr; }
+}
+/* عمود العلامة */
+.qalah-skin .footer-brand-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+.qalah-skin .footer-about-text {
+  color: var(--text-secondary);
+  line-height: 1.9;
+  font-size: 0.92rem;
+  max-width: 38ch;
+  margin: 0;
+}
+/* قائمة التواصل (هاتف/بريد) */
+.qalah-skin .footer-contact {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.qalah-skin .footer-contact li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+.qalah-skin .footer-contact li svg {
+  color: var(--primary-light, var(--primary-color));
+  flex-shrink: 0;
+}
+.qalah-skin .footer-contact a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: var(--transition-smooth);
+}
+.qalah-skin .footer-contact a:hover {
+  color: var(--text-primary);
+}
+@media (max-width: 768px) {
+  .qalah-skin .footer-grid { display: none; } /* الديسكتوب فقط — الجوّال يستعمل .footer-mobile */
+}
+.qalah-skin .footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.qalah-skin .footer-col-title {
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  font-weight: 700;
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 0.5rem;
+  width: fit-content;
+}
+.qalah-skin .footer-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+}
+.qalah-skin .footer-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: var(--transition-smooth);
+}
+.qalah-skin .footer-links a:hover {
+  color: var(--text-primary);
+  transform: translateX(-5px);
+}
+.qalah-skin .app-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.qalah-skin .app-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: var(--transition-smooth);
+}
+.qalah-skin .app-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+.qalah-skin .app-btn-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.qalah-skin .app-btn-subtitle {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.qalah-skin .app-btn-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.qalah-skin .tv-buttons {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+.qalah-skin .newsletter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.qalah-skin .newsletter-input-wrap {
+  position: relative;
+}
+.qalah-skin .newsletter-input {
+  width: 100%;
+  background-color: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  padding: 0.75rem 1.25rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: var(--transition-smooth);
+  text-align: center;
+  font-size: 0.875rem;
+}
+.qalah-skin .newsletter-input:focus {
+  border-color: var(--primary-color);
+  background-color: #222;
+  box-shadow: 0 0 10px rgba(133, 0, 0, 0.3);
+}
+.qalah-skin .newsletter-btn {
+  background-color: var(--yellow-accent);
+  color: #000000;
+  border: none;
+  border-radius: 9999px;
+  padding: 0.75rem 2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  font-size: 0.9rem;
+}
+.qalah-skin .newsletter-btn:hover {
+  background-color: var(--yellow-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(244, 194, 43, 0.2);
+}
+.qalah-skin .footer-branding {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.qalah-skin .footer-logo {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -1px;
+  /* الشعار صورة: ارتفاع فقط + align-self يمنع تمدّد الـflex لعرض العمود + max-width:none يتجاوز
+     Tailwind preflight (img{max-width:100%}) ⇒ النسبة محفوظة دائمًا بلا ضغط؛ النصّ احتياطيّ. */
+  align-self: flex-start;
+  height: auto;
+  width: auto;
+  max-height: 76px;
+  max-width: none;
+}
+/* واتساب (بدل النشرة البريديّة) — ديسكتوب */
+.qalah-skin .footer-whatsapp-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: fit-content;
+  background-color: #25d366;
+  color: #fff;
+  font-weight: 700;
+  padding: 0.7rem 1.5rem;
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: var(--transition-smooth);
+}
+.qalah-skin .footer-whatsapp-cta:hover {
+  background-color: #1ebe5a;
+  transform: translateY(-2px);
+}
+.qalah-skin .footer-muted {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+/* ─── فوتر الجوّال المُبسَّط (افتراضيّ ظاهر ≤768px؛ يُخفى على الديسكتوب ≥769) ─── */
+.qalah-skin .footer-mobile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+@media (min-width: 769px) {
+  .qalah-skin .footer-mobile { display: none; }
+}
+.qalah-skin .footer-m-logo {
+  height: auto;
+  width: auto;
+  max-height: 56px;
+  max-width: none;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.qalah-skin .footer-m-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #25d366;
+  color: #fff;
+  font-weight: 700;
+  padding: 0.6rem 1.4rem;
+  border-radius: 9999px;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.qalah-skin .footer-m-social {
+  display: flex;
+  gap: 0.6rem;
+}
+.qalah-skin .footer-m-social a {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+.qalah-skin .footer-m-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.1rem;
+  font-size: 0.85rem;
+}
+.qalah-skin .footer-m-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+.qalah-skin .social-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.qalah-skin .social-icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: var(--transition-smooth);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.qalah-skin .social-icon-btn:hover {
+  background-color: var(--primary-color);
+  color: var(--text-primary);
+  transform: scale(1.15) rotate(8deg);
+  border-color: var(--primary-light);
+}
+.qalah-skin .footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 1.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ─── زرّ العودة للأعلى العائم ────────────────────────────────────────────── */
+.qalah-skin .scroll-to-top-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: calc((100vw - 1450px) / 2 + 2rem);
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 4px 15px rgba(133, 0, 0, 0.4);
+  transition: var(--transition-smooth);
+  z-index: 101;
+}
+.qalah-skin .scroll-to-top-btn:hover {
+  background-color: #a30000;
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(133, 0, 0, 0.55);
+}
+@media (max-width: 1450px) {
+  .qalah-skin .scroll-to-top-btn { right: 2rem; }
+}
+/* رفع الزرّ فوق شريط العاجل كي لا يلامسه. الشريط السفليّ يظهر على ≥768px فقط (تحتها مودال منبثق). */
+@media (min-width: 1024px) {
+  .qalah-skin.has-breaking .scroll-to-top-btn { bottom: calc(70px + 1.5rem); }
+}
+/* <1024px: شريط التنقّل السفليّ ظاهر — ارفع الزرّ فوقه على الأقلّ. */
+@media (max-width: 1023px) {
+  .qalah-skin .scroll-to-top-btn { bottom: calc(3.5rem + 1rem); }
+}
+/* 768–1023px: شريط العاجل ظاهر فوق التنقّل — ارفع الزرّ فوق الشريط. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .qalah-skin.has-breaking .scroll-to-top-btn { bottom: calc(3.5rem + 70px + 1rem); }
+}
+
+/* صور الأيقونات داخل السوشال (stroke/fill = currentColor) ترث اللون */
+.qalah-skin .header-socials a svg,
+.qalah-skin .social-icon-btn svg { display: block; flex-shrink: 0; }
+
+/* ─── تجاوب الموبايل (التصميم الأصليّ لسطح المكتب 1450px) ─────────────────── */
+@media (max-width: 768px) {
+  /* الشريط الأسود العلويّ: سكرول أفقيّ بدل الازدحام/الالتفاف */
+  .qalah-skin .navbar {
+    justify-content: flex-start;
+    padding: 0 1rem;
+  }
+  .qalah-skin .navbar-nav {
+    gap: 1.25rem;
+    overflow-x: auto;
+    width: 100%;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .qalah-skin .navbar-nav::-webkit-scrollbar { display: none; }
+  .qalah-skin .navbar-item a { white-space: nowrap; }
+
+  /* حشوة أقلّ للهيدر/الفوتر على الشاشات الصغيرة */
+  .qalah-skin .site-header { padding: 0.5rem 1rem; }
+  .qalah-skin .footer { padding: 2.5rem 1.25rem 1.5rem; }
+
+  /* البحث يتقلّص بدل ما يدفع العناصر */
+  .qalah-skin .header-search-wrap { width: 140px; }
+  .qalah-skin .header-search-wrap:focus-within { width: 160px; }
+
+  /* فجوات أضيق ليتّسع الصفّ على الجوّال (الشعار يبقى كبيرًا حسب الطلب) */
+  .qalah-skin .header-logo-img { height: 58px; }
+  .qalah-skin .header-logo-group { gap: 0.75rem; }
+  .qalah-skin .header-action-group { gap: 0.6rem; }
+  .qalah-skin .header-live-btn { padding: 0.4rem 0.9rem; font-size: 0.8rem; }
+}
+
+/* على الموبايل/التابلت (أقلّ من lg=1024): لا حاجة للشريط الأسود العلويّ ولا صفّ الأقسام —
+   التنقّل كلّه عبر القائمة الجانبيّة (الهامبرغر): الوسائط + الأقسام + الصفحات. */
+@media (max-width: 1023px) {
+  .qalah-skin .navbar { display: none; }
+  .qalah-skin .header-nav-row { display: none; }
+
+  /* الصفّ الرئيسيّ: لوجو + هامبرغر فقط (شِيل البث والبحث المضمّن) */
+  .qalah-skin .header-action-group { display: none; }
+
+  /* الإشعارات/الحساب/أيقونة البحث تنتقل للصفّ العلويّ مع السوشال */
+  .qalah-skin .header-top-row { justify-content: space-between; }
+  .qalah-skin .qn-mobile-actions { display: flex; }
+}
+
+/* تقليب بطاقة البورصة عند تبديل السهم (يُعاد تشغيله بتغيّر key العنصر) */
+@keyframes qn-bourse-flip {
+  0% { transform: rotateX(-90deg); opacity: 0; }
+  55% { opacity: 1; }
+  100% { transform: rotateX(0deg); opacity: 1; }
+}
+.qn-bourse-flip {
+  animation: qn-bourse-flip 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: 50% 0;
+  backface-visibility: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  .qn-bourse-flip { animation: none; }
+}
+
+/* لمعة ذهبيّة تمرّ عبر لوح عيار 24 (بطاقة الذهب) — تتوقّف باحترام prefers-reduced-motion */
+@keyframes qn-shine {
+  0%, 55% { transform: translateX(-130%) skewX(-18deg); }
+  100% { transform: translateX(130%) skewX(-18deg); }
+}
+.qn-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 36%, rgba(255, 255, 255, 0.55) 50%, transparent 64%);
+  transform: translateX(-130%) skewX(-18deg);
+  animation: qn-shine 4.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .qn-shine { animation: none; opacity: 0; }
+}
+
+/* الشريط الإخباريّ تحت المنيو — مؤشّر الآلة الكاتبة (ديسكتوب) + التكير المتحرّك من الشمال لليمين (جوّال) */
+@keyframes news-cursor-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.qalah-skin .news-cursor {
+  animation: news-cursor-blink 0.9s step-end infinite;
+}
+@keyframes news-ticker-move {
+  from { transform: translate3d(-50%, 0, 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
+.qalah-skin .news-ticker-track {
+  display: inline-flex;
+  white-space: nowrap;
+  will-change: transform;
+  backface-visibility: hidden;
+  animation: news-ticker-move 50s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .qalah-skin .news-cursor { animation: none; }
+  .qalah-skin .news-ticker-track { animation: none; }
+}
+
+/* شريط الأخبار العاجلة — مستوحى من «صوت الحق»: ثابت أسفل الموقع، خبر واحد دوّار + شارة بيضاء + مشاركة + إغلاق */
+.qalah-skin .breaking-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1450px;
+  max-width: 100%;
+  height: 70px;
+  z-index: 55;
+  background: #b90000;
+  color: #fff;
+  align-items: center;
+  overflow: hidden;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 -10px 40px rgba(185, 0, 0, 0.4);
+  animation: breaking-rise 0.5s ease both;
+}
+@keyframes breaking-rise {
+  from { transform: translate(-50%, 100%); }
+  to { transform: translate(-50%, 0); }
+}
+@media (max-width: 1023px) {
+  .qalah-skin .breaking-bar { bottom: 3.5rem; }
+}
+
+/* الشارة البيضاء «عاجل» مع حافة بيضاء مائلة تنفذ في الأحمر */
+.qalah-skin .breaking-badge {
+  position: relative;
+  z-index: 20;
+  flex-shrink: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2.5rem;
+  background: #fff;
+  box-shadow: 10px 0 20px rgba(0, 0, 0, 0.1);
+}
+.qalah-skin .breaking-badge-text {
+  color: #b90000;
+  font-weight: 900;
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+  animation: qn-breaking-pulse 1.6s ease-in-out infinite;
+}
+.qalah-skin .breaking-badge-skew {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 100%;
+  margin-right: -0.9rem;
+  width: 1.8rem;
+  background: #fff;
+  transform: skewX(-15deg);
+}
+@keyframes qn-breaking-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* مسرح العناوين — خبر واحد ظاهر، يتلاشى/ينزلق عند التبديل */
+.qalah-skin .breaking-stage {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+}
+.qalah-skin .breaking-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 2.5rem;
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  pointer-events: none;
+}
+.qalah-skin .breaking-slide[data-active='true'] {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.qalah-skin .breaking-headline {
+  flex: 1;
+  min-width: 0;
+  font-weight: 900;
+  font-size: 1.25rem;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease;
+}
+.qalah-skin .breaking-headline:hover {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* أزرار المشاركة */
+.qalah-skin .breaking-share {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+.qalah-skin .breaking-share-label {
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.6);
+}
+@media (max-width: 1200px) {
+  .qalah-skin .breaking-share-label { display: none; }
+}
+.qalah-skin .breaking-share-btn {
+  height: 2.4rem;
+  width: 2.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.qalah-skin .breaking-share-btn:hover {
+  background: #fff;
+  color: #b90000;
+}
+
+/* زرّ الإغلاق */
+.qalah-skin .breaking-close {
+  flex-shrink: 0;
+  height: 100%;
+  padding: 0 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  border-inline-start: 1px solid rgba(255, 255, 255, 0.2);
+  transition: background 0.2s ease;
+}
+.qalah-skin .breaking-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* مودال الجوّال — يفتح تلقائيًّا للأخبار غير المقروءة */
+.qalah-skin .breaking-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.9);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  animation: breaking-fade 0.3s ease both;
+}
+@keyframes breaking-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.qalah-skin .breaking-modal-card {
+  width: 100%;
+  max-width: 24rem;
+  background: #fff;
+  border-radius: 2.5rem;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: breaking-pop 0.35s ease both;
+}
+@keyframes breaking-pop {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.qalah-skin .breaking-modal-head {
+  background: #b90000;
+  color: #fff;
+  text-align: center;
+  padding: 2rem;
+  font-weight: 900;
+  font-size: 1.5rem;
+  letter-spacing: 0.15em;
+  animation: qn-breaking-pulse 1.6s ease-in-out infinite;
+}
+.qalah-skin .breaking-modal-body {
+  padding: 2rem;
+  text-align: center;
+}
+.qalah-skin .breaking-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+.qalah-skin .breaking-modal-item {
+  display: block;
+  padding: 1.25rem;
+  border: 2px solid #f1f5f9;
+  border-radius: 1.5rem;
+  color: #0f172a;
+  font-weight: 900;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.qalah-skin .breaking-modal-item:hover {
+  border-color: #b90000;
+  background: #fef2f2;
+  color: #b90000;
+}
+.qalah-skin .breaking-modal-dismiss {
+  margin-top: 2rem;
+  width: 100%;
+  padding: 1.1rem;
+  background: #b90000;
+  color: #fff;
+  font-weight: 900;
+  font-size: 1.15rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 40px rgba(185, 0, 0, 0.3);
+  transition: transform 0.1s ease;
+}
+.qalah-skin .breaking-modal-dismiss:active {
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qalah-skin .breaking-bar,
+  .qalah-skin .breaking-badge-text,
+  .qalah-skin .breaking-slide,
+  .qalah-skin .breaking-modal,
+  .qalah-skin .breaking-modal-card,
+  .qalah-skin .breaking-modal-head {
+    animation: none;
+    transition: none;
+  }
+}
