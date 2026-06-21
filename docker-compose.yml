@@ -9,40 +9,12 @@ x-backend-common: &backend-common
   image: alphacms-backend:latest
   env_file: ./.env
   restart: unless-stopped
-  depends_on:
-    mysql: { condition: service_healthy }
-    redis: { condition: service_started }
+depends_on: []
   volumes:
     - media:/var/www/html/storage/app/public
 
 services:
-  mysql:
-    image: mysql:8.0
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-alphacms}
-      MYSQL_USER: ${DB_USERNAME:-alphacms}
-      MYSQL_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD}
-    volumes:
-      - mysql-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_ROOT_PASSWORD}"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
-    volumes:
-      - redis-data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 10
+  
 
   # Laravel API (php-fpm). Builds the shared backend image.
   backend:
@@ -76,7 +48,7 @@ services:
   # Public site — Next.js standalone. CLIENT is baked at build (one image per client).
   frontend:
     build:
-      context: ./public-frontend
+      context: ./frontend
       dockerfile: Dockerfile
       args:
         CLIENT: ${CLIENT:-shaabjo}
