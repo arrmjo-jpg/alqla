@@ -3,7 +3,7 @@
 
 x-backend-common: &backend-common
   image: alphacms-backend:latest
-  env_file: ./.env
+ 
   restart: unless-stopped
   volumes:
     - media:/var/www/html/storage/app/public
