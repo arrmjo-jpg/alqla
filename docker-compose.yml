@@ -54,18 +54,7 @@ services:
     depends_on:
       - backend
 
-  nginx:
-    image: nginx:1.27-alpine
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    volumes:
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - media:/srv/media:ro
-    depends_on:
-      - frontend
-      - backend
-
+ 
   meilisearch:
     image: getmeili/meilisearch:v1.16
     profiles:
