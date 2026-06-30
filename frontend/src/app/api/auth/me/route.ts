@@ -12,13 +12,13 @@ export async function GET(): Promise<Response> {
     
     return NextResponse.json({ user, unread }, {
       headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Cache-Control': 'private, no-store, no-cache, must-revalidate',
       },
     });
   } catch {
     return NextResponse.json({ user: null, unread: 0 }, {
       headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Cache-Control': 'private, no-store, no-cache, must-revalidate',
       },
     });
   }
