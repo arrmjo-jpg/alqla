@@ -23,7 +23,7 @@ return [
     // Quick Incremental Import
     // Remove before Production release
     // TODO(production): احذفه أو عطّله. false ⇒ يُخفى الزرّ + يُرفض الـAPI (403) + يعود التدفّق الرسميّ.
-    'quick_incremental' => (bool) env('WP_MIGRATION_QUICK_INCREMENTAL', true),
+    'quick_incremental' => (bool) env('WP_MIGRATION_QUICK_INCREMENTAL', false),
 
     // الاسم القانوني للكاتب الذي تُسنَد إليه كل المحتوى المُرحَّل (غير قابل للتفاوض).
     // لا تُرحَّل حسابات/كتّاب ووردبريس إطلاقاً — التنظيف التحريري لاحق يدوي.

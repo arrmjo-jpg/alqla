@@ -19,8 +19,6 @@ COPY --from=composer/composer:2-bin /composer /usr/bin/composer
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-alphacms.ini
 
-COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-alphacms.ini
-
 WORKDIR /var/www/html
 
 # Vendor layer (cached on composer.lock). --no-scripts: artisan isn't bootable until app is copied.
