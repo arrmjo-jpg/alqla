@@ -29,7 +29,7 @@ RUN composer install --no-dev --no-interaction --no-progress --prefer-dist --opt
 COPY . .
 RUN composer dump-autoload --optimize --no-dev \
     && php artisan package:discover --ansi || true \
-    && chown -R www-data:www-data storage bootstrap/cache
+    && chown -R www-data:www-data storage bootstrap/cache public
 
 COPY docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
