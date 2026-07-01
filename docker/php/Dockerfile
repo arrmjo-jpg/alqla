@@ -9,7 +9,7 @@ FROM php:8.4-fpm AS base
 # binaries are auto-detected by spatie/laravel-image-optimizer.
 RUN apt-get update && apt-get install -y --no-install-recommends \
       git unzip libicu-dev libzip-dev libpng-dev libjpeg62-turbo-dev libwebp-dev libfreetype6-dev \
-      ffmpeg jpegoptim optipng pngquant gifsicle webp nginx supervisor \
+      ffmpeg jpegoptim optipng pngquant gifsicle webp nginx supervisor procps \
     && docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
     && docker-php-ext-install -j"$(nproc)" pdo_mysql gd intl zip bcmath exif pcntl opcache \
     && pecl install redis && docker-php-ext-enable redis \
