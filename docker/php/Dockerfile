@@ -9,7 +9,7 @@ FROM php:8.4-fpm AS base
 # binaries are auto-detected by spatie/laravel-image-optimizer.
 RUN apt-get update && apt-get install -y --no-install-recommends \
       git unzip libicu-dev libzip-dev libpng-dev libjpeg62-turbo-dev libwebp-dev libfreetype6-dev \
-      ffmpeg jpegoptim optipng pngquant gifsicle webp \
+      ffmpeg jpegoptim optipng pngquant gifsicle webp nginx supervisor \
     && docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
     && docker-php-ext-install -j"$(nproc)" pdo_mysql gd intl zip bcmath exif pcntl opcache \
     && pecl install redis && docker-php-ext-enable redis \
@@ -18,6 +18,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=composer/composer:2-bin /composer /usr/bin/composer
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-alphacms.ini
+COPY docker/php/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/php/nginx-backend.conf /etc/nginx/sites-available/default
+RUN rm -f /etc/nginx/sites-enabled/default && ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
 WORKDIR /var/www/html
 
@@ -34,7 +37,6 @@ RUN composer dump-autoload --optimize --no-dev \
 COPY docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-USER www-data
-EXPOSE 9000
+EXPOSE 80
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["php-fpm"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

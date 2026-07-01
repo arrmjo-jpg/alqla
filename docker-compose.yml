@@ -16,25 +16,11 @@ services:
       context: .
       dockerfile: docker/php/Dockerfile
     expose:
-      - "9000"
-
-  # جسر HTTP → FastCGI. php-fpm يتكلّم FastCGI (9000) لا HTTP، وTraefik يتكلّم HTTP فقط؛
-  # فهذه الخدمة (nginx:80) تُترجم HTTP إلى FastCGI عبر backend:9000. وجّه api.<domain> إليها.
-  nginx:
-    build:
-      context: docker/nginx
-      dockerfile: Dockerfile
-    image: alphacms-nginx:latest
-    restart: unless-stopped
-    expose:
       - "80"
-    depends_on:
-      - backend
-    volumes:
-      - media:/srv/media:ro
 
   worker:
     <<: *backend-common
+    user: www-data
     command: php artisan queue:work redis --queue=default,notifications,mail,search,sitemap,ai,analytics --tries=3 --backoff=10 --sleep=1 --max-time=3600
     healthcheck:
       test: ["CMD", "pgrep", "-f", "queue:work"]
@@ -44,10 +30,12 @@ services:
 
   worker-media:
     <<: *backend-common
+    user: www-data
     command: php artisan queue:work redis-media --queue=media --tries=2 --timeout=2520 --sleep=2 --max-time=3600
 
   scheduler:
     <<: *backend-common
+    user: www-data
     command: php artisan schedule:work
 
   frontend:
