@@ -9,6 +9,24 @@ x-backend-common: &backend-common
     - media:/var/www/html/storage/app/public
 
 services:
+  admin:
+    build:
+      context: ./admin-frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: https://api.alpha-cms.shop/api/v1
+    restart: unless-stopped
+    expose:
+      - "80"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.admin.rule=Host(`admin.alpha-cms.shop`)
+      - traefik.http.routers.admin.entrypoints=https
+      - traefik.http.routers.admin.tls=true
+      - traefik.http.routers.admin.tls.certresolver=letsencrypt
+      - traefik.http.routers.admin.service=admin
+      - traefik.http.services.admin.loadbalancer.server.port=80
+
 
   backend:
     <<: *backend-common
@@ -17,6 +35,9 @@ services:
       dockerfile: docker/php/Dockerfile
     expose:
       - "80"
+    volumes:
+    - media:/var/www/html/storage/app/public
+    - /data/uploads:/var/www/html/public/uploads:ro
 
   worker:
     <<: *backend-common
