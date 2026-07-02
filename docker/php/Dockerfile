@@ -19,6 +19,7 @@ COPY --from=composer/composer:2-bin /composer /usr/bin/composer
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-alphacms.ini
 COPY docker/php/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# FORCE_REBUILD_CACHE_KEY: 2
 COPY docker/php/nginx-backend.conf /etc/nginx/sites-available/default
 RUN rm -f /etc/nginx/sites-enabled/default && ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
