@@ -34,6 +34,9 @@ export function QalahNavbar({ social }: { social?: Record<string, string> | null
           );
         })}
       </ul>
+      <div className="navbar-lang">
+        <Link href="/en">English</Link>
+      </div>
     </nav>
   );
 }

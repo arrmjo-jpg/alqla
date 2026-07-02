@@ -1,8 +1,9 @@
-import { ArrowUpLeft, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import Link from 'next/link';
 
 import { FeedBadge } from '@/components/home/featured-hero';
 import { Container } from '@/components/layout/container';
+import { SectionHeader, SectionMore } from '@/components/home/section-header';
 import { getCategoryById, getCategoryFeed, type CategoryRef, type FeedItem } from '@/lib/feed';
 import { formatRelativeTime } from '@/lib/format';
 
@@ -50,28 +51,8 @@ function CategoryBlock({
 
   return (
     <section>
-      {/* الترويسة — شريط أحمر يمين + عنوان + خطّ متدرّج + «عرض المزيد» */}
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <Link href={moreHref} className="group relative">
-          <h2 className="border-r-4 border-primary pr-4 text-xl font-bold tracking-tight text-fg transition-colors group-hover:text-primary sm:text-2xl">
-            {title}
-          </h2>
-          <span
-            className="absolute -bottom-2 right-0 h-0.5 w-24 bg-gradient-to-l from-primary/0 via-primary/50 to-primary"
-            aria-hidden
-          />
-        </Link>
-        <Link
-          href={moreHref}
-          className="group flex shrink-0 items-center gap-1.5 text-sm font-semibold text-primary transition-opacity hover:opacity-80"
-        >
-          <span>عرض المزيد</span>
-          <ArrowUpLeft
-            className="size-4 transition-transform group-hover:-translate-x-0.5 group-hover:-translate-y-0.5"
-            aria-hidden
-          />
-        </Link>
-      </div>
+      {/* الترويسة الموحّدة: اسم القسم بخلفيّة حمراء + خطّ أبيض. */}
+      <SectionHeader title={title} href={moreHref} />
 
       {/* شبكة 2×2 */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
@@ -79,6 +60,9 @@ function CategoryBlock({
           <GridCard key={item.id} item={item} />
         ))}
       </div>
+
+      {/* «عرض الكل» أسفل القسم (نُقِل من أعلاه). */}
+      <SectionMore href={moreHref} />
     </section>
   );
 }

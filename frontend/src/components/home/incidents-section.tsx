@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { Container } from '@/components/layout/container';
 import { FeedBadge } from '@/components/home/featured-hero';
+import { SectionHeader, SectionMore } from '@/components/home/section-header';
 import { getCategoryById, getCategoryFeed, type FeedItem } from '@/lib/feed';
 import { formatRelativeTime } from '@/lib/format';
 
@@ -31,24 +32,8 @@ export async function IncidentsSection({
   return (
     <section className="mt-6 bg-white sm:mt-8" dir="rtl" aria-labelledby={headingId}>
       <Container className="py-8 sm:py-10">
-        {/* الترويسة — شريط أحمر + عنوان + «عرض الكل» (متّسقة مع بقيّة أقسام الهوم) */}
-        <div className="mb-6 flex items-center justify-between gap-4 border-b border-border pb-4">
-          <div className="flex items-center gap-3">
-            <span className="h-7 w-1.5 shrink-0 bg-primary" aria-hidden />
-            <h2 id={headingId} className="text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">
-              <Link href={moreHref} className="transition-colors hover:text-primary">
-                {title}
-              </Link>
-            </h2>
-          </div>
-          <Link
-            href={moreHref}
-            className="flex shrink-0 items-center gap-1 text-sm font-bold text-muted transition-colors hover:text-primary"
-          >
-            عرض الكل
-            <ChevronLeft className="size-4" aria-hidden />
-          </Link>
-        </div>
+        {/* الترويسة الموحّدة: اسم القسم بخلفيّة حمراء + خطّ أبيض. */}
+        <SectionHeader title={title} headingId={headingId} href={moreHref} />
 
         {/* الجوّال: كروسل أفقي بـscroll-snap (سحب لمسيّ بلا JS)؛ pb يتّسع لظلّ البطاقة العائمة */}
         <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-6 sm:hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -65,6 +50,9 @@ export async function IncidentsSection({
             <IncidentCard key={item.id} item={item} />
           ))}
         </div>
+
+        {/* «عرض الكل» أسفل القسم (نُقِل من أعلاه). */}
+        <SectionMore href={moreHref} />
       </Container>
     </section>
   );

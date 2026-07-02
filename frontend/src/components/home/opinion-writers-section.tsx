@@ -1,8 +1,8 @@
-import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 
 import { Container } from '@/components/layout/container';
 import { FeedBadge } from '@/components/home/featured-hero';
+import { SectionHeader, SectionMore } from '@/components/home/section-header';
 import { getCategoryById, getCategoryFeed, type FeedItem } from '@/lib/feed';
 
 // قسم مقالات الرأي (بورتريه، أسفل نبض الشارع) — صفّ بطاقات: صورة + عنوان المقال + اسم الكاتب.
@@ -34,21 +34,8 @@ export async function OpinionWritersSection({
   return (
     <section className="mt-6 bg-white sm:mt-8" dir="rtl" aria-labelledby={headingId}>
       <Container className="py-8 sm:py-10">
-        {/* الترويسة — خطّ سفليّ أحمر (لون الموقع) + عنوان داكن */}
-        <div className="mb-6 flex items-center justify-between gap-4 border-b-2 border-primary pb-3">
-          <h2 id={headingId} className="text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">
-            <Link href={moreHref} className="transition-colors hover:text-primary">
-              {title}
-            </Link>
-          </h2>
-          <Link
-            href={moreHref}
-            className="flex shrink-0 items-center gap-1 text-sm font-bold text-muted transition-colors hover:text-primary"
-          >
-            عرض الكل
-            <ChevronLeft className="size-4" aria-hidden />
-          </Link>
-        </div>
+        {/* الترويسة الموحّدة: اسم القسم بخلفيّة حمراء + خطّ أبيض. */}
+        <SectionHeader title={title} headingId={headingId} href={moreHref} />
 
         {/* صفّ الكُتّاب — 3 على الجوّال، 6 على سطح المكتب (صفّ واحد كالمرجع) */}
         <div className="grid grid-cols-3 gap-x-4 gap-y-6 lg:grid-cols-6">
@@ -56,6 +43,9 @@ export async function OpinionWritersSection({
             <WriterCard key={item.id} item={item} />
           ))}
         </div>
+
+        {/* «عرض الكل» أسفل القسم (نُقِل من أعلاه). */}
+        <SectionMore href={moreHref} />
       </Container>
     </section>
   );

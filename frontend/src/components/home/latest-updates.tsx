@@ -5,6 +5,7 @@ import { getCategoryById, getCategoryFeed, type FeedItem } from '@/lib/feed';
 import { formatRelativeTime } from '@/lib/format';
 
 import { CategoryChip, FeedBadge } from './featured-hero';
+import { SectionHeader, SectionMore } from './section-header';
 
 // كتلة «أخبار محلية» (تصنيف بالـID الثابت): كرت رئيسيّ بتراكب صورة + شبكة كروت بيضاء.
 // **التصنيف بالـID** (مقاوم لإعادة التسمية، ويطابق الأخبار متعدّدة الأقسام رئيسيًّا أو ثانويًّا في الباك)؛
@@ -29,31 +30,8 @@ export async function LatestUpdates({
   return (
     <section className="mt-6 sm:mt-8" aria-labelledby="local-news-heading">
       <Container>
-        {/* ترويسة القسم: شارة حمراء عموديّة + اسم القسم + «عرض الكل» → صفحة القسم */}
-        <div className="mb-6 flex items-center justify-between gap-4 border-b border-border pb-4">
-          <div className="flex items-center gap-3">
-            <span
-              className="h-7 w-1 shrink-0 bg-primary"
-              style={{ borderRadius: '9999px' }}
-              aria-hidden
-            />
-            <h2
-              id="local-news-heading"
-              className="font-heading text-xl font-extrabold text-fg sm:text-2xl"
-            >
-              <Link href={moreHref} className="transition-colors hover:text-primary">
-                {title}
-              </Link>
-            </h2>
-          </div>
-          <Link
-            href={moreHref}
-            className="flex items-center gap-1 text-sm font-semibold text-muted transition-colors hover:text-primary"
-          >
-            <span>عرض الكل</span>
-            <ChevronStart className="size-4" />
-          </Link>
-        </div>
+        {/* الترويسة الموحّدة: اسم القسم بخلفيّة حمراء + خطّ أبيض. */}
+        <SectionHeader title={title} headingId="local-news-heading" href={moreHref} />
 
         {/* كرت رئيسيّ + شبكة — ارتفاع ثابت متطابق على سطح المكتب (md) */}
         <div className="flex flex-col gap-4 md:h-[440px] md:flex-row md:gap-6">
@@ -70,6 +48,9 @@ export async function LatestUpdates({
             </ul>
           )}
         </div>
+
+        {/* «عرض الكل» أسفل القسم (نُقِل من أعلاه). */}
+        <SectionMore href={moreHref} />
       </Container>
     </section>
   );
@@ -168,20 +149,3 @@ function ListCard({ item }: { item: FeedItem }) {
   );
 }
 
-// شيفرون يشير لجهة القراءة-للأمام (يسار في RTL) — أيقونة مضمّنة (لا تبعيّة).
-function ChevronStart({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M15 19l-7-7 7-7" />
-    </svg>
-  );
-}

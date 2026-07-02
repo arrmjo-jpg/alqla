@@ -1,6 +1,7 @@
 import { AdZone } from '@/components/ads/ad-zone';
 import { EconomyShowcase } from '@/components/economy/economy-showcase';
 import { CategoryCarousel } from '@/components/home/category-carousel';
+import { CategoryFeatureQuad } from '@/components/home/category-feature-quad';
 import { CategoryGridPair } from '@/components/home/category-grid-pair';
 import { EditorialCategorySection } from '@/components/home/category-editorial-section';
 import { FeaturedHero } from '@/components/home/featured-hero';
@@ -53,19 +54,20 @@ export default async function Home() {
       </div>
       {/* أخبار محلية — التصميم الأصليّ (LatestUpdates، بالـID الثابت #2). */}
       <LatestUpdates categoryId={2} fallbackTitle="أخبار محلية" />
-      {/* برلمانيات — كروسل (#36). */}
-      <CategoryCarousel categoryId={36} fallbackTitle="برلمانيات" />
+      {/* برلمانيات — 4 أخبار (كبير + 3 صغار، بلا سكرول جوّال) (#36). */}
+      <CategoryFeatureQuad categoryId={36} fallbackTitle="برلمانيات" />
       {/* شريط الاشتراك في واتساب. */}
       <SubscribeBox variant="bar" />
-      {/* عربي دولي — كروسل (#43). */}
-      <CategoryCarousel categoryId={43} fallbackTitle="عربي دولي" />
+      {/* عربي دولي — 4 أخبار (كبير + 3 صغار، بلا سكرول جوّال) (#43). */}
+      <CategoryFeatureQuad categoryId={43} fallbackTitle="عربي دولي" />
+      {/* أخبار ثقافية — تحت عربي دولي مباشرةً: 5 أخبار (كبير + 4 صغار، بلا سكرول) (#56). */}
+      <CategoryFeatureQuad categoryId={56} fallbackTitle="أخبار ثقافية" count={5} />
       {/* قسم الاقتصاد (تصميم خاصّ: بورصة + ذهب). */}
       <EconomyShowcase />
       {/* ودجت 3 أعمدة: تريندينغ + آخر المستجدات + الأكثر قراءة. */}
       <TrendingLatestMostRead />
-      {/* قسمان كروسل تحت الودجت مباشرةً: جامعات ثمّ أخبار ثقافية (نفس شكل برلمانيات). */}
-      <CategoryCarousel categoryId={42} fallbackTitle="جامعات" />
-      <CategoryCarousel categoryId={56} fallbackTitle="أخبار ثقافية" />
+      {/* تحت الودجت مباشرةً: جامعات (4 أخبار: كبير + 3 صغار، بلا سكرول). */}
+      <CategoryFeatureQuad categoryId={42} fallbackTitle="جامعات" />
       {/* قسم الوفيات/التعزية — تصميم خاصّ مع آية قرآنيّة، أسفل أخبار ثقافية مباشرةً. */}
       <ObituariesSection categoryId={49} fallbackTitle="الوفيات" />
       {/* زوج إعلانات فوق الريلز. */}
