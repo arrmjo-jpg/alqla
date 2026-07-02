@@ -6,6 +6,7 @@ import type { NextConfig } from "next";
 // Pin the file-tracing root to this app so Next does not infer a parent workspace
 // when sibling lockfiles exist.
 const API = (process.env.API_BASE_URL ?? "").replace(/\/$/, "");
+const BACKEND_URL = API.replace(/\/api\/v1$/, "").replace(/\/v1$/, "");
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: path.dirname(fileURLToPath(import.meta.url)),
@@ -19,6 +20,7 @@ const nextConfig: NextConfig = {
       { source: "/:locale(ar|en)/epaper", destination: `${API}/:locale/epaper` },
       { source: "/:locale(ar|en)/epaper/:path*", destination: `${API}/:locale/epaper/:path*` },
       { source: "/build/:path*", destination: `${API}/build/:path*` },
+      { source: "/uploads/:path*", destination: `${BACKEND_URL}/uploads/:path*` },
     ];
   },
 };
