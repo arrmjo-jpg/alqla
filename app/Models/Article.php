@@ -10,6 +10,7 @@ use App\Enums\LiveEventStatus;
 use App\Support\Audit\AuditsChanges;
 use App\Support\Content\SlugGenerator;
 use App\Support\Engagement\HasEngagement;
+use App\Support\Media\MediaUrl;
 use App\Support\Search\ResilientSearchable;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,7 +19,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
 use Spatie\Tags\HasTags;
 
 /**
@@ -278,8 +278,6 @@ class Article extends Model
      */
     public function authorAvatarUrl(): ?string
     {
-        $avatar = $this->author?->avatar;
-
-        return $avatar ? Storage::disk('public')->url($avatar) : null;
+        return MediaUrl::forPublic($this->author?->avatar);
     }
 }

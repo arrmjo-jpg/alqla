@@ -41,7 +41,10 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            // أصل روابط الوسائط المحلّية (شعارات/أيقونات/صور الكُتّاب…): MEDIA_PUBLIC_URL المخصّص — دومين
+            // الـAPI الذي يخدم /storage فعليًّا. **لا يعتمد على APP_URL** (المضبوط على دومين الواجهة Next.js).
+            // APP_URL يبقى fallbackاً للتطوير المحلّي فقط؛ الإنتاج يضبط MEDIA_PUBLIC_URL على دومين الـAPI.
+            'url' => rtrim(env('MEDIA_PUBLIC_URL') ?: env('APP_URL', 'http://localhost'), '/').'/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

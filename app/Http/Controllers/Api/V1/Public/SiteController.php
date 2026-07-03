@@ -8,10 +8,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Settings\GeneralSettings;
 use App\Settings\NewspaperSettings;
+use App\Support\Media\MediaUrl;
 use App\Support\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class SiteController extends Controller
 {
@@ -31,9 +31,7 @@ class SiteController extends Controller
             'whatsapp' => $settings->social_whatsapp ?: null,
         ]);
 
-        $logoUrl = fn (?string $path): ?string => $path
-            ? Storage::disk('public')->url($path)
-            : null;
+        $logoUrl = fn (?string $path): ?string => MediaUrl::forPublic($path);
 
         // Header navigation categories — admin-curated via the `show_in_header` flag,
         // ordered by sort_order. الأقسام الرئيسية فقط (parent_id=null)؛ كل قسم يحمل أبناءه
