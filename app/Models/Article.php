@@ -51,7 +51,7 @@ class Article extends Model
      */
     protected array $auditAttributes = [
         'type', 'status', 'event_status', 'title', 'subtitle', 'slug', 'locale',
-        'primary_category_id', 'is_featured', 'is_breaking', 'is_pinned', 'is_header', 'is_editor_pick',
+        'primary_category_id', 'is_featured', 'is_breaking', 'is_pinned', 'is_header', 'is_editor_pick', 'is_squares',
         'comments_enabled', 'published_at', 'seo_title', 'seo_description',
         'seo_keywords', 'canonical_url', 'robots', 'og_image_id',
     ];
@@ -61,7 +61,7 @@ class Article extends Model
         'type', 'status', 'event_status', 'locale', 'translation_group',
         'title', 'subtitle', 'slug', 'short_url', 'excerpt', 'content', 'content_json',
         'seo_title', 'seo_description', 'seo_keywords', 'canonical_url', 'robots', 'og_image_id',
-        'is_featured', 'is_breaking', 'is_pinned', 'is_header', 'is_editor_pick', 'comments_enabled',
+        'is_featured', 'is_breaking', 'is_pinned', 'is_header', 'is_editor_pick', 'is_squares', 'comments_enabled',
         'views_count', 'published_at',
     ];
 
@@ -77,6 +77,7 @@ class Article extends Model
             'is_pinned' => 'boolean',
             'is_header' => 'boolean',
             'is_editor_pick' => 'boolean',
+            'is_squares' => 'boolean',
             'comments_enabled' => 'boolean',
             'published_at' => 'datetime',
             'views_count' => 'integer',
@@ -200,23 +201,43 @@ class Article extends Model
         return 'articles_index';
     }
 
-    /** يُفهرَس المنشور فقط (لا مسودّات/مجدوَل/مؤرشف) — صفر تسريب لغير المنشور. */
+    /**
+     * تمكين البحث في جميع المقالات إدارياً (بما في ذلك المسودات والمؤرشفة).
+     * يتم ضمان سرية الموقع العام عبر فلاتر Meilisearch و MySQL Scopes الصارمة.
+     */
     public function shouldBeSearchable(): bool
     {
-        return $this->status === ArticleStatus::Published
-            && $this->published_at !== null
-            && ! $this->published_at->isFuture();
+        return true;
     }
 
     /**
-     * المستند المُفهرَس — يشمل النصّ الكامل (العنوان/الترويسة/المقتطف + متن HTML
-     * مُجرَّد) والتصنيف والوسوم؛ وحقول تصفية/ترتيب (locale/type/published_at).
+     * منع مشكلة N+1 Queries أثناء استيراد كتل الفهرسة الكبيرة (scout:import)
+     * بتحميل العلاقات دفعة واحدة.
+     */
+    public function makeAllSearchableUsing($query)
+    {
+        return $query->with([
+            'primaryCategory:id,name',
+            'categories:id,name,slug',
+            'tags:id,name',
+        ]);
+    }
+
+    /**
+     * المستند المُفهرَس — يشمل النصّ الكامل والتصنيفات والوسوم؛ وحقول التصفية والفرز.
      *
      * @return array<string,mixed>
      */
     public function toSearchableArray(): array
     {
-        $this->loadMissing(['primaryCategory:id,name', 'tags']);
+        $this->loadMissing(['primaryCategory:id,name', 'categories:id', 'tags']);
+
+        $categoryIds = collect([$this->primary_category_id])
+            ->concat($this->categories->pluck('id'))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
 
         return [
             'id' => (string) $this->id,
@@ -226,10 +247,15 @@ class Article extends Model
             'body' => trim((string) preg_replace('/\s+/u', ' ', strip_tags((string) $this->content))),
             'category' => (string) ($this->primaryCategory?->name ?? ''),
             'tags' => $this->tags->pluck('name')->implode(' '),
-            // حقول تصفية/ترتيب (Meili filterable/sortable)
+            // حقول التصفية والفرز الخاصة بـ Meilisearch (filterable/sortable)
             'locale' => $this->locale,
-            'type' => $this->type?->value, // null-safe: صفّ بنوع null لا يُسقط الفهرسة (scout:import 79k)
+            'type' => $this->type?->value,
+            'status' => $this->status?->value,
+            'author_id' => $this->author_id ? (int) $this->author_id : null,
+            'category_ids' => $categoryIds,
+            'tag_names' => $this->tags->pluck('name')->all(),
             'published_at' => $this->published_at?->getTimestamp(),
+            'created_at' => $this->created_at?->getTimestamp(),
         ];
     }
 

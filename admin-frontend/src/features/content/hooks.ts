@@ -42,8 +42,26 @@ const LIVE_UPDATES = ['live-updates'] as const;
 export function useArticles(params: ArticlesListParams) {
   return useQuery({
     queryKey: [...ARTICLES, params],
-    queryFn: () => articlesService.list(params),
+    queryFn: ({ signal }) => articlesService.list(params, signal),
     placeholderData: keepPreviousData,
+  });
+}
+
+/** Fetch up to 100 active writers for the filter dropdown. */
+export function useWritersList() {
+  return useQuery({
+    queryKey: [...WRITERS, 'list-all'],
+    queryFn: () =>
+      usersService.list({
+        page: 1,
+        per_page: 100,
+        search: '',
+        status: 'active',
+        role: '',
+        trashed: 'none',
+        is_writer: 1,
+      }),
+    staleTime: 60_000,
   });
 }
 

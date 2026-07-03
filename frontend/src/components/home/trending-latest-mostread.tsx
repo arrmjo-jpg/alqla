@@ -2,35 +2,64 @@ import { Flame } from 'lucide-react';
 import Link from 'next/link';
 
 import { Container } from '@/components/layout/container';
+import { WritersCarousel } from '@/components/home/writers-carousel';
 import { LivePulse } from '@/components/ui/live-pulse';
-import { getEditorsPickFeed, getHeaderFeed, getMostReadFeed, type FeedItem } from '@/lib/feed';
-import { formatRelativeTime } from '@/lib/format';
+import { getCategoryById, getCategoryFeed, getEditorsPickFeed, type FeedItem } from '@/lib/feed';
 
-// ودجت ثلاثة أعمدة (نمط المرجع، بألوان الموقع) — من **كلّ الأقسام** حسب العلم، لا قسمًا محدّدًا:
-//  • تريندينغ  = is_editor_pick (صندوق أحمر، أرقام + صور).
-//  • أحدث الأخبار = is_header (قائمة عناوين + تاريخ).
-//  • الأكثر قراءة = الأكثر مشاهدةً خلال الشهر (days=30).
-// شارة «عاجل»/«تغطية خاصة» تظهر حين يكون الخبر عاجلًا أو تغطيةً مباشرة. Server Component، ISR.
+// ودجت (بألوان الموقع): تريندينغ (يمين، ثلث) + قسمَا كُتّاب مكدّسان فوق بعض (يسار، ثلثان: تصنيف #20 ثمّ #57).
+//  • تريندينغ = is_editor_pick (صندوق أحمر، أرقام + صور).
+//  • قسمَا الكُتّاب = مقالات كلّ تصنيف ببطاقات كاتب تنزلق تلقائيًّا (WritersCarousel، مكوّن عميل)؛ **اسم الكاتب
+//    يفتح بروفيله وكلّ مقالاته**. الصورة = غلاف المقال، ولمقال الرأي بلا غلاف تُستخدَم صورة الكاتب تلقائيًّا. Server Component، ISR.
 export async function TrendingLatestMostRead() {
-  const [editorsPick, header, mostRead] = await Promise.all([
-    getEditorsPickFeed('ar', 5),
-    getHeaderFeed('ar'),
-    getMostReadFeed('ar', 5, 30), // الأكثر قراءة خلال الشهر
-  ]);
-
-  if (editorsPick.length === 0 && header.length === 0 && mostRead.length === 0) return null;
+  const editorsPick = await getEditorsPickFeed('ar', 5);
 
   return (
-    <section className="mt-6 sm:mt-8" dir="rtl" aria-label="تريندينغ وأحدث الأخبار والأكثر قراءة">
+    <section className="mt-6 sm:mt-8" dir="rtl" aria-label="تريندينغ وأقلام الكُتّاب">
       <Container>
-        {/* RTL: تريندينغ (يمين) ← أحدث الأخبار (وسط) ← الأكثر قراءة (يسار) */}
+        {/* RTL: تريندينغ (يمين، ثلث) ← قسمَا كُتّاب مكدّسان فوق بعض (يسار، ثلثان). */}
         <div className="grid items-stretch gap-6 lg:grid-cols-3">
           <TrendingBox items={editorsPick.slice(0, 5)} />
-          <NewsList title="آخر المستجدات" items={header.slice(0, 6)} moreHref="/latest" />
-          <NewsList title="الأكثر قراءة" items={mostRead.slice(0, 6)} />
+          <div className="flex min-w-0 flex-col gap-6 lg:col-span-2">
+            {/* قسمان مميّزان فوق بعض بشكلين مختلفين: «مقالات» (#20، عموديّ) ثمّ (#57، دائريّ). */}
+            <WritersRow categoryId={20} variant="portrait" />
+            <WritersRow categoryId={57} variant="circle" />
+          </div>
         </div>
       </Container>
     </section>
+  );
+}
+
+// قسم كُتّاب واحد — ترويسة (اسم التصنيف مميّز + شارة حمراء + «المزيد») + كاروسيل بطاقات الكُتّاب.
+// بالـID الثابت (getCategoryById يحلّ الاسم/slug الحاليَّين)؛ فارغ/محذوف ⇒ يُخفى.
+async function WritersRow({ categoryId, variant }: { categoryId: number; variant?: 'portrait' | 'circle' }) {
+  const cat = await getCategoryById(categoryId);
+  if (!cat) return null;
+  const items = await getCategoryFeed(cat.slug, 12);
+  if (items.length === 0) return null;
+  const moreHref = `/category/${encodeURIComponent(cat.slug)}`;
+
+  return (
+    <div className="flex min-w-0 flex-col">
+      <div className="mb-3 flex items-center justify-between gap-3 border-b border-border pb-3">
+        {/* اسم القسم بخلفيّة حمراء + خطّ أبيض (كترويسات باقي الموقع). */}
+        <h2 className="font-heading text-sm font-extrabold sm:text-base">
+          <Link
+            href={moreHref}
+            className="inline-block bg-primary px-2.5 py-1 text-white transition-opacity hover:opacity-90"
+          >
+            {cat.name}
+          </Link>
+        </h2>
+        <Link
+          href={moreHref}
+          className="shrink-0 text-xs font-bold text-muted transition-colors hover:text-primary"
+        >
+          المزيد
+        </Link>
+      </div>
+      <WritersCarousel items={items} variant={variant} />
+    </div>
   );
 }
 
@@ -105,47 +134,3 @@ function TrendingBox({ items }: { items: FeedItem[] }) {
   );
 }
 
-// قائمة عناوين (أحدث الأخبار / الأكثر قراءة) — عنوان + شارة + تاريخ نسبيّ. رابط الخبر بمعرّفه في المسار.
-function NewsList({ title, items, moreHref }: { title: string; items: FeedItem[]; moreHref?: string }) {
-  if (items.length === 0) return null;
-  return (
-    <div className="flex h-full flex-col">
-      <div className="mb-3 flex items-center justify-between gap-3 border-b border-border pb-3">
-        <h2 className="flex items-center gap-2 font-heading text-lg font-extrabold text-fg sm:text-xl">
-          <span className="h-5 w-1 shrink-0 bg-primary" style={{ borderRadius: '9999px' }} aria-hidden />
-          {moreHref ? (
-            <Link href={moreHref} className="transition-colors hover:text-primary">
-              {title}
-            </Link>
-          ) : (
-            title
-          )}
-        </h2>
-        {moreHref && (
-          <Link href={moreHref} className="shrink-0 text-xs font-bold text-muted transition-colors hover:text-primary">
-            المزيد
-          </Link>
-        )}
-      </div>
-      <ul className="flex flex-1 flex-col divide-y divide-border">
-        {items.map((item) => (
-          <li key={item.id} className="group flex flex-1 flex-col justify-center py-3 first:pt-0 last:pb-0">
-            <Link href={item.href} className="block">
-              <div className="flex flex-wrap items-start gap-1.5">
-                {item.badge && <Tag badge={item.badge} />}
-                <h3 className="line-clamp-2 flex-1 text-sm font-bold leading-6 text-fg transition-colors group-hover:text-primary">
-                  {item.title}
-                </h3>
-              </div>
-              {item.publishedAt && (
-                <time dateTime={item.publishedAt} className="mt-1.5 block text-xs font-medium text-muted">
-                  {formatRelativeTime(item.publishedAt)}
-                </time>
-              )}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}

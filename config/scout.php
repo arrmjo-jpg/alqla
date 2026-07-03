@@ -148,15 +148,15 @@ return [
             // فهرس المقالات — بحث عربي/إنجليزي بترتيب صلة + تصفية + ترتيب.
             'articles_index' => [
                 'searchableAttributes' => ['title', 'subtitle', 'excerpt', 'body', 'category', 'tags'],
-                'filterableAttributes' => ['locale', 'type'],
-                'sortableAttributes' => ['published_at'],
+                'filterableAttributes' => ['locale', 'type', 'status', 'author_id', 'category_ids', 'tag_names'],
+                'sortableAttributes' => ['published_at', 'created_at'],
                 // تسامح الأخطاء الإملائية مفعّل افتراضياً في Meilisearch.
                 'rankingRules' => ['words', 'typo', 'proximity', 'attribute', 'sort', 'exactness'],
             ],
             // فهرس مكتبة الفيديو — بحث متن (عنوان/وصف/مقتطف) بترتيب صلة + حقول تصفية.
             'videos_index' => [
                 'searchableAttributes' => ['title', 'description', 'excerpt'],
-                'filterableAttributes' => ['locale', 'source_type', 'video_category_id', 'is_featured'],
+                'filterableAttributes' => ['locale', 'source_type', 'video_category_id', 'is_featured', 'status', 'visibility', 'author_id'],
                 'sortableAttributes' => ['published_at'],
                 'rankingRules' => ['words', 'typo', 'proximity', 'attribute', 'sort', 'exactness'],
             ],

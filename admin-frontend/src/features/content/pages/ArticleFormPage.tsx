@@ -48,6 +48,7 @@ import { useMediaStaging, stagedFromArticle } from '../lib/useMediaStaging';
 import { suggestTags, tiptapText } from '../lib/tagSuggest';
 import { excerptFromDoc } from '../lib/excerpt';
 import { ArticleWorkflowPanel } from '../components/ArticleWorkflowPanel';
+import { DISPLAY_FLAGS } from '../constants';
 import { ArticlePreviewModal } from '../components/ArticlePreviewModal';
 import { CategoryPicker } from '../components/CategoryPicker';
 import { MediaStudio } from '../components/media/MediaStudio';
@@ -247,6 +248,7 @@ export default function ArticleFormPage() {
         is_pinned: false,
         is_header: false,
         is_editor_pick: false,
+        is_squares: false,
         comments_enabled: false,
         views_count: 0,
       },
@@ -284,6 +286,7 @@ export default function ArticleFormPage() {
       is_pinned: article.is_pinned,
       is_header: article.is_header,
       is_editor_pick: article.is_editor_pick,
+      is_squares: article.is_squares,
       comments_enabled: article.comments_enabled,
       views_count: article.views_count,
     });
@@ -425,6 +428,7 @@ export default function ArticleFormPage() {
       is_pinned: values.is_pinned,
       is_header: values.is_header,
       is_editor_pick: values.is_editor_pick,
+      is_squares: values.is_squares,
       comments_enabled: values.comments_enabled,
       views_count: values.views_count,
     };
@@ -955,66 +959,21 @@ export default function ArticleFormPage() {
                 {isEditorial ? (
                   <div className="space-y-3">
                     <p className="text-xs font-bold text-muted-foreground">{t('articles.form.displayGroup')}</p>
-                    <Controller
-                      control={control}
-                      name="is_pinned"
-                      render={({ field }) => (
-                        <SwitchField
-                          label={t('articles.form.isPinned')}
-                          description={t('articles.form.isPinnedHint')}
-                          checked={field.value}
-                          onChange={field.onChange}
-                        />
-                      )}
-                    />
-                    <Controller
-                      control={control}
-                      name="is_breaking"
-                      render={({ field }) => (
-                        <SwitchField
-                          label={t('articles.form.isBreaking')}
-                          description={t('articles.form.isBreakingHint')}
-                          checked={field.value}
-                          onChange={field.onChange}
-                        />
-                      )}
-                    />
-                    <Controller
-                      control={control}
-                      name="is_featured"
-                      render={({ field }) => (
-                        <SwitchField
-                          label={t('articles.form.isFeatured')}
-                          description={t('articles.form.isFeaturedHint')}
-                          checked={field.value}
-                          onChange={field.onChange}
-                        />
-                      )}
-                    />
-                    <Controller
-                      control={control}
-                      name="is_header"
-                      render={({ field }) => (
-                        <SwitchField
-                          label={t('articles.form.isHeader')}
-                          description={t('articles.form.isHeaderHint')}
-                          checked={field.value}
-                          onChange={field.onChange}
-                        />
-                      )}
-                    />
-                    <Controller
-                      control={control}
-                      name="is_editor_pick"
-                      render={({ field }) => (
-                        <SwitchField
-                          label={t('articles.form.isEditorPick')}
-                          description={t('articles.form.isEditorPickHint')}
-                          checked={field.value}
-                          onChange={field.onChange}
-                        />
-                      )}
-                    />
+                    {DISPLAY_FLAGS.map((flag) => (
+                      <Controller
+                        key={flag.key}
+                        control={control}
+                        name={flag.key}
+                        render={({ field }) => (
+                          <SwitchField
+                            label={t(flag.labelKey)}
+                            description={t(`${flag.labelKey}Hint`)}
+                            checked={!!field.value}
+                            onChange={field.onChange}
+                          />
+                        )}
+                      />
+                    ))}
                   </div>
                 ) : null}
 

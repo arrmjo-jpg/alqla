@@ -8,7 +8,6 @@ import { FeaturedHero } from '@/components/home/featured-hero';
 import { IncidentsSection } from '@/components/home/incidents-section';
 import { LatestUpdates } from '@/components/home/latest-updates';
 import { ObituariesSection } from '@/components/home/obituaries-section';
-import { OpinionWritersSection } from '@/components/home/opinion-writers-section';
 import { ReelsCarousel } from '@/components/home/reels-carousel';
 import { TrendingLatestMostRead } from '@/components/home/trending-latest-mostread';
 import { WeekStories } from '@/components/home/week-stories';
@@ -62,6 +61,8 @@ export default async function Home() {
       <CategoryFeatureQuad categoryId={43} fallbackTitle="عربي دولي" />
       {/* أخبار ثقافية — تحت عربي دولي مباشرةً: 5 أخبار (كبير + 4 صغار، بلا سكرول) (#56). */}
       <CategoryFeatureQuad categoryId={56} fallbackTitle="أخبار ثقافية" count={5} />
+      {/* ضيف الأسبوع — تحت أخبار ثقافية مباشرةً (تصنيف #58): ٤ مقالات بنمط بطاقات أفقيّة فاتحة. */}
+      <WeekStories categoryId={58} fallbackTitle="ضيف الأسبوع" />
       {/* قسم الاقتصاد (تصميم خاصّ: بورصة + ذهب). */}
       <EconomyShowcase />
       {/* ودجت 3 أعمدة: تريندينغ + آخر المستجدات + الأكثر قراءة. */}
@@ -87,17 +88,8 @@ export default async function Home() {
       />
       {/* اخبار الناس — التصميم الأصليّ (تحريريّ). */}
       <EditorialCategorySection categoryId={31} headingId="people-news-heading" fallbackTitle="اخبار الناس" />
-      {/* مقالات — التصميم الأصليّ (كُتّاب الرأي). */}
-      <OpinionWritersSection categoryId={20} headingId="opinion-heading" fallbackTitle="مقالات" />
-      {/* مقالات مختارة — نسخة من قسم المقالات بمقالات مختلفة (الأحدث التالية skip=6، بلا تكرار محتوى). */}
-      <OpinionWritersSection
-        categoryId={20}
-        headingId="selected-articles-heading"
-        forceTitle="مقالات مختارة"
-        skip={6}
-      />
-      {/* ضيف الأسبوع — قسمٌ مستقلّ (تصنيف #58): ٤ مقالات بنمط بطاقات الوفيات الأفقيّة بلا خلفيّة داكنة. */}
-      <WeekStories categoryId={58} fallbackTitle="ضيف الأسبوع" />
+      {/* «مقالات» و«مقالات مختارة» انتقلا إلى ودجت تريندينغ (كاروسيل الكُتّاب) أعلاه — أُزيلا هنا لمنع التكرار.
+          و«ضيف الأسبوع» نُقِل تحت «أخبار ثقافية» أعلاه. */}
       {/* أخبار الفن — بتصميم القسم (شبكة بطاقات عائمة)، محلّ «حوادث» سابقًا. */}
       <IncidentsSection categoryId={37} headingId="art-heading" fallbackTitle="أخبار الفن" />
       {/* قسم الرياضة — نظير الاقتصاد بطابعٍ رياضيّ + جدول ترتيب الدوري مباشرةً من 365Scores (محلّ كروسل رياضة). */}

@@ -30,7 +30,7 @@ const PGROUPS = ['permission-groups'] as const;
 export function useUsers(params: UsersListParams) {
   return useQuery({
     queryKey: [...USERS, params],
-    queryFn: () => usersService.list(params),
+    queryFn: ({ signal }) => usersService.list(params, signal),
     placeholderData: keepPreviousData,
   });
 }

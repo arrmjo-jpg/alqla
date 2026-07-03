@@ -22,9 +22,10 @@ function buildParams(p: UsersListParams): Record<string, string | number> {
 }
 
 export const usersService = {
-  async list(p: UsersListParams): Promise<UsersListResult> {
+  async list(p: UsersListParams, signal?: AbortSignal): Promise<UsersListResult> {
     const { data } = await http.get<ApiSuccess<UserData[]>>('/admin/users', {
       params: buildParams(p),
+      signal,
     });
     const pagination = (data.meta as { pagination: PaginationMeta }).pagination;
     return { data: data.data, pagination };

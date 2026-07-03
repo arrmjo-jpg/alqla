@@ -54,10 +54,11 @@ export function SectionHeader({
 }
 
 // رابط «عرض الكل» أسفل القسم — زرّ أسود/خطّ أبيض، يصير أحمر عند المرور. أقصى الشمال (يسار):
-// الصفحة RTL ⇒ justify-end يدفع الزرّ إلى الحافة اليسرى.
+// الصفحة RTL ⇒ justify-end يدفع الزرّ إلى الحافة اليسرى. خطّ علويّ يمتدّ بعرض القسم كاملًا فوق الزرّ
+// (مطابق لخطّ اسم القسم: border-border) وملاصق للزرّ مباشرةً (بلا حاشية علويّة).
 export function SectionMore({ href }: { href: string }) {
   return (
-    <div className="mt-6 flex justify-end">
+    <div className="mt-6 flex justify-end border-t border-border">
       <Link
         href={href}
         className="inline-flex items-center gap-1 rounded-md bg-black px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary"

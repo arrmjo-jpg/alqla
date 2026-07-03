@@ -1,12 +1,12 @@
 'use client';
 
-import Link from 'next/link';
 import { useRef, useState } from 'react';
 
 import { ReelCard } from '@/components/reels/reel-card';
 import type { ReelItem } from '@/lib/reels';
 
 import { ReelsModal } from './reels-modal';
+import { SectionHeader, SectionMore } from './section-header';
 
 // كروسل الريلز في الرئيسية (أسفل آخر المستجدات): بطاقات 9:16 تشتغل عند المرور بالموس،
 // والنقر يفتح موديل داخل الصفحة (تنقّل بالسكرول/الأسهم/المفاتيح/اللمس). تمرير أفقيّ RTL.
@@ -28,25 +28,8 @@ export function ReelsCarousel({
   return (
     <section className="mt-6 sm:mt-8" aria-labelledby="reels-carousel-heading">
       <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6">
-        <div className="mb-6 flex items-center justify-between gap-4 border-b border-border pb-4">
-          <div className="flex items-center gap-3">
-            <span className="h-7 w-1 shrink-0 bg-primary" style={{ borderRadius: '9999px' }} aria-hidden />
-            <h2 id="reels-carousel-heading" className="font-heading text-xl font-extrabold text-fg sm:text-2xl">
-              <Link href="/reels" className="transition-colors hover:text-primary">
-                الريلز
-              </Link>
-            </h2>
-          </div>
-          <Link
-            href="/reels"
-            className="flex items-center gap-1 text-sm font-semibold text-muted transition-colors hover:text-primary"
-          >
-            <span>عرض الكل</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="size-4" aria-hidden>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-          </Link>
-        </div>
+        {/* الترويسة الموحّدة: اسم القسم بخلفيّة حمراء + خطّ أبيض (كباقي الأقسام). */}
+        <SectionHeader title="الريلز" headingId="reels-carousel-heading" href="/reels" />
 
         <div className="group/strip relative">
           <button
@@ -81,6 +64,9 @@ export function ReelsCarousel({
             ))}
           </div>
         </div>
+
+        {/* «عرض الكل» أسفل القسم (كباقي الأقسام). */}
+        <SectionMore href="/reels" />
       </div>
 
       {openIndex !== null && (
