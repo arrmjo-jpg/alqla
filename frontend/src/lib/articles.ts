@@ -66,7 +66,7 @@ const looseArray = <T extends z.ZodTypeAny>(item: T) =>
   z.preprocess((v) => (Array.isArray(v) ? v : []), z.array(item));
 
 // كتلة seo (PublicSeoBuilder) — تُمرَّر كما هي. og/twitter مُهيكلة للتحويل لـMetadata؛ structured_data/breadcrumbs خام للإصدار.
-const SeoSchema = z
+export const SeoSchema = z
   .object({
     title: z.string().nullish(),
     description: z.string().nullish(),
@@ -304,10 +304,15 @@ export function readingMinutes(html: string): number {
   return Math.max(1, Math.round(text.split(' ').length / 200));
 }
 
+export interface SeoModel {
+  title: string;
+  seo?: ArticleSeo | null;
+}
+
 // محوّل تمريريّ: كتلة `seo` من الـAPI ⇒ Next Metadata. **لا منطق SEO جديد** — تمرير قيم PublicSeoBuilder كما هي.
-export function articleSeoToMetadata(article: ArticleDetail, fallbackCanonical: string): Metadata {
-  const seo = article.seo;
-  if (!seo) return { title: article.title };
+export function articleSeoToMetadata(model: SeoModel, fallbackCanonical: string): Metadata {
+  const seo = model.seo;
+  if (!seo) return { title: model.title };
 
   const canonical = seo.canonical_url ?? fallbackCanonical;
   const og = seo.og ?? undefined;
@@ -327,7 +332,7 @@ export function articleSeoToMetadata(article: ArticleDetail, fallbackCanonical: 
   for (const h of seo.hreflang ?? []) languages[h.locale] = h.url;
 
   return {
-    title: seo.title ?? article.title,
+    title: seo.title ?? model.title,
     description: seo.description ?? undefined,
     keywords: seo.keywords ?? undefined,
     alternates: { canonical, languages: Object.keys(languages).length > 0 ? languages : undefined },

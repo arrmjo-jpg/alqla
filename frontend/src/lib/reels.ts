@@ -1,7 +1,7 @@
 import 'server-only';
 import { z } from 'zod';
-
 import { env } from './env';
+import { SeoSchema, type ArticleSeo } from './articles';
 
 // عنصر ريل جاهز للعرض (view-model) — لا يتسرّب شكل الـAPI الخام إلى العارض.
 export interface ReelItem {
@@ -17,6 +17,7 @@ export interface ReelItem {
   publishedAt: string | null;
   isFeatured: boolean;
   metrics: { views: number; likes: number; dislikes: number; favorites: number };
+  seo?: ArticleSeo;
 }
 
 const MediaSchema = z
@@ -50,6 +51,7 @@ export const ReelSchema = z
     share_image: z.string().nullish(),
     media: MediaSchema,
     metrics: MetricsSchema,
+    seo: z.lazy(() => SeoSchema).nullish(),
   })
   .passthrough();
 
@@ -99,6 +101,7 @@ export function mapReel(r: Reel): ReelItem {
       dislikes: r.metrics?.dislikes ?? 0,
       favorites: r.metrics?.favorites ?? 0,
     },
+    seo: r.seo ?? undefined,
   };
 }
 

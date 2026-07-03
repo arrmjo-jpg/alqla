@@ -28,6 +28,7 @@ const videoCategoryTag = (locale: string, slug: string) => `video-category:${loc
 const playlistTag = (locale: string, slug: string) => `playlist:${locale}:${slug}`;
 
 const enc = encodeURIComponent;
+import { SeoSchema, type ArticleSeo } from './articles';
 
 // بطاقة فيديو موحّدة للواجهة (تُغذّي كلّ الرفوف/البطاقات) — حقول العرض + التشغيل.
 export interface VideoItem {
@@ -49,6 +50,7 @@ export interface VideoItem {
   isFeatured: boolean;
   sourceType: string | null;
   description: string | null;
+  seo?: ArticleSeo;
 }
 
 // قائمة تشغيل موحّدة (الفهرس: videos فارغة + عدّاد؛ التفاصيل: videos مرتّبة بالـ position).
@@ -62,6 +64,7 @@ export interface PlaylistItem {
   isFeatured: boolean;
   videosCount: number;
   videos: VideoItem[];
+  seo?: ArticleSeo;
 }
 
 export const VideoSchema = z
@@ -99,6 +102,7 @@ export const VideoSchema = z
       })
       .passthrough()
       .nullish(),
+    seo: z.lazy(() => SeoSchema).nullish(),
   })
   .passthrough();
 
@@ -113,6 +117,7 @@ const PlaylistSchema = z
     cover: z.string().nullish(),
     videos_count: z.number().nullish(),
     videos: z.array(VideoSchema).nullish(),
+    seo: z.lazy(() => SeoSchema).nullish(),
   })
   .passthrough();
 
@@ -170,6 +175,7 @@ export function mapVideo(v: RawVideo): VideoItem {
     isFeatured: v.is_featured ?? false,
     sourceType: v.source_type ?? null,
     description: v.description ?? v.excerpt ?? null,
+    seo: v.seo ?? undefined,
   };
 }
 
@@ -184,6 +190,7 @@ function mapPlaylist(p: RawPlaylist): PlaylistItem {
     isFeatured: p.is_featured ?? false,
     videosCount: p.videos_count ?? p.videos?.length ?? 0,
     videos: (p.videos ?? []).map(mapVideo),
+    seo: p.seo ?? undefined,
   };
 }
 

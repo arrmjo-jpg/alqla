@@ -37,6 +37,8 @@ const bareSlug = (idslug: string): string => {
 const withParam = (href: string, key: string, value: string): string =>
   `${href}${href.includes('?') ? '&' : '?'}${key}=${encodeURIComponent(value)}`;
 
+import { articleSeoToMetadata } from '@/lib/articles';
+
 export async function generateMetadata({
   params,
 }: {
@@ -46,22 +48,7 @@ export async function generateMetadata({
   const video = await getVideo(bareSlug(idslug));
   if (!video) return { title: 'فيديو' };
 
-  const canonical = `${env.siteUrl}/videos/${idslug}`;
-  const description = video.description ?? undefined;
-  const images = video.poster ? [video.poster] : undefined;
-
-  return {
-    title: video.title,
-    description,
-    alternates: { canonical },
-    openGraph: { type: 'video.other', title: video.title, description, url: canonical, images },
-    twitter: {
-      card: video.poster ? 'summary_large_image' : 'summary',
-      title: video.title,
-      description,
-      images,
-    },
-  };
+  return articleSeoToMetadata(video, `${env.siteUrl}/videos/${idslug}`);
 }
 
 export default async function WatchPage({

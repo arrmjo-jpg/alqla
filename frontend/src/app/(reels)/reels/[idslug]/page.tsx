@@ -12,6 +12,9 @@ import { getSiteSettings } from '@/lib/site-settings';
 // رابط عميق لريل محدّد — يفتح الـfeed مبتدئاً به. ISR = سقف أمان؛ التحديث حدثيّ عبر reel:{locale}:{slug}.
 export const revalidate = 21600;
 
+import { env } from '@/lib/env';
+import { articleSeoToMetadata } from '@/lib/articles';
+
 export async function generateMetadata({
   params,
 }: {
@@ -20,16 +23,8 @@ export async function generateMetadata({
   const { idslug } = await params;
   const reel = await getReelByIdSlug(idslug);
   if (!reel) return { title: 'الريلز' };
-  return {
-    title: reel.title,
-    description: reel.description ?? undefined,
-    openGraph: {
-      type: 'video.other',
-      title: reel.title,
-      description: reel.description ?? undefined,
-      images: reel.poster ? [reel.poster] : undefined,
-    },
-  };
+
+  return articleSeoToMetadata(reel, `${env.siteUrl}/reels/${idslug}`);
 }
 
 export default async function ReelDeepLinkPage({ params }: { params: Promise<{ idslug: string }> }) {
