@@ -34,7 +34,7 @@ class PublicArticleResource extends JsonResource
             'published_at' => $this->published_at?->toISOString(),
             'views_count' => $this->views_count,
             'canonical_path' => $this->canonicalPath(),
-            'seo' => PublicSeoBuilder::build($this->resource),
+            'seo' => PublicSeoBuilder::build($this->resource)->toArray(),
             // عقد الواجهة العامة: أعلام العرض + تفاعل + حالة الحدث المباشر.
             // SSoT للتعليقات: قيمة واحدة نهائيّة تدمج (إعدادات الموقع العامّة ∧ علَم المقال) عبر
             // CommentGuard — فتستهلك الواجهة قيمة واحدة دون إعادة تطبيق الشرط (مصدر الحقيقة الوحيد).

@@ -86,6 +86,8 @@ const SeoSchema = z
         image: z.string().nullish(),
         image_width: z.number().nullish(),
         image_height: z.number().nullish(),
+        image_secure_url: z.string().nullish(),
+        image_type: z.string().nullish(),
         article: z
           .object({
             published_time: z.string().nullish(),
@@ -311,7 +313,15 @@ export function articleSeoToMetadata(article: ArticleDetail, fallbackCanonical: 
   const og = seo.og ?? undefined;
   const tw = seo.twitter ?? undefined;
   const ogImages = og?.image
-    ? [{ url: og.image, width: og.image_width ?? undefined, height: og.image_height ?? undefined }]
+    ? [
+        {
+          url: og.image,
+          secureUrl: og.image_secure_url ?? undefined,
+          type: og.image_type ?? undefined,
+          width: og.image_width ?? undefined,
+          height: og.image_height ?? undefined,
+        },
+      ]
     : undefined;
   const languages: Record<string, string> = {};
   for (const h of seo.hreflang ?? []) languages[h.locale] = h.url;
