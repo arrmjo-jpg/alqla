@@ -16,6 +16,7 @@ import { env } from './env';
 const REVALIDATE = 300; // ISR — سقف أمان؛ التحديث الحدثيّ عبر الوسم عند توفّره.
 const epaperFeedTag = (locale: string) => `epaper-feed:${locale}`;
 const enc = encodeURIComponent;
+import { SeoSchema, type ArticleSeo } from './articles';
 
 export interface BriefPoint {
   title: string;
@@ -49,6 +50,7 @@ export interface EpaperIssue {
   briefPoints: BriefPoint[];
   highlights: HighlightItem[];
   insideThisIssue: InsideSection[];
+  seo?: ArticleSeo;
 }
 
 const EpaperItemSchema = z
@@ -71,6 +73,7 @@ const EpaperItemSchema = z
     inside_this_issue: z
       .array(z.object({ label: z.string(), lead: z.string().nullish(), page: z.number().nullish() }).passthrough())
       .nullish(),
+    seo: z.lazy(() => SeoSchema).nullish(),
   })
   .passthrough();
 
@@ -97,6 +100,7 @@ function mapIssue(r: RawEpaper): EpaperIssue {
     briefPoints: (r.brief_points ?? []).map((p) => ({ title: p.title, why: p.why ?? null })),
     highlights: (r.highlights ?? []).map((h) => ({ title: h.title, quote: h.quote ?? null, page: h.page ?? null })),
     insideThisIssue: (r.inside_this_issue ?? []).map((s) => ({ label: s.label, lead: s.lead ?? null, page: s.page ?? null })),
+    seo: r.seo ?? undefined,
   };
 }
 

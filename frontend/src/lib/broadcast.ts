@@ -11,6 +11,7 @@ import type {
   BroadcastStatus,
 } from './broadcast-types';
 import { env } from './env';
+import { SeoSchema } from './articles';
 
 // طبقة بيانات البثّ — تعيد استخدام النقاط العامّة القائمة (صفر باك إند جديد):
 //   GET /api/v1/{kind}          → قائمة بثّ النوع (live: scheduled|live · tv/radio: دليل دائم)
@@ -65,7 +66,10 @@ const PlaybackSchema = z
   })
   .passthrough();
 
-const DetailSchema = CardSchema.extend({ playback: PlaybackSchema.nullish() });
+const DetailSchema = CardSchema.extend({
+  playback: PlaybackSchema.nullish(),
+  seo: z.lazy(() => SeoSchema).nullish(),
+});
 
 const ListEnvelope = z.object({ data: z.array(CardSchema).nullish() }).passthrough();
 const ItemEnvelope = z.object({ data: DetailSchema.nullish() }).passthrough();
@@ -105,6 +109,7 @@ function mapDetail(r: RawDetail): BroadcastDetail {
       startsAt: p?.starts_at ?? null,
       vod: p?.vod ? { id: p.vod.id, slug: p.vod.slug, href: p.vod.canonical_path } : null,
     },
+    seo: r.seo ?? undefined,
   };
 }
 

@@ -35,6 +35,7 @@ class PublicEpaperListItemResource extends JsonResource
             'brief_points' => $this->brief_points,
             'highlights' => $this->highlights,
             'inside_this_issue' => $this->inside_this_issue,
+            'seo' => \App\Support\Content\EpaperSeoBuilder::build($this->resource),
         ];
     }
 }

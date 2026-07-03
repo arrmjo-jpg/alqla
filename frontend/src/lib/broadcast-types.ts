@@ -38,6 +38,9 @@ export interface BroadcastPlayback {
   vod: { id: number; slug: string; href: string } | null;
 }
 
+import type { ArticleSeo } from './articles';
+
 export interface BroadcastDetail extends BroadcastCard {
   playback: BroadcastPlayback;
+  seo?: ArticleSeo;
 }

@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 
 import { NewspaperReader } from '@/components/epaper/reader/newspaper-reader';
 import { getEpapers, type EpaperIssue } from '@/lib/epaper';
-import { buildMetadata } from '@/lib/seo';
 import { getSiteSettings } from '@/lib/site-settings';
 
 // القارئ الأصليّ (pdf.js) — خارج مجموعة (site) ⇒ صفحة غامرة بلا هيدر/فوتر الموقع. SEO عبر
@@ -17,6 +16,9 @@ async function resolveIssue(idslug: string): Promise<EpaperIssue | null> {
   return issues.find((i) => i.id === id) ?? null;
 }
 
+import { articleSeoToMetadata } from '@/lib/articles';
+import { env } from '@/lib/env';
+
 export async function generateMetadata({
   params,
 }: {
@@ -24,19 +26,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { idslug } = await params;
   const issue = await resolveIssue(idslug);
-  if (!issue) return buildMetadata({ title: 'الجريدة الرقمية', path: '/epaper' });
+  if (!issue) return { title: 'الجريدة الرقمية' };
 
-  const description =
-    issue.summary?.trim() ||
-    `العدد ${issue.issueNumber}${issue.publicationDate ? ` — ${issue.publicationDate}` : ''} — الجريدة الرقمية`;
-
-  return buildMetadata({
-    title: issue.title,
-    description,
-    path: `/newspaper/${issue.id}-${issue.slug}`,
-    image: issue.cover ?? undefined,
-    type: 'article',
-  });
+  return articleSeoToMetadata(issue, `${env.siteUrl}/newspaper/${idslug}`);
 }
 
 export default async function NewspaperReaderPage({
