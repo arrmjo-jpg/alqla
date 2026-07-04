@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Cairo } from 'next/font/google';
+import { Cairo, Noto_Sans_Arabic } from 'next/font/google';
 import localFont from 'next/font/local';
 
 import './globals.css';
@@ -27,6 +27,14 @@ const cairo = Cairo({
   display: 'swap',
 });
 
+// خط القراءة الطويلة المريح للأخبار
+const notoArabic = Noto_Sans_Arabic({
+  subsets: ['arabic'],
+  weight: ['300', '400', '500', '600', '700', '800'],
+  variable: '--font-noto-arabic',
+  display: 'swap',
+});
+
 // All metadata derived from Site Settings (no hardcoded SEO content).
 export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata();
@@ -38,7 +46,25 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   // suppressHydrationWarning على <html>: إضافات المتصفّح (مثل crxlauncher) تحقن سمات قبل ترطيب React ⇒ عدم تطابق
   // زائف؛ يُسكِت سمات <html> نفسه فقط، لا الأبناء (فلا يُخفي عدم تطابق حقيقيّ في التطبيق).
   return (
-    <html lang="ar" dir="rtl" className={`${aljazeera.variable} ${cairo.variable} antialiased`} suppressHydrationWarning>
+    <html lang="ar" dir="rtl" className={`${aljazeera.variable} ${cairo.variable} ${notoArabic.variable} antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          try {
+            if (localStorage.getItem('desktop_view') === 'true') {
+              var meta = document.querySelector('meta[name="viewport"]');
+              var content = 'width=1200, initial-scale=0.2, shrink-to-fit=yes';
+              if (meta) {
+                meta.setAttribute('content', content);
+              } else {
+                meta = document.createElement('meta');
+                meta.setAttribute('name', 'viewport');
+                meta.setAttribute('content', content);
+                document.head.appendChild(meta);
+              }
+            }
+          } catch (e) {}
+        `}} />
+      </head>
       <body className="flex min-h-dvh flex-col bg-bg text-fg">
         <ResourceHints />
         {children}

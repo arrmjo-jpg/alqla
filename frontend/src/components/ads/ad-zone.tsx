@@ -1,6 +1,16 @@
 'use client';
 
-import { type CSSProperties, useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import {
+  createContext,
+  type CSSProperties,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { getClientId } from '@/lib/client-id';
 
@@ -44,16 +54,107 @@ function beacon(path: string, token: string): void {
   }).catch(() => {});
 }
 
+// ─── الدفعة المشترَكة (batch) — طلب واحد لكلّ مساحات الصفحة ──────────────────────────────────
+// المصدر الخلفيّ يحدّد مساحات الصفحة (page → chrome + مساحات الصفحة). الواجهة تمرّر page فقط
+// (فصل تامّ عن أسماء المساحات). AdZone يستهلك من السياق كسولاً؛ ورمز أيّ مساحة تتجاوز نافذة الدلو
+// (~30ث) عند رؤيتها يُجدَّد بطلب مفرد احتياطيّ ⇒ احتساب انطباع سليم. بلا مزوّد ⇒ السلوك المفرد القديم.
+
+interface AdBatchValue {
+  ready: boolean;
+  /** ad=undefined ⇒ خارج خريطة الدفعة (يسقط للمفرد)؛ null ⇒ لا إعلان صراحةً. fresh ⇒ الرمز ضمن نافذة الدلو. */
+  getZone: (zone: string) => { ad: ServedAd | null | undefined; fresh: boolean };
+}
+
+const AdBatchContext = createContext<AdBatchValue | null>(null);
+const useAdBatch = (): AdBatchValue | null => useContext(AdBatchContext);
+
+// مسار الصفحة → مفتاح صفحة (لا أسماء مساحات هنا؛ الخلفيّة تحلّ المفتاح → المساحات).
+function pageKeyForPath(pathname: string): string {
+  if (pathname === '/') return 'homepage';
+  if (pathname.startsWith('/articles/')) return 'article';
+  if (/^\/(bourse|gold-prices|sport|reels|weather|writer|category|videos|search|epaper|following)/.test(pathname)) {
+    return 'inner';
+  }
+  return ''; // مساحات chrome فقط (احتياط).
+}
+
+interface BatchState {
+  zones: Record<string, ServedAd | null>;
+  fetchedAt: number;
+  windowMs: number;
+  ready: boolean;
+}
+
+const EMPTY_BATCH: BatchState = { zones: {}, fetchedAt: 0, windowMs: 30_000, ready: false };
+
+export function AdBatchProvider({ page, children }: { page?: string; children: ReactNode }) {
+  const pathname = usePathname();
+  const resolvedPage = page ?? pageKeyForPath(pathname || '/');
+  const [state, setState] = useState<BatchState>(EMPTY_BATCH);
+
+  useEffect(() => {
+    let alive = true;
+    setState(EMPTY_BATCH);
+    void (async () => {
+      try {
+        const query = new URLSearchParams({
+          page: resolvedPage,
+          locale: pageLocale(),
+          device: detectDevice(),
+        }).toString();
+        const res = await fetch(`/api/ads/batch?${query}`, {
+          cache: 'no-store',
+          headers: { 'X-Client-Id': getClientId() },
+        });
+        if (!res.ok) {
+          if (alive) setState((s) => ({ ...s, ready: true }));
+          return;
+        }
+        const data: { zones?: Record<string, ServedAd | null>; expires_in?: number } = await res
+          .json()
+          .catch(() => ({}));
+        if (alive) {
+          setState({
+            zones: data.zones ?? {},
+            fetchedAt: Date.now(),
+            windowMs: Math.max(1, data.expires_in ?? 30) * 1000,
+            ready: true,
+          });
+        }
+      } catch {
+        if (alive) setState((s) => ({ ...s, ready: true }));
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [resolvedPage]);
+
+  const value = useMemo<AdBatchValue>(
+    () => ({
+      ready: state.ready,
+      getZone: (zone) => ({
+        ad: state.zones[zone],
+        fresh: state.fetchedAt > 0 && Date.now() - state.fetchedAt < state.windowMs,
+      }),
+    }),
+    [state],
+  );
+
+  return <AdBatchContext.Provider value={value}>{children}</AdBatchContext.Provider>;
+}
+
 export function AdZone({ zone, className }: { zone: string; className?: string }) {
+  const batch = useAdBatch();
   const [ad, setAd] = useState<ServedAd | null>(null);
   // Lazy-load: لا يُطلَب الإعلان إلا عند اقتراب موضعه من الـviewport (يقلّص دفعة الطلبات عند أوّل تحميل).
-  // فوق الشاشة ⇒ العنصر متقاطع فورًا ⇒ جلب فوريّ (بلا تأخير ملموس)؛ أسفل الشاشة ⇒ يؤجَّل حتى الاقتراب.
+  // فوق الشاشة ⇒ العنصر متقاطع فورًا ⇒ عرض فوريّ (بلا تأخير ملموس)؛ أسفل الشاشة ⇒ يؤجَّل حتى الاقتراب.
   const [inView, setInView] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLSpanElement | null>(null);
 
   // مراقبة موضع الزون عبر عنصر بحجم صفر (absolute فلا يؤثّر في التخطيط ولا فجوة الأبوين). عند الاقتراب
-  // (rootMargin) يُسمح بالجلب مرّة واحدة. بلا IntersectionObserver ⇒ جلب فوريّ (تدهور رشيق = السلوك القديم).
+  // (rootMargin) يُسمح بالعرض مرّة واحدة. بلا IntersectionObserver ⇒ عرض فوريّ (تدهور رشيق = السلوك القديم).
   useEffect(() => {
     if (inView) return;
     if (typeof IntersectionObserver === 'undefined') {
@@ -75,9 +176,21 @@ export function AdZone({ zone, className }: { zone: string; className?: string }
     return () => io.disconnect();
   }, [inView]);
 
-  // جلب حيّ — فقط بعد دخول النطاق (lazy) — no-store (عقد Cache/CDN؛ لا SSR/ISR/كاش).
+  // حلّ الإعلان بعد دخول النطاق (lazy): من الدفعة المشترَكة إن كانت جاهزة وحديثة (بلا طلب)؛ وإلا طلب مفرد
+  // حيّ (بلا مزوّد، أو مساحة خارج الدفعة، أو رمز الدفعة تجاوز نافذة الدلو ⇒ رمز حديث للاحتساب الصحيح).
   useEffect(() => {
-    if (!inView) return;
+    if (!inView || ad) return;
+
+    if (batch) {
+      if (!batch.ready) return; // ننتظر وصول الدفعة (يُعاد التشغيل عند ready) — لا طلب مفرد.
+      const { ad: batched, fresh } = batch.getZone(zone);
+      if (batched !== undefined && fresh) {
+        if (batched && (batched.type === 'image' || batched.type === 'html')) setAd(batched);
+        return; // مخدوم من الدفعة (أو null صراحةً) — لا طلب مفرد.
+      }
+      // batched===undefined (خارج خريطة الصفحة) أو غير حديث (رمز منتهٍ) ⇒ نسقط للطلب المفرد أدناه.
+    }
+
     let alive = true;
     void (async () => {
       try {
@@ -99,7 +212,7 @@ export function AdZone({ zone, className }: { zone: string; className?: string }
     return () => {
       alive = false;
     };
-  }, [inView, zone]);
+  }, [inView, zone, ad, batch]);
 
   // منارة الظهور — مرّة واحدة عند رؤية 50% (IntersectionObserver؛ تدهور رشيق بلا دعم).
   useEffect(() => {

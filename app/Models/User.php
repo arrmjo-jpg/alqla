@@ -132,4 +132,10 @@ class User extends Authenticatable implements HasMedia
             ->format('webp')
             ->performOnCollections('avatar');
     }
+
+    public function articles(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Article::class, 'author_id');
+    }
 }
+

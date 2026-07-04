@@ -31,7 +31,7 @@ final class PublicSeoBuilder
         // (broke article-detail SEO ⇒ 500). Never cache the settings object.
         $settings = app(GeneralSettings::class);
 
-        $siteName = $settings->site_name ?: (string) config('app.name', 'AlphaCMS');
+        $siteName = $settings->getLocalizedName($article->locale);
         $absoluteUrl = self::absoluteUrl($article->canonicalPath());
         
         // Priority check for social sharing image:
@@ -149,7 +149,7 @@ final class PublicSeoBuilder
     private static function breadcrumbs(Article $article, GeneralSettings $settings): array
     {
         $locale = $article->locale;
-        $siteName = $settings->site_name ?: (string) config('app.name', 'AlphaCMS');
+        $siteName = $settings->getLocalizedName($locale);
 
         $items = [[
             '@type' => 'ListItem',
@@ -258,7 +258,7 @@ final class PublicSeoBuilder
             }
         }
 
-        $pubName = self::getPublisherName();
+        $pubName = self::getPublisherName($article->locale);
 
         $publisher = array_filter([
             '@type' => 'Organization',
@@ -294,15 +294,15 @@ final class PublicSeoBuilder
         };
     }
 
-    public static function getSiteName(): string
+    public static function getSiteName(?string $locale = null): string
     {
         $settings = app(GeneralSettings::class);
-        return $settings->site_name ?: (string) config('app.name', 'AlphaCMS');
+        return $settings->getLocalizedName($locale);
     }
 
-    public static function getPublisherName(): string
+    public static function getPublisherName(?string $locale = null): string
     {
-        $siteName = self::getSiteName();
+        $siteName = self::getSiteName($locale);
         $pubName = (string) config('seo.publisher.name', '');
         if ($pubName === '' || $pubName === 'Laravel') {
             $pubName = $siteName;

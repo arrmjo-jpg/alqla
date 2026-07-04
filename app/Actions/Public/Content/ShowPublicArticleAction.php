@@ -40,7 +40,10 @@ class ShowPublicArticleAction
                         ->forLocale($locale)
                         ->where('id', $id)
                         ->with([
-                            'author:id,name,bio,avatar,is_writer',
+                            'author' => function ($query) {
+                                $query->select('id', 'name', 'bio', 'avatar', 'is_writer')
+                                      ->withCount(['articles as articles_count' => fn($q) => $q->published()]);
+                            },
                             'primaryCategory:id,name,slug',
                             'categories:id,name,slug',
                             'tags',
@@ -53,7 +56,10 @@ class ShowPublicArticleAction
                         ->forLocale($locale)
                         ->where('id', (int) $slug)
                         ->with([
-                            'author:id,name,bio,avatar,is_writer',
+                            'author' => function ($query) {
+                                $query->select('id', 'name', 'bio', 'avatar', 'is_writer')
+                                      ->withCount(['articles as articles_count' => fn($q) => $q->published()]);
+                            },
                             'primaryCategory:id,name,slug',
                             'categories:id,name,slug',
                             'tags',
@@ -66,7 +72,10 @@ class ShowPublicArticleAction
                         ->forLocale($locale)
                         ->where('slug', $slug)
                         ->with([
-                            'author:id,name,bio,avatar,is_writer',
+                            'author' => function ($query) {
+                                $query->select('id', 'name', 'bio', 'avatar', 'is_writer')
+                                      ->withCount(['articles as articles_count' => fn($q) => $q->published()]);
+                            },
                             'primaryCategory:id,name,slug',
                             'categories:id,name,slug',
                             'tags',

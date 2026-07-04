@@ -19,7 +19,9 @@ export async function ContactInfoPanel() {
   const settings = await getSiteSettings();
   const siteName = settings?.site_name?.trim() || '';
   const description = settings?.description?.trim() || '';
-  const phone = settings?.phone?.trim() || '';
+  const phones = (settings?.phones ?? [])
+    .map((c) => ({ name: (c.name ?? '').trim(), title: (c.title ?? '').trim(), phone: (c.phone ?? '').trim() }))
+    .filter((c) => c.phone !== '');
   const email = settings?.email?.trim() || '';
   const social = socialEntries(settings?.social);
   const coords = parseCoords(settings?.latitude, settings?.longitude);
@@ -34,12 +36,12 @@ export async function ContactInfoPanel() {
       </div>
 
       {/* قنوات مباشرة — روابط فعليّة tel/mailto */}
-      {(phone || email) && (
+      {(phones.length > 0 || email) && (
         <ul className="space-y-1 px-3 py-3">
-          {phone ? (
-            <li>
+          {phones.map((c, i) => (
+            <li key={i}>
               <a
-                href={`tel:${phone}`}
+                href={`tel:${c.phone.replace(/\s+/g, '')}`}
                 className="group flex items-center gap-3 px-3 py-2.5 transition-colors hover:bg-surface-2"
               >
                 <span
@@ -49,14 +51,16 @@ export async function ContactInfoPanel() {
                   <Phone className="size-5" aria-hidden />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-caption text-muted">الهاتف</span>
+                  <span className="block text-caption text-muted">
+                    {[c.title, c.name].filter(Boolean).join(' — ') || 'الهاتف'}
+                  </span>
                   <span dir="ltr" className="block text-sm font-bold text-fg transition-colors group-hover:text-primary">
-                    {phone}
+                    {c.phone}
                   </span>
                 </span>
               </a>
             </li>
-          ) : null}
+          ))}
           {email ? (
             <li>
               <a

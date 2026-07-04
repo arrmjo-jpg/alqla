@@ -7,6 +7,7 @@ import { getStaticPages } from '@/lib/static-pages';
 import { PLATFORM_LINKS } from '../nav-data';
 import { socialEntries } from '../social-map';
 import { QalahScrollTop } from './scroll-top';
+import { DesktopViewToggle } from '@/components/layout/desktop-view-toggle';
 
 function PhoneIcon({ className }: { className?: string }) {
   return (
@@ -34,7 +35,9 @@ export async function QalahFooter() {
   const year = new Date().getFullYear();
   const copyright = settings?.copyright?.trim() || `${siteName} ${year} - جميع الحقوق محفوظة`;
   const description = settings?.description?.trim() || null;
-  const phone = settings?.phone?.trim() || null;
+  const phones = (settings?.phones ?? [])
+    .map((c) => ({ name: (c.name ?? '').trim(), title: (c.title ?? '').trim(), phone: (c.phone ?? '').trim() }))
+    .filter((c) => c.phone !== '');
   const email = settings?.email?.trim() || null;
   const social = socialEntries(settings?.social);
   const whatsapp = social.find((s) => s.key === 'whatsapp') ?? null;
@@ -91,14 +94,19 @@ export async function QalahFooter() {
         {/* تواصل معنا */}
         <div className="footer-col">
           <h3 className="footer-col-title">تواصل معنا</h3>
-          {phone || email ? (
+          {phones.length > 0 || email ? (
             <ul className="footer-contact">
-              {phone && (
-                <li>
+              {phones.map((c, i) => (
+                <li key={i}>
                   <PhoneIcon className="size-4" />
-                  <a href={`tel:${phone}`} dir="ltr">{phone}</a>
+                  <span style={{ display: 'inline-flex', flexDirection: 'column', lineHeight: 1.3 }}>
+                    <a href={`tel:${c.phone.replace(/\s+/g, '')}`} dir="ltr">{c.phone}</a>
+                    {(c.title || c.name) && (
+                      <small style={{ opacity: 0.7 }}>{[c.title, c.name].filter(Boolean).join(' — ')}</small>
+                    )}
+                  </span>
                 </li>
-              )}
+              ))}
               {email && (
                 <li>
                   <MailIcon className="size-4" />
@@ -155,6 +163,10 @@ export async function QalahFooter() {
             </Link>
           ))}
         </nav>
+
+        <div className="mt-4 flex justify-center w-full px-4">
+          <DesktopViewToggle className="w-full max-w-[280px]" />
+        </div>
       </div>
 
       <div className="footer-bottom">

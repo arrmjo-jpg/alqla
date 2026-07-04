@@ -33,6 +33,13 @@ const SiteSettingsSchema = z
     copyright: z.string().nullish(),
     cookie_policy: z.string().nullish(),
     phone: z.string().nullish(),
+    phones: z
+      .array(
+        z
+          .object({ name: z.string().nullish(), title: z.string().nullish(), phone: z.string().nullish() })
+          .passthrough(),
+      )
+      .nullish(),
     email: z.string().nullish(),
     latitude: z.string().nullish(),
     longitude: z.string().nullish(),

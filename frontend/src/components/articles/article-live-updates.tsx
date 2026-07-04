@@ -127,7 +127,19 @@ function mapRaw(raw: unknown): LiveUpdateItem {
       .map((g): ArticleImage | null => {
         const gi = (g ?? {}) as Record<string, unknown>;
         const url = str(gi.url);
-        return url ? { url, thumb: str(gi.thumb), medium: str(gi.medium), alt: str(gi.alt) } : null;
+        return url
+          ? {
+              url,
+              thumb: str(gi.thumb),
+              medium: str(gi.medium),
+              alt: str(gi.alt),
+              caption: str(gi.caption),
+              photographer: str(gi.photographer),
+              source: str(gi.source),
+              width: typeof gi.width === 'number' ? gi.width : null,
+              height: typeof gi.height === 'number' ? gi.height : null,
+            }
+          : null;
       })
       .filter((g): g is ArticleImage => g !== null),
   };

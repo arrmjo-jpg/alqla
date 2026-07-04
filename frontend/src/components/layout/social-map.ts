@@ -3,6 +3,7 @@ import type { ComponentType } from 'react';
 import {
   FacebookIcon,
   InstagramIcon,
+  NabdIcon,
   WhatsappIcon,
   XIcon,
   YoutubeIcon,
@@ -25,6 +26,7 @@ const SOCIAL: Record<string, { Icon: ComponentType<SocialIconProps>; label: stri
   instagram: { Icon: InstagramIcon, label: 'إنستغرام' },
   youtube: { Icon: YoutubeIcon, label: 'يوتيوب' },
   whatsapp: { Icon: WhatsappIcon, label: 'واتساب' },
+  nabd: { Icon: NabdIcon, label: 'نبض' },
 };
 
 const isHttpUrl = (v: unknown): v is string => typeof v === 'string' && /^https?:\/\//i.test(v);

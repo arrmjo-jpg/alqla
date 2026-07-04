@@ -171,6 +171,7 @@ class ListPublicArticlesAction
         )
             ->allowedFilters(
                 AllowedFilter::exact('type'),
+                AllowedFilter::exact('author_id'),
                 AllowedFilter::partial('title', 'title'),
                 // تصفية البحث التقليدي في قاعدة البيانات (Fallback)
                 AllowedFilter::callback('q', function ($q) use ($term): void {

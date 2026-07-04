@@ -33,7 +33,7 @@ final class ReelSeoBuilder
         // أعلى نسخة MP4 تقدّمية كـ contentUrl (توافق مشاركة أوسع من HLS).
         $progressive = is_array($renditions) && $renditions !== [] ? (string) end($renditions) : null;
 
-        $siteName = PublicSeoBuilder::getSiteName();
+        $siteName = PublicSeoBuilder::getSiteName($reel->locale);
         $twitterHandle = (string) config('seo.twitter.@username', '') ?: null;
 
         return [

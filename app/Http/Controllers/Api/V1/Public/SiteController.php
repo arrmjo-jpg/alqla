@@ -29,7 +29,22 @@ class SiteController extends Controller
             'youtube' => $settings->social_youtube ?: null,
             'tiktok' => $settings->social_tiktok ?: null,
             'whatsapp' => $settings->social_whatsapp ?: null,
+            'nabd' => $settings->social_nabd ?: null,
         ]);
+
+        // جهات الاتصال: قائمة {name,title,phone} منظَّفة، مع رجوع للرقم الأحاديّ القديم إن فرغت.
+        $phones = array_values(array_filter(array_map(static function ($c): array {
+            $c = is_array($c) ? $c : ['phone' => $c];
+
+            return [
+                'name' => trim((string) ($c['name'] ?? '')),
+                'title' => trim((string) ($c['title'] ?? '')),
+                'phone' => trim((string) ($c['phone'] ?? '')),
+            ];
+        }, $settings->site_phones ?: []), static fn (array $c): bool => $c['phone'] !== ''));
+        if ($phones === [] && trim((string) $settings->site_phone) !== '') {
+            $phones = [['name' => '', 'title' => '', 'phone' => trim($settings->site_phone)]];
+        }
 
         $logoUrl = fn (?string $path): ?string => MediaUrl::forPublic($path);
 
@@ -60,19 +75,20 @@ class SiteController extends Controller
             ->all();
 
         return ApiResponse::success(data: [
-            'site_name' => $settings->site_name,
+            'site_name' => $settings->getLocalizedName($locale),
             // وصف الموقع الحقيقيّ (حقل مخصّص) — تستهلكه الواجهة في meta/og description.
-            'description' => $settings->site_description ?: '',
-            'copyright' => $settings->copyright_text,
-            // نصّ سياسة الكوكيز — يعرضه الفوتر في مودال (نصّ خام، لا HTML).
-            'cookie_policy' => $settings->cookie_policy_text ?: '',
-            'phone' => $settings->site_phone ?: '',
+            'description' => $settings->getLocalizedDescription($locale),
+            'copyright' => $settings->getLocalizedCopyright($locale),
+            // نصّ سياسة الكوكيز — يعرضه الفوتر في مودال (نصّ خام، لا HTML). عربي/إنجليزي حسب locale.
+            'cookie_policy' => $settings->getLocalizedCookiePolicy($locale),
+            'phone' => $phones[0]['phone'] ?? '',
+            'phones' => $phones,
             'email' => $settings->site_email ?: '',
             // إحداثيّات المقرّ (خريطة صفحات التواصل) — null حين غير مضبوطة.
             'latitude' => $settings->latitude ?: null,
             'longitude' => $settings->longitude ?: null,
-            'logo_light' => $logoUrl($settings->logo_light),
-            'logo_dark' => $logoUrl($settings->logo_dark),
+            'logo_light' => $logoUrl($settings->getLocalizedLogoLight($locale)),
+            'logo_dark' => $logoUrl($settings->getLocalizedLogoDark($locale)),
             'favicon' => $logoUrl($settings->favicon),
             'social' => $social,
             'nav_categories' => $navCategories,

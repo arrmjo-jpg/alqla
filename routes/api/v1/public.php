@@ -224,6 +224,11 @@ Route::prefix('engagement/{type}/{id}')
 // إبداع الصورة تحويل موقّع لوجهة مُخزَّنة (no-store، لا open redirect)؛ نقرة إبداع HTML
 // (روابطه الخاصّة) تُحتسب بمنارة POST /track/click (V2). كلّها محدودة المعدّل.
 Route::prefix('ads')->group(function (): void {
+    // دفعة الصفحة: كلّ مساحاتها في استجابة واحدة (?page= → chrome + مساحات الصفحة). نفس المحرّك/الرموز/
+    // كاش الحافة كنقطة العرض المفردة؛ الواجهة تمرّر page فقط (فصل تامّ عن أسماء المساحات).
+    Route::get('/', [AdServeController::class, 'batch'])
+        ->middleware(['public.cache', 'throttle:ads.serve']);
+
     Route::get('/serve/{zoneKey}', [AdServeController::class, 'serve'])
         ->where('zoneKey', '[a-z0-9_]+')
         ->middleware(['public.cache', 'throttle:ads.serve']);

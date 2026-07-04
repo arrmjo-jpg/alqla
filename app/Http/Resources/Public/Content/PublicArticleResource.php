@@ -33,6 +33,7 @@ class PublicArticleResource extends JsonResource
             'tags' => $this->whenLoaded('tags', fn () => $this->tags->pluck('name')->values()->all()),
             'published_at' => $this->published_at?->toISOString(),
             'views_count' => $this->views_count,
+            'reading_time' => $this->content ? max(1, (int) round(count(preg_split('/\s+/u', strip_tags($this->content))) / 200)) : 0,
             'canonical_path' => $this->canonicalPath(),
             'seo' => PublicSeoBuilder::build($this->resource)->toArray(),
             // عقد الواجهة العامة: أعلام العرض + تفاعل + حالة الحدث المباشر.
@@ -54,6 +55,8 @@ class PublicArticleResource extends JsonResource
                 'bio' => $this->author?->bio,
                 'avatar' => $this->authorAvatarUrl(),
                 'is_writer' => (bool) $this->author?->is_writer,
+                'role' => $this->author?->roles->first()?->name ?? ($this->author?->is_writer ? 'writer' : null),
+                'articles_count' => (int) ($this->author?->articles_count ?? 0),
             ]),
             'primary_category' => $this->whenLoaded('primaryCategory', fn (): array => [
                 'name' => $this->primaryCategory?->name,
@@ -98,7 +101,18 @@ class PublicArticleResource extends JsonResource
         if ($this->type->value === 'opinion') {
             $avatar = $this->resource->authorAvatarUrl();
             if ($avatar) {
-                return ['url' => $avatar, 'thumb' => $avatar, 'medium' => $avatar, 'name' => null, 'alt' => $this->author?->name];
+                return [
+                    'url' => $avatar,
+                    'thumb' => $avatar,
+                    'medium' => $avatar,
+                    'name' => null,
+                    'alt' => $this->author?->name,
+                    'caption' => null,
+                    'photographer' => null,
+                    'source' => null,
+                    'width' => null,
+                    'height' => null,
+                ];
             }
         }
 
@@ -114,6 +128,11 @@ class PublicArticleResource extends JsonResource
             'medium' => $m->conversionUrl('medium'),
             'name' => $m->original_name,
             'alt' => $m->alt,
+            'caption' => $m->caption,
+            'photographer' => $m->credit,
+            'source' => $m->source,
+            'width' => $m->width,
+            'height' => $m->height,
         ];
     }
 }

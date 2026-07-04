@@ -20,6 +20,11 @@ export interface ArticleImage {
   thumb: string | null;
   medium: string | null;
   alt: string | null;
+  caption: string | null;
+  photographer: string | null;
+  source: string | null;
+  width: number | null;
+  height: number | null;
 }
 
 export interface ArticleDetail {
@@ -32,12 +37,21 @@ export interface ArticleDetail {
   href: string; // canonical_path بلا بادئة لغة → /articles/{id}-{slug}
   publishedAt: string | null;
   viewsCount: number;
+  readingTime: number;
   isLive: boolean;
   eventStatus: string | null;
   /** SSoT: ناتج CommentGuard (إعدادات الموقع ∧ المقال) — قيمة واحدة، لا منطق إضافيّ بالواجهة. */
   commentsEnabled: boolean;
   flags: { breaking: boolean; featured: boolean; header: boolean; spotlight: boolean };
-  author: { id: number | null; name: string; bio: string | null; avatar: string | null; isWriter: boolean } | null;
+  author: {
+    id: number | null;
+    name: string;
+    bio: string | null;
+    avatar: string | null;
+    isWriter: boolean;
+    role: string | null;
+    articlesCount: number;
+  } | null;
   primaryCategory: { name: string; slug: string } | null;
   secondaryCategories: { name: string; slug: string }[];
   cover: ArticleImage | null;
@@ -54,6 +68,11 @@ const ImageSchema = z
     medium: z.string().nullish(),
     name: z.string().nullish(),
     alt: z.string().nullish(),
+    caption: z.string().nullish(),
+    photographer: z.string().nullish(),
+    source: z.string().nullish(),
+    width: z.number().nullish(),
+    height: z.number().nullish(),
   })
   .passthrough();
 
@@ -130,6 +149,7 @@ const ArticleSchema = z
     canonical_path: z.string().nullish(),
     published_at: z.string().nullish(),
     views_count: z.number().nullish(),
+    reading_time: z.number().nullish(),
     is_live: z.boolean().nullish(),
     event_status: z.string().nullish(),
     comments_enabled: z.boolean().nullish(),
@@ -149,6 +169,8 @@ const ArticleSchema = z
         bio: z.string().nullish(),
         avatar: z.string().nullish(),
         is_writer: z.boolean().nullish(),
+        role: z.string().nullish(),
+        articles_count: z.number().nullish(),
       })
       .passthrough()
       .nullish(),
@@ -177,7 +199,17 @@ function localeless(path: string | null | undefined): string {
 
 function mapImage(i: z.infer<typeof ImageSchema> | null | undefined): ArticleImage | null {
   if (!i?.url) return null;
-  return { url: i.url, thumb: i.thumb ?? null, medium: i.medium ?? null, alt: i.alt ?? null };
+  return {
+    url: i.url,
+    thumb: i.thumb ?? null,
+    medium: i.medium ?? null,
+    alt: i.alt ?? null,
+    caption: i.caption ?? null,
+    photographer: i.photographer ?? null,
+    source: i.source ?? null,
+    width: typeof i.width === 'number' ? i.width : null,
+    height: typeof i.height === 'number' ? i.height : null,
+  };
 }
 
 function mapArticle(a: RawArticle): ArticleDetail {
@@ -191,6 +223,7 @@ function mapArticle(a: RawArticle): ArticleDetail {
     href: localeless(a.canonical_path),
     publishedAt: a.published_at ?? null,
     viewsCount: a.views_count ?? 0,
+    readingTime: a.reading_time ?? readingMinutes(a.content_html ?? ''),
     isLive: a.is_live ?? false,
     eventStatus: a.event_status ?? null,
     commentsEnabled: a.comments_enabled ?? false,
@@ -207,6 +240,8 @@ function mapArticle(a: RawArticle): ArticleDetail {
           bio: a.author.bio ?? null,
           avatar: a.author.avatar ?? null,
           isWriter: !!a.author.is_writer,
+          role: a.author.role ?? null,
+          articlesCount: typeof a.author.articles_count === 'number' ? a.author.articles_count : 0,
         }
       : null,
     primaryCategory:

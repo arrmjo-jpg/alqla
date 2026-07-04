@@ -239,6 +239,49 @@ export const getCategoryFeed = cache(
   },
 );
 
+export const getTagFeed = cache(
+  async (tag: string, limit = 4, locale = 'ar'): Promise<FeedItem[]> => {
+    if (!env.apiBaseUrl) return [];
+    try {
+      const qs = new URLSearchParams({ per_page: String(limit), sort: '-published_at' });
+      qs.set('filter[tag]', tag);
+      const res = await fetch(
+        `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles?${qs.toString()}`,
+        { headers: env.internalHeaders, next: { revalidate: 300, tags: ['articles', `tag:${tag}`] } },
+      );
+      if (!res.ok) return [];
+      const parsed = EnvelopeSchema.safeParse(await res.json());
+      if (!parsed.success) return [];
+      return (parsed.data.data ?? []).map(mapItem);
+    } catch {
+      return [];
+    }
+  },
+);
+
+export const getAuthorArticles = cache(
+  async (authorId: number, limit = 2, locale = 'ar'): Promise<FeedItem[]> => {
+    if (!env.apiBaseUrl || !authorId) return [];
+    try {
+      const qs = new URLSearchParams({
+        per_page: String(limit),
+        sort: '-published_at',
+        'filter[author_id]': String(authorId),
+      });
+      const res = await fetch(
+        `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles?${qs.toString()}`,
+        { headers: env.internalHeaders, next: { revalidate: 300, tags: ['articles', `author_articles:${authorId}`] } },
+      );
+      if (!res.ok) return [];
+      const parsed = EnvelopeSchema.safeParse(await res.json());
+      if (!parsed.success) return [];
+      return (parsed.data.data ?? []).map(mapItem);
+    } catch {
+      return [];
+    }
+  },
+);
+
 // ─── صفحة قسم مُرقَّمة (/category/[slug]) — عناصر القسم + بيانات الترقيم (total/total_pages) ───
 // نفس نقطة القائمة (filter[category]) لكن بوضع offset (يعيد meta.pagination). فشل/غياب ⇒ نتيجة فارغة.
 export interface CategoryPageResult {

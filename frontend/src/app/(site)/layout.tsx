@@ -1,4 +1,4 @@
-import { AdZone } from '@/components/ads/ad-zone';
+import { AdBatchProvider, AdZone } from '@/components/ads/ad-zone';
 import { BreakingNewsBar } from '@/components/layout/breaking-news-bar';
 import { CookiePolicyModal } from '@/components/layout/cookie-policy-modal';
 import { HomeOnly } from '@/components/layout/home-only';
@@ -9,6 +9,8 @@ import { QalahHeader } from '@/components/layout/qalah/header';
 import { QalahNavbar } from '@/components/layout/qalah/navbar';
 import { getBreakingFeed, getLatestFeed } from '@/lib/feed';
 import { getSiteSettings } from '@/lib/site-settings';
+import { DesktopViewProvider } from '@/lib/desktop-view-context';
+import { MobileTopToggleBanner } from '@/components/layout/desktop-view-toggle';
 
 // قشرة الموقع العامّ — تصميم «القلعة نيوز» الجديد، مُنطّق داخل .qalah-skin (إطار 1450px + هويّة).
 // الإعلانات وقوائم الموبايل ومودال الكوكيز تبقى كما كانت. لوحة /account خارج هذه المجموعة بقالبها الخاصّ.
@@ -22,7 +24,12 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
   ]);
 
   return (
-    <div className={`qalah-skin site-frame${breaking.length > 0 ? ' has-breaking' : ''}`}>
+    <DesktopViewProvider>
+      <div className={`qalah-skin site-frame${breaking.length > 0 ? ' has-breaking' : ''}`}>
+      {/* مزوّد دفعة الإعلانات — طلب واحد لكلّ مساحات الصفحة (chrome + مساحات الصفحة). page يُشتقّ من المسار. */}
+      <AdBatchProvider>
+      <MobileTopToggleBanner />
+
       {/* إعلان بداية الموقع — أعلى كلّ شيء (قبل الشريط العلويّ والهيدر)، في كلّ صفحات الموقع. */}
       <AdZone zone="aalan_fwq_alhydr_fy_bdaya_almwqa" className="flex justify-center px-4 py-2" />
 
@@ -68,8 +75,9 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
       {/* المكوّن يدير فاصله الخاصّ (ديسكتوب فقط وعند الفتح) ويُخفى تلقائيًّا إن لا عاجل. */}
       <BreakingNewsBar items={breaking.slice(0, 5).map((i) => ({ id: i.id, title: i.title, href: i.href }))} />
 
-      {/* موافقة سياسة الكوكيز — تُفتح تلقائيًّا وسط الشاشة عند أوّل زيارة فقط. نصّ فارغ ⇒ لا شيء. */}
       <CookiePolicyModal text={settings?.cookie_policy?.trim() || ''} hideTrigger autoOpenKey="acm_cookie_ack" />
-    </div>
+      </AdBatchProvider>
+      </div>
+    </DesktopViewProvider>
   );
 }

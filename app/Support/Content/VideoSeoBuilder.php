@@ -49,7 +49,7 @@ final class VideoSeoBuilder
             : ($progressive ?? $hls);
         $embedUrl = $isExternal ? $media?->embed_url : $absoluteUrl;
 
-        $siteName = PublicSeoBuilder::getSiteName();
+        $siteName = PublicSeoBuilder::getSiteName($video->locale);
         $twitterHandle = (string) config('seo.twitter.@username', '') ?: null;
 
         return [

@@ -74,3 +74,12 @@ export function LinkedinIcon({ size = 20, ...props }: SocialIconProps) {
     </svg>
   );
 }
+
+// نبض (Nabd) — مُجمِّع أخبار عربيّ. رمز «نبضة» (خطّ النبض) دلاليّاً — يرث اللون عبر currentColor.
+export function NabdIcon({ size = 20, ...props }: SocialIconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false" {...props}>
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+    </svg>
+  );
+}

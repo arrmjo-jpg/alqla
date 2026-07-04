@@ -1,21 +1,50 @@
-import { Clock, Eye } from 'lucide-react';
+import { PenLine, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 
-import { EngagementBar } from '@/components/engagement/engagement-bar';
-import { AudioReader } from '@/components/reading/audio-reader';
-import { ShareButtons } from '@/components/share/share-buttons';
-import { LivePulse } from '@/components/ui/live-pulse';
-import { readingMinutes, type ArticleDetail, type LiveUpdateItem } from '@/lib/articles';
+import { type ArticleDetail, type LiveUpdateItem } from '@/lib/articles';
 import type { EngagementMetrics } from '@/lib/engagement';
-import { formatNumber, formatRelativeTime } from '@/lib/format';
+import type { FeedItem } from '@/lib/feed';
+import type { Heading } from '@/lib/reading';
+
+// Import our presentation blocks and design tokens
+import { ArticleHeader } from './blocks/article-header';
+import { ArticleMetadata } from './blocks/metadata-row';
+import { ReadingToolsBar } from './blocks/reading-tools';
+import { ArticleHero } from './blocks/hero-image';
+import { ArticleBody } from './blocks/article-body';
+import { ArticleCard } from '@/components/articles/article-card';
+import { TableOfContents } from '@/components/reading/table-of-contents';
+import { editorialTypography, editorialSpacing } from '@/lib/design-tokens';
 
 import { ArticleLiveUpdates } from './article-live-updates';
 
-// عارض تفاصيل المحتوى **الموحّد** — صفحة/Layout/Components واحدة، الفروق **Conditional** حسب `type`:
-//  • news : غلاف 16:9 + شارات أعلام (عاجل/مميّز) + تصنيف أساسيّ/ثانويّ + سطر كاتب.
-//  • live : شارة «مباشر» + الخطّ الزمنيّ للتغطية الحيّة (ArticleLiveUpdates) قبل المتن.
-//  • opinion: تمركز حول الكاتب (صورة الكاتب + اسمه + نبذته) بدل غلاف 16:9 + شارة «رأي».
-// المتن `content_html` (مُعقَّم خادميّاً) عبر `.tiptap-content`. SEO/Engagement/Share/Comments أنظمة مشتركة.
+interface ArticleDetailViewProps {
+  article: ArticleDetail;
+  slug: string;
+  metrics: EngagementMetrics;
+  shareUrl: string;
+  liveUpdates: LiveUpdateItem[];
+  contentHtml?: string;
+  ttsEnabled?: boolean;
+  latestAuthorArticles?: FeedItem[];
+  headings?: Heading[];
+}
+
+function translateRole(role: string | null | undefined): string {
+  if (!role) return 'كاتب';
+  const mapping: Record<string, string> = {
+    super_admin: 'مدير النظام',
+    editor: 'محرر رئيسي',
+    reviewer: 'مراجع المحتوى',
+    moderator: 'مشرف القسم',
+    social_media_manager: 'مسؤول شبكات التواصل',
+    journalist: 'صحفي كاتب',
+    contributor: 'مساهم',
+    writer: 'كاتب مقال',
+  };
+  return mapping[role] ?? 'كاتب';
+}
+
 export function ArticleDetailView({
   article,
   slug,
@@ -23,174 +52,187 @@ export function ArticleDetailView({
   shareUrl,
   liveUpdates,
   contentHtml,
-  ttsEnabled,
-}: {
-  article: ArticleDetail;
-  slug: string;
-  metrics: EngagementMetrics;
-  shareUrl: string;
-  liveUpdates: LiveUpdateItem[];
-  /** المتن مع ids مُحقَّنة بالعناوين (طبقة القراءة المشتركة)؛ احتياطاً المتن الخام. */
-  contentHtml?: string;
-  /** إظهار «استمع للمقال» (Gemini TTS) — قيمة قادمة من إعدادات Spatie. */
-  ttsEnabled?: boolean;
-}) {
-  const isOpinion = article.type === 'opinion';
+  ttsEnabled = false,
+  latestAuthorArticles = [],
+  headings = [],
+}: ArticleDetailViewProps) {
+  const isOpinion = article.type === 'opinion' || article.primaryCategory?.slug === 'opinion';
   const isLive = article.type === 'live';
-  const minutes = readingMinutes(article.contentHtml);
+  
+  // Resolve page layouts to exactly TWO main templates: opinion or standard
+  const template = isOpinion ? 'opinion' : 'standard';
+
+  const bodyHtml = contentHtml ?? article.contentHtml;
   const writerHref = article.author?.isWriter && article.author.id ? `/writer/${article.author.id}` : null;
 
-  // صورة الهيرو حسب النوع: الخبر/المقال = صورة المحتوى؛ الرأي بلا صورة محتوى ⇒ صورة الكاتب؛
-  // وإلا Placeholder الموقع (للخبر/الرأي). التغطية الحيّة لا Placeholder (وسائطها وتحديثاتها تكفي).
-  const heroSrc = article.cover?.url ?? (isOpinion ? article.author?.avatar ?? null : null);
-  const usingAvatarHero = !article.cover && heroSrc !== null;
-  const heroAlt = article.cover?.alt ?? (usingAvatarHero ? article.author?.name ?? article.title : article.title);
-  const showPlaceholder = heroSrc === null && !isLive;
-
   return (
-    <article>
-      {/* الترويسة: التصنيف + شارة النوع/الأعلام */}
-      <div className="flex flex-wrap items-center gap-2">
-        {article.primaryCategory && (
-          <Link
-            href={`/category/${encodeURIComponent(article.primaryCategory.slug)}`}
-            className="text-sm font-extrabold text-primary hover:underline"
-          >
-            {article.primaryCategory.name}
-          </Link>
-        )}
-        {isLive && (
-          <span
-            className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-bold text-white"
-            style={{ background: '#ff1e1e', borderRadius: 0 }}
-          >
-            {article.isLive && <LivePulse />}
-            {article.isLive ? 'مباشر الآن' : 'تغطية حيّة'}
-          </span>
-        )}
-        {article.flags.breaking && (
-          <span className="px-2 py-0.5 text-xs font-bold text-white" style={{ background: '#ff1e1e', borderRadius: 0 }}>
-            عاجل
-          </span>
-        )}
-        {isOpinion && <span className="bg-surface-2 px-2 py-0.5 text-xs font-bold text-fg">رأي</span>}
-      </div>
+    <article className="min-w-0 w-full">
+      {/* 1. Opinion Template Layout */}
+      {template === 'opinion' && (
+        <div className="space-y-6">
+          {/* Header Block */}
+          <ArticleHeader
+            title={article.title}
+            subtitle={article.subtitle}
+            isLive={isLive}
+            isOpinion={true}
+            breaking={article.flags.breaking}
+            featured={article.flags.featured}
+          />
 
-      {/* العنوان */}
-      <h1 className="mt-2.5 text-2xl font-extrabold leading-tight text-fg sm:text-3xl lg:text-[2.5rem] lg:leading-[1.15]">
-        {article.title}
-      </h1>
+          {/* Metadata */}
+          <ArticleMetadata
+            category={article.primaryCategory}
+            publishedAt={article.publishedAt}
+            readingTime={article.readingTime}
+            author={article.author}
+          />
 
-      {/* المقدّمة */}
-      {article.subtitle && <p className="mt-3 text-lg leading-relaxed text-muted">{article.subtitle}</p>}
-
-      {/* بطاقة الكاتب — للمقال (رأي) فقط: صورة + اسم + نبذة. تظهر دائمًا للمقال. */}
-      {isOpinion && article.author && (
-        <div className="mt-5 flex items-center gap-4 bg-surface-2 p-4">
-          {article.author.avatar && (
-            // eslint-disable-next-line @next/next/no-img-element -- <img> مقصود (سياسة صور الواجهة)
-            <img
-              src={article.author.avatar}
-              alt={article.author.name}
-              className="avatar size-16 shrink-0 object-cover"
-              loading="eager"
-            />
+          {/* Cover image vs Author avatar top banner */}
+          {article.cover && article.cover.url ? (
+            <div className="my-6">
+              <ArticleHero cover={article.cover} defaultTitle={article.title} layout="full" />
+            </div>
+          ) : (
+            <div className="bg-surface-2 border border-border/80 p-6 my-6 flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-6 font-sans">
+              <div className="size-20 sm:size-24 rounded-full overflow-hidden bg-surface-3 ring-4 ring-background shrink-0 select-none">
+                {article.author?.avatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- author avatar
+                  <img src={article.author.avatar} alt={article.author.name} className="size-full object-cover" />
+                ) : (
+                  <div className="size-full flex items-center justify-center text-muted" aria-hidden>
+                    <PenLine className="size-10" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 text-center sm:text-right">
+                <span className={`${editorialTypography.aside} text-primary px-2.5 py-0.5 bg-primary/10 rounded-full inline-block`}>
+                  {translateRole(article.author?.role)}
+                </span>
+                <h2 className="text-xl font-extrabold text-fg mt-2">{article.author?.name}</h2>
+                {article.author?.bio && (
+                  <p className="text-sm text-muted mt-2 leading-relaxed">{article.author.bio}</p>
+                )}
+                {writerHref && (
+                  <Link href={writerHref} className="text-xs font-bold text-primary mt-3 inline-flex items-center gap-1 hover:underline min-h-[44px]">
+                    <span>بروفيل الكاتب ومقالاته</span>
+                  </Link>
+                )}
+              </div>
+            </div>
           )}
-          <div className="min-w-0">
-            {writerHref ? (
-              <Link href={writerHref} className="font-bold text-fg hover:text-primary">
-                {article.author.name}
-              </Link>
-            ) : (
-              <p className="font-bold text-fg">{article.author.name}</p>
+
+          {/* Reading tools & Content Area */}
+          <div className="w-full space-y-6">
+            <ReadingToolsBar
+              articleId={article.id}
+              url={shareUrl}
+              title={article.title}
+              initialMetrics={metrics}
+              ttsEnabled={ttsEnabled}
+            />
+
+            <div className={editorialSpacing.readingColumn}>
+              <ArticleBody contentHtml={bodyHtml} excerpt={article.excerpt} />
+            </div>
+          </div>
+
+          {/* Latest Columnist Articles */}
+          {latestAuthorArticles.length > 0 && (
+            <div className="mt-12 border-t border-border pt-8">
+              <h3 className={`${editorialTypography.aside} mb-6 block`}>أحدث كتابات الكاتب:</h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {latestAuthorArticles.map((art) => (
+                  <ArticleCard key={art.href} item={art} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 2. Standard News Template Layout (News, Live updates, and Special coverages) */}
+      {template === 'standard' && (
+        <div className="space-y-6">
+          {/* Article Header Block */}
+          <ArticleHeader
+            title={article.title}
+            subtitle={article.subtitle}
+            isLive={isLive}
+            isOpinion={false}
+            breaking={article.flags.breaking}
+            featured={article.flags.featured}
+          />
+
+          {/* Article Metadata */}
+          <ArticleMetadata
+            category={article.primaryCategory}
+            publishedAt={article.publishedAt}
+            readingTime={article.readingTime}
+            author={article.author} // Restored author name inside metadata row
+          />
+
+          {/* Reading tools, Cover Image, and Body */}
+          <div className="w-full space-y-6">
+            <ReadingToolsBar
+              articleId={article.id}
+              url={shareUrl}
+              title={article.title}
+              initialMetrics={metrics}
+              ttsEnabled={ttsEnabled}
+            />
+
+            {/* Body wrapper containing Floated Image and Wrapping paragraphs */}
+            <div className="my-6 block overflow-hidden">
+              {article.cover && article.cover.url && (
+                <ArticleHero 
+                  cover={article.cover} 
+                  defaultTitle={article.title} 
+                  layout="float" 
+                />
+              )}
+              
+              <ArticleBody contentHtml={bodyHtml} excerpt={article.excerpt} />
+            </div>
+
+            {/* Collapsible mobile TOC if headings exist */}
+            {headings.length >= 2 && (
+              <div className="lg:hidden mb-6 border border-border bg-surface-2 p-4 print:hidden">
+                <details className="group">
+                  <summary className="flex items-center justify-between cursor-pointer font-bold text-fg text-sm list-none select-none">
+                    <span>فهرس محتويات المقال</span>
+                    <span className="transition-transform duration-200 group-open:rotate-180">
+                      <ChevronDown className="size-4 text-muted" />
+                    </span>
+                  </summary>
+                  <div className="mt-3 border-t border-border/50 pt-3">
+                    <TableOfContents headings={headings} />
+                  </div>
+                </details>
+              </div>
             )}
-            {article.author.bio && <p className="mt-1 line-clamp-2 text-sm text-muted">{article.author.bio}</p>}
+
+            {/* Live Updates chronological block */}
+            {isLive && liveUpdates.length > 0 && (
+              <div className="mb-8 border-t border-border/80 pt-6">
+                <ArticleLiveUpdates slug={slug} initial={liveUpdates} />
+              </div>
+            )}
+            {/* Author Card omitted for standard news per public presentation rules */}
           </div>
         </div>
       )}
 
-      {/* سطر المعلومات: التاريخ + وقت القراءة + المشاهدات — بلا اسم كاتب (الكاتب في بطاقته للمقال فقط) */}
-      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-y border-border py-3 text-sm text-muted">
-        {article.publishedAt && (
-          <span className="inline-flex items-center gap-1">
-            <Clock className="size-4 shrink-0" aria-hidden />
-            <time dateTime={article.publishedAt}>{formatRelativeTime(article.publishedAt)}</time>
-          </span>
-        )}
-        {minutes > 0 && <span>{minutes} دقيقة قراءة</span>}
-        {article.viewsCount > 0 && (
-          <span className="inline-flex items-center gap-1 tabular-nums">
-            <Eye className="size-4 shrink-0" aria-hidden />
-            {formatNumber(article.viewsCount)}
-            <span className="sr-only">مشاهدة</span>
-          </span>
-        )}
-      </div>
-
-      {/* صورة الهيرو — صورة المحتوى، أو صورة الكاتب (للمقال بلا صورة محتوى)، أو Placeholder الموقع. */}
-      {heroSrc ? (
-        <figure className="mt-5">
-          {/* eslint-disable-next-line @next/next/no-img-element -- <img> مقصود (سياسة صور الواجهة) */}
-          <img
-            src={heroSrc}
-            alt={heroAlt}
-            className="aspect-[16/9] w-full bg-surface-2 object-cover"
-            loading="eager"
-            fetchPriority="high"
-          />
-          {article.cover?.alt && (
-            <figcaption className="mt-2 text-caption text-muted">{article.cover.alt}</figcaption>
-          )}
-        </figure>
-      ) : showPlaceholder ? (
-        <div className="mt-5 aspect-[16/9] w-full bg-surface-3" aria-hidden />
-      ) : null}
-
-      {/* شريط الإجراءات أسفل الصورة مباشرة — استماع + تفاعل + مشاركة في سطر واحد */}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-y border-border py-2.5 print:hidden">
-        <div className="flex flex-wrap items-center gap-3">
-          {ttsEnabled ? <AudioReader targetId="article-content" /> : null}
-          <EngagementBar
-            type="article"
-            id={article.id}
-            href={article.href}
-            title={article.title}
-            initialMetrics={metrics}
-            reactionStyle="thumbs"
-            hydrate
-            showShare={false}
-          />
-        </div>
-        <ShareButtons url={shareUrl} title={article.title} />
-      </div>
-
-      {/* الخطّ الزمنيّ للتغطية الحيّة (type=live) — قبل المتن */}
-      {isLive && liveUpdates.length > 0 && (
-        <div className="mt-6">
-          <ArticleLiveUpdates slug={slug} initial={liveUpdates} />
-        </div>
-      )}
-
-      {/* المتن */}
-      {(contentHtml ?? article.contentHtml) && (
-        <div
-          id="article-content"
-          className="tiptap-content mt-6 text-[1.0625rem] leading-loose text-fg"
-          dangerouslySetInnerHTML={{ __html: contentHtml ?? article.contentHtml }}
-        />
-      )}
-
-      {/* الوسوم */}
+      {/* Tags Block */}
       {article.tags.length > 0 && (
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="mt-6 flex flex-wrap gap-2 lg:max-w-[720px] lg:mx-auto lg:pr-14 print:hidden">
           {article.tags.map((t) => (
-            <span key={t} className="bg-surface-2 px-2.5 py-1 text-xs text-muted">
+            <span key={t} className="bg-surface-2 border border-border px-2.5 py-1 text-xs text-muted font-semibold hover:text-primary hover:border-primary transition-colors cursor-pointer select-none">
               #{t}
             </span>
           ))}
         </div>
       )}
-
     </article>
   );
 }
