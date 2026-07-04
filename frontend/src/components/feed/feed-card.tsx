@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { FeedBadge } from '@/components/home/featured-hero';
+import { OptimizedImage } from '@/components/ui/optimized-image';
 import type { FeedItem } from '@/lib/feed';
 import { formatRelativeTime } from '@/lib/format';
 
@@ -16,18 +17,13 @@ export function FeedCard({ item }: { item: FeedItem }) {
         className="relative aspect-video transform-gpu overflow-hidden bg-surface-2 will-change-transform"
         style={{ borderRadius: '12px' }}
       >
-        {item.image ? (
-          // eslint-disable-next-line @next/next/no-img-element -- <img> مقصود: حارس أداء الواجهة
-          <img
-            src={item.image}
-            alt={item.imageAlt}
-            loading="lazy"
-            decoding="async"
-            className="absolute inset-0 size-full transform-gpu object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-          />
-        ) : (
-          <div className="absolute inset-0 size-full bg-surface-3" aria-hidden />
-        )}
+        <OptimizedImage
+          cover={item.cover}
+          src={item.image}
+          alt={item.imageAlt}
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="absolute inset-0 size-full transform-gpu object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+        />
       </div>
 
       <FeedBadge badge={item.badge} />

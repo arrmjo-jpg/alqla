@@ -17,6 +17,12 @@ export interface FeedItem {
   author: { id: number | null; name: string; avatar: string | null; isWriter: boolean } | null;
   publishedAt: string | null;
   badge: { kind: 'live' | 'breaking'; label: string } | null;
+  cover?: {
+    url: string;
+    thumb?: string | null;
+    medium?: string | null;
+    alt?: string | null;
+  } | null;
 }
 
 // اسم متوافق مع المستهلك القديم (الهيرو).
@@ -92,6 +98,12 @@ export function mapItem(it: Item): FeedItem {
       : null,
     publishedAt: it.published_at ?? null,
     badge: toBadge(it),
+    cover: it.cover ? {
+      url: it.cover.url ?? '',
+      thumb: it.cover.thumb ?? null,
+      medium: it.cover.medium ?? null,
+      alt: it.cover.alt ?? null,
+    } : null,
   };
 }
 

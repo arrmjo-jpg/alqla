@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { Container } from '@/components/layout/container';
+import { OptimizedImage } from '@/components/ui/optimized-image';
 import { getCategoryById, getCategoryFeed, type FeedItem } from '@/lib/feed';
 import { formatRelativeTime } from '@/lib/format';
 
@@ -65,18 +66,13 @@ function LeadCard({ item }: { item: FeedItem }) {
     >
       <Link href={item.href} className="absolute inset-0 z-10" aria-label={item.title} />
 
-      {item.image ? (
-        // eslint-disable-next-line @next/next/no-img-element -- <img> مقصود: حارس أداء الهوم (لا next/image)
-        <img
-          src={item.image}
-          alt={item.imageAlt}
-          loading="lazy"
-          decoding="async"
-          className="absolute inset-0 size-full transform-gpu object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-        />
-      ) : (
-        <div className="absolute inset-0 size-full bg-surface-3" aria-hidden />
-      )}
+      <OptimizedImage
+        cover={item.cover}
+        src={item.image}
+        alt={item.imageAlt}
+        sizes="(max-width: 768px) 100vw, 50vw"
+        className="absolute inset-0 size-full transform-gpu object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+      />
 
       <div
         className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent"
@@ -115,18 +111,13 @@ function ListCard({ item }: { item: FeedItem }) {
         className="relative size-[84px] shrink-0 overflow-hidden bg-surface-2"
         style={{ borderRadius: '8px' }}
       >
-        {item.image ? (
-          // eslint-disable-next-line @next/next/no-img-element -- <img> مقصود: حارس أداء الهوم
-          <img
-            src={item.image}
-            alt={item.imageAlt}
-            loading="lazy"
-            decoding="async"
-            className="size-full object-cover"
-          />
-        ) : (
-          <div className="size-full bg-surface-3" aria-hidden />
-        )}
+        <OptimizedImage
+          cover={item.cover}
+          src={item.image}
+          alt={item.imageAlt}
+          sizes="84px"
+          className="size-full object-cover"
+        />
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 text-start">

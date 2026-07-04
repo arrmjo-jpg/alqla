@@ -155,9 +155,19 @@ class ListPublicArticlesAction
         // المسار الافتراضي بدون بحث (أو كحالة تراجع في حال تعطل Meilisearch)
         $query = QueryBuilder::for(
             Article::query()
+                ->select([
+                    'id', 'author_id', 'primary_category_id', 'type', 'status', 'locale',
+                    'title', 'subtitle', 'slug', 'excerpt', 'published_at',
+                    'is_featured', 'is_breaking', 'is_pinned', 'is_header', 'is_editor_pick', 'is_squares',
+                    'views_count', 'event_status', 'created_at', 'deleted_at'
+                ])
                 ->published()
                 ->forLocale($locale)
-                ->with(['author:id,name,avatar,is_writer', 'primaryCategory:id,name,slug', 'mediaAssets' => fn ($q) => $q->wherePivot('collection', 'cover')])
+                ->with([
+                    'author:id,name,avatar,is_writer',
+                    'primaryCategory:id,name,slug',
+                    'mediaAssets' => fn ($q) => $q->wherePivot('collection', 'cover')
+                ])
         )
             ->allowedFilters(
                 AllowedFilter::exact('type'),
@@ -214,12 +224,49 @@ class ListPublicArticlesAction
             ];
         }
 
-        $paginator = $query
+        // Optimize COUNT(*) by caching it separately under query filters tags
+        $categoryFilter = (string) ($request->query('filter')['category'] ?? '');
+        $tags = $categoryFilter !== ''
+            ? ArticleCacheTags::categoryTags($locale, $categoryFilter)
+            : ArticleCacheTags::feedTags($locale);
+
+        $relevantFilters = [
+            'filter.type' => (string) ($request->query('filter')['type'] ?? ''),
+            'filter.category' => $categoryFilter,
+            'filter.tag' => (string) ($request->query('filter')['tag'] ?? ''),
+            'filter.q' => $term,
+        ];
+        ksort($relevantFilters);
+        $filterHash = substr(hash('xxh128', json_encode($relevantFilters)), 0, 16);
+        $countCacheKey = "public:articles:count:{$locale}:{$filterHash}";
+
+        // Retrieve total count using cached tags (warmed up or computed)
+        $total = CachedRead::remember(
+            $tags,
+            $countCacheKey,
+            CacheTtl::SHORT,
+            fn () => $query->toBase()->getCountForPagination()
+        );
+
+        $page = max(1, (int) $request->integer('page', 1));
+        
+        $results = $query
             ->orderByDesc('is_pinned')
             ->allowedSorts('published_at', 'views_count')
             ->defaultSort('-published_at')
-            ->paginate($perPage)
-            ->appends($request->query());
+            ->forPage($page, $perPage)
+            ->get();
+
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            $results,
+            $total,
+            $perPage,
+            $page,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]
+        );
 
         return [
             'data' => PublicArticleListItemResource::collection($paginator)->resolve(),

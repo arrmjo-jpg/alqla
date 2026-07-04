@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { Container } from '@/components/layout/container';
 import { LivePulse } from '@/components/ui/live-pulse';
+import { OptimizedImage } from '@/components/ui/optimized-image';
 import type { FeedItem } from '@/lib/feed';
 import { formatRelativeTime } from '@/lib/format';
 
@@ -62,19 +63,14 @@ function HeroCard({
       {/* رابط الخبر يغطّي الكرت كاملاً */}
       <Link href={item.href} className="absolute inset-0 z-10" aria-label={item.title} />
 
-      {item.image ? (
-        // eslint-disable-next-line @next/next/no-img-element -- <img> مقصود: حارس أداء الهوم (لا next/image)
-        <img
-          src={item.image}
-          alt={item.imageAlt}
-          loading={priority ? 'eager' : 'lazy'}
-          fetchPriority={priority ? 'high' : 'auto'}
-          decoding="async"
-          className="absolute inset-0 size-full transform-gpu object-fill transition-transform duration-700 ease-out will-change-transform [backface-visibility:hidden] group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-        />
-      ) : (
-        <div className="absolute inset-0 size-full bg-surface-3" aria-hidden />
-      )}
+      <OptimizedImage
+        cover={item.cover}
+        src={item.image}
+        alt={item.imageAlt}
+        priority={priority}
+        sizes={isLead ? "(max-width: 1024px) 100vw, 66vw" : "(max-width: 1024px) 100vw, 33vw"}
+        className="absolute inset-0 size-full transform-gpu object-fill transition-transform duration-700 ease-out will-change-transform [backface-visibility:hidden] group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+      />
 
       <div
         className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent"

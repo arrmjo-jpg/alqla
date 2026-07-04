@@ -25,10 +25,11 @@ final class PublicSeoBuilder
 {
     public static function build(Article $article): SeoData
     {
-        // Load GeneralSettings only once and cache it.
-        $settings = cache()->remember('settings.general', 86400, function () {
-            return app(GeneralSettings::class);
-        });
+        // GeneralSettings (Spatie Settings) — resolved per request. Spatie caches the *values*
+        // internally; caching the settings **object** in the app cache is invalid: it round-trips
+        // through (un)serialize and comes back as __PHP_Incomplete_Class, throwing on property access
+        // (broke article-detail SEO ⇒ 500). Never cache the settings object.
+        $settings = app(GeneralSettings::class);
 
         $siteName = $settings->site_name ?: (string) config('app.name', 'AlphaCMS');
         $absoluteUrl = self::absoluteUrl($article->canonicalPath());
@@ -295,9 +296,7 @@ final class PublicSeoBuilder
 
     public static function getSiteName(): string
     {
-        $settings = cache()->remember('settings.general', 86400, function () {
-            return app(GeneralSettings::class);
-        });
+        $settings = app(GeneralSettings::class);
         return $settings->site_name ?: (string) config('app.name', 'AlphaCMS');
     }
 
@@ -315,9 +314,7 @@ final class PublicSeoBuilder
     {
         $logo = (string) config('seo.publisher.logo', '');
         if ($logo === '') {
-            $settings = cache()->remember('settings.general', 86400, function () {
-                return app(GeneralSettings::class);
-            });
+            $settings = app(GeneralSettings::class);
             if ($settings->logo_light) {
                 $logo = MediaUrl::forPublic($settings->logo_light) ?? '';
             }

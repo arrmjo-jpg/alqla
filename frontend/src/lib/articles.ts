@@ -223,13 +223,14 @@ function mapArticle(a: RawArticle): ArticleDetail {
   };
 }
 
-/** تفاصيل مقال بالسلَغ المجرّد. النقطة تتبع 301 لسلَغ قديم (fetch redirect:follow). غير موجود/فشل ⇒ null. */
-export const getArticle = cache(async (slug: string, locale = 'ar'): Promise<ArticleDetail | null> => {
+/** تفاصيل مقال بالسلَغ أو الـ idslug. النقطة تتبع 301 لسلَغ قديم (fetch redirect:follow). غير موجود/فشل ⇒ null. */
+export const getArticle = cache(async (idslug: string, locale = 'ar'): Promise<ArticleDetail | null> => {
   if (!env.apiBaseUrl) return null;
+  const bare = idslug.replace(/^\d+-/, '');
   try {
-    const res = await fetch(`${env.apiBaseUrl}/api/v1/${enc(locale)}/articles/${enc(slug)}`, {
+    const res = await fetch(`${env.apiBaseUrl}/api/v1/${enc(locale)}/articles/${enc(idslug)}`, {
       headers: env.internalHeaders,
-      next: { revalidate: REVALIDATE, tags: ['articles', `article:${slug}`] },
+      next: { revalidate: REVALIDATE, tags: ['articles', `article:${bare}`] },
     });
     if (!res.ok) return null;
     const parsed = ArticleEnvelope.safeParse(await res.json());

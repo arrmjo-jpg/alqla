@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 
 import { AdZone } from '@/components/ads/ad-zone';
 import { ArticleCard } from '@/components/articles/article-card';
@@ -43,7 +43,7 @@ export async function generateMetadata({
   params: Promise<{ idslug: string }>;
 }): Promise<Metadata> {
   const { idslug } = await params;
-  const article = await getArticle(bareSlug(idslug));
+  const article = await getArticle(idslug);
   if (!article) return { title: 'مقال' };
   // المحوّل يمرّر قيم seo الخلفيّة كما هي (canonical/og/twitter/hreflang)؛ احتياط الـcanonical = رابط الصفحة نفسه.
   return articleSeoToMetadata(article, `${env.siteUrl}/articles/${idslug}`);
@@ -53,8 +53,21 @@ export default async function ArticlePage({ params }: { params: Promise<{ idslug
   const { idslug } = await params;
   const slug = bareSlug(idslug);
 
-  const article = await getArticle(slug);
+  const article = await getArticle(idslug);
   if (!article) notFound(); // 404 حقيقيّ — قبل أيّ بثّ
+
+  // 301 only on a genuine slug change (SEO canonicalisation). محصّن ضدّ اختلاف تطبيع يونيكود العربيّ (NFC)
+  // و«الهروب» المشوَّه ⇒ لا حلقات إعادة توجيه زائفة (المقارنة بعد فكّ الترميز + التطبيع لكلا الطرفين).
+  const canonicalIdSlug = article.href.split('/').pop() ?? '';
+  let requested = idslug;
+  try {
+    requested = decodeURIComponent(idslug);
+  } catch {
+    /* idslug مفكوك أصلاً أو هروب مشوَّه — قارن كما هو */
+  }
+  if (canonicalIdSlug && canonicalIdSlug.normalize('NFC') !== requested.normalize('NFC')) {
+    permanentRedirect(`/articles/${canonicalIdSlug}`);
+  }
 
   const [metrics, liveUpdates, relatedRaw, ttsConfig] = await Promise.all([
     getArticleMetrics(article.id),
