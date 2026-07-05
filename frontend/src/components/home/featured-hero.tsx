@@ -54,10 +54,10 @@ function HeroCard({
   const isLead = variant === 'lead';
 
   return (
-    // الجوّال: نسبة 16:9؛ سطح المكتب: ارتفاع ثابت أطول (lead 400px، الصغير 200px) — يبقى الارتفاعان متطابقين.
+    // الجوّال: نسبة 16:9؛ سطح المكتب: ارتفاع ثابت أطول (lead 500px، الصغير 250px) — يبقى الارتفاعان متطابقين.
     <div
       className={`group relative block aspect-video transform-gpu overflow-hidden bg-surface-2 will-change-transform lg:aspect-auto ${
-        isLead ? 'lg:h-[400px]' : 'lg:h-[200px]'
+        isLead ? 'lg:h-[500px]' : 'lg:h-[250px]'
       }`}
     >
       {/* رابط الخبر يغطّي الكرت كاملاً */}

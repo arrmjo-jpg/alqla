@@ -10,7 +10,6 @@ import { LatestUpdates } from '@/components/home/latest-updates';
 import { ObituariesSection } from '@/components/home/obituaries-section';
 import { ReelsCarousel } from '@/components/home/reels-carousel';
 import { TrendingLatestMostRead } from '@/components/home/trending-latest-mostread';
-import { WeekStories } from '@/components/home/week-stories';
 import { SubscribeBox } from '@/components/public-forms/subscribe-box';
 import { SportsShowcase } from '@/components/sport/sports-showcase';
 import { VideoSection } from '@/components/videos/video-section';
@@ -53,16 +52,16 @@ export default async function Home() {
       </div>
       {/* أخبار محلية — التصميم الأصليّ (LatestUpdates، بالـID الثابت #2). */}
       <LatestUpdates categoryId={2} fallbackTitle="أخبار محلية" />
-      {/* برلمانيات — 4 أخبار (كبير + 3 صغار، بلا سكرول جوّال) (#36). */}
-      <CategoryFeatureQuad categoryId={36} fallbackTitle="برلمانيات" />
+      {/* برلمانيات — 8 أخبار (كبير + 7 صغار، بلا سكرول جوّال) (#36). */}
+      <CategoryFeatureQuad categoryId={36} fallbackTitle="برلمانيات" count={8} />
       {/* شريط الاشتراك في واتساب. */}
       <SubscribeBox variant="bar" />
-      {/* عربي دولي — 4 أخبار (كبير + 3 صغار، بلا سكرول جوّال) (#43). */}
-      <CategoryFeatureQuad categoryId={43} fallbackTitle="عربي دولي" />
+      {/* عربي دولي — 8 أخبار (كبير + 7 صغار، بلا سكرول جوّال) (#43). */}
+      <CategoryFeatureQuad categoryId={43} fallbackTitle="عربي دولي" count={8} />
       {/* أخبار ثقافية — تحت عربي دولي مباشرةً: 5 أخبار (كبير + 4 صغار، بلا سكرول) (#56). */}
       <CategoryFeatureQuad categoryId={56} fallbackTitle="أخبار ثقافية" count={5} />
-      {/* ضيف الأسبوع — تحت أخبار ثقافية مباشرةً (تصنيف #58): ٤ مقالات بنمط بطاقات أفقيّة فاتحة. */}
-      <WeekStories categoryId={58} fallbackTitle="ضيف الأسبوع" />
+      {/* ضيف الأسبوع — تحت أخبار ثقافية مباشرةً (تصنيف #58): 4 أخبار بنمط بطاقات عائمة. */}
+      <IncidentsSection categoryId={58} headingId="week-stories-heading" fallbackTitle="ضيف الأسبوع" count={4} />
       {/* قسم الاقتصاد (تصميم خاصّ: بورصة + ذهب). */}
       <EconomyShowcase />
       {/* ودجت 3 أعمدة: تريندينغ + آخر المستجدات + الأكثر قراءة. */}
@@ -70,7 +69,7 @@ export default async function Home() {
       {/* تحت الودجت مباشرةً: جامعات (4 أخبار: كبير + 3 صغار، بلا سكرول). */}
       <CategoryFeatureQuad categoryId={42} fallbackTitle="جامعات" />
       {/* قسم الوفيات/التعزية — تصميم خاصّ مع آية قرآنيّة، أسفل أخبار ثقافية مباشرةً. */}
-      <ObituariesSection categoryId={49} fallbackTitle="الوفيات" />
+      <ObituariesSection categoryId={49} fallbackTitle="الوفيات" count={8} />
       {/* زوج إعلانات فوق الريلز. */}
       <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-2 px-4 sm:flex-row sm:px-6 lg:px-8">
         <AdZone zone="aalan_fwq_qsm_alrylz_ymyn" className="mt-1 flex justify-center sm:flex-1" />

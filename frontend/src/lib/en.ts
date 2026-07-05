@@ -9,9 +9,9 @@ export function enUrl(path: string | null | undefined): string {
   return `/en${path.startsWith('/') ? path : `/${path}`}`;
 }
 
-/** /en/category/{slug} */
-export function enCategoryUrl(slug: string): string {
-  return `/en/category/${encodeURIComponent(slug)}`;
+/** /en/category-{id}/{slug} */
+export function enCategoryUrl(id: number | string, slug: string): string {
+  return `/en/category-${id}/${encodeURIComponent(slug)}`;
 }
 
 /** /en/author/{id} */

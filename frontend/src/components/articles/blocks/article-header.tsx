@@ -49,17 +49,10 @@ export function ArticleHeader({
         </div>
       )}
 
-      {/* Main H1 Title */}
+      {/* Main H1 Title — show subtitle as H1 if available, otherwise main title */}
       <h1 className={`${editorialTypography.h1} editorial-h1`}>
-        {title}
+        {subtitle || title}
       </h1>
-
-      {/* Subtitle (Lead Paragraph) */}
-      {subtitle && (
-        <p className={`${editorialTypography.lead} editorial-lead`}>
-          {subtitle}
-        </p>
-      )}
     </header>
   );
 }

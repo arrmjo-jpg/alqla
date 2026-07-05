@@ -52,7 +52,7 @@ export interface ArticleDetail {
     role: string | null;
     articlesCount: number;
   } | null;
-  primaryCategory: { name: string; slug: string } | null;
+  primaryCategory: { id: number; name: string; slug: string } | null;
   secondaryCategories: { name: string; slug: string }[];
   cover: ArticleImage | null;
   gallery: ArticleImage[];
@@ -76,7 +76,7 @@ const ImageSchema = z
   })
   .passthrough();
 
-const CatSchema = z.object({ name: z.string().nullish(), slug: z.string().nullish() }).passthrough();
+const CatSchema = z.object({ id: z.number().nullish(), name: z.string().nullish(), slug: z.string().nullish() }).passthrough();
 
 // تسامح مع حقول المصفوفات: قد تعود من كاش الباك إند ككائن Collection مُسلسَل (`{__PHP_Incomplete_Class_Name…}`)
 // بدل مصفوفة — لأنّ PublicArticleResource يعيد `whenLoaded(...->values())` (Collection لا array)، خلاف
@@ -245,8 +245,8 @@ function mapArticle(a: RawArticle): ArticleDetail {
         }
       : null,
     primaryCategory:
-      a.primary_category?.name && a.primary_category.slug
-        ? { name: a.primary_category.name, slug: a.primary_category.slug }
+      a.primary_category?.id && a.primary_category.name && a.primary_category.slug
+        ? { id: a.primary_category.id, name: a.primary_category.name, slug: a.primary_category.slug }
         : null,
     secondaryCategories: (a.secondary_categories ?? [])
       .filter((c): c is { name: string; slug: string } => Boolean(c.name) && Boolean(c.slug))

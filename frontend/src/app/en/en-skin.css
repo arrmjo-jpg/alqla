@@ -253,3 +253,22 @@
 
 /* Author header */
 .en-author-head { display: flex; gap: 18px; align-items: center; padding: 30px 0; border-bottom: 3px solid var(--en-primary); }
+
+/* ============================================================================
+   NAV EXTRAS — navbar social (start), header category row, footer logo
+   ========================================================================== */
+.en-navbar-socials { grid-column: 1; justify-self: start; display: flex; align-items: center; gap: 0.5rem; }
+.en-navbar-socials a { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,.35); color: rgba(255,255,255,.9); display: flex; align-items: center; justify-content: center; transition: var(--transition-smooth); }
+.en-navbar-socials a:hover { border-color: #000; background: #000; color: #fff; transform: translateY(-1px); }
+.en-navbar-socials svg { display: block; }
+@media (max-width: 1023px) { .en-navbar-socials { display: none; } }
+
+/* Header category row (like the Arabic homepage's section nav) */
+.en-header-nav { border-top: 1px solid rgba(0,0,0,.06); margin-top: 0.65rem; padding-top: 0.5rem; }
+.en-header-nav-list { display: flex; list-style: none; gap: 1.4rem; overflow-x: auto; white-space: nowrap; margin: 0; padding: 0 0 0.15rem; -ms-overflow-style: none; scrollbar-width: none; }
+.en-header-nav-list::-webkit-scrollbar { display: none; }
+.en-header-nav-item { color: #333; font-family: var(--en-font); font-size: 1.08rem; font-weight: 700; padding: 0.2rem 0; transition: var(--transition-smooth); }
+.en-header-nav-item:hover { color: var(--en-primary); }
+
+/* Footer logo image (dark logo on dark footer) */
+.en-footer-logo { height: auto; width: auto; max-height: 58px; max-width: none; display: block; margin-bottom: 0.75rem; }

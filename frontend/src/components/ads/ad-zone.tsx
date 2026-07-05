@@ -71,7 +71,7 @@ const useAdBatch = (): AdBatchValue | null => useContext(AdBatchContext);
 // مسار الصفحة → مفتاح صفحة (لا أسماء مساحات هنا؛ الخلفيّة تحلّ المفتاح → المساحات).
 function pageKeyForPath(pathname: string): string {
   if (pathname === '/') return 'homepage';
-  if (pathname.startsWith('/articles/')) return 'article';
+  if (pathname.includes('/articles/') || pathname.includes('/article/')) return 'article';
   if (/^\/(bourse|gold-prices|sport|reels|weather|writer|category|videos|search|epaper|following)/.test(pathname)) {
     return 'inner';
   }

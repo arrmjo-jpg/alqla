@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { formatRelativeTime } from '@/lib/format';
-import { editorialTypography } from '@/lib/design-tokens';
+import { FontSizeControls } from './font-size-controls';
 
 interface MetadataRowProps {
   category: { name: string; slug: string } | null;
@@ -14,10 +14,7 @@ export function ArticleMetadata({
   category,
   publishedAt,
   readingTime,
-  author,
 }: MetadataRowProps) {
-  const writerHref = author?.isWriter && author.id ? `/writer/${author.id}` : null;
-
   // Formatting dates (relative and absolute)
   const formatFullDateTime = (iso: string | null) => {
     if (!iso) return '';
@@ -39,11 +36,11 @@ export function ArticleMetadata({
     return `${mins} دقيقة قراءة`;
   };
 
-  // Build sequential metadata items array dynamically for clean bullet separation
-  const items: React.ReactNode[] = [];
+  // Build metadata items
+  const metaItems: React.ReactNode[] = [];
 
   if (category) {
-    items.push(
+    metaItems.push(
       <Link
         key="category"
         href={`/category/${encodeURIComponent(category.slug)}`}
@@ -55,7 +52,7 @@ export function ArticleMetadata({
   }
 
   if (pubDateRel) {
-    items.push(
+    metaItems.push(
       <span key="pubDateRel" className="text-fg font-semibold">
         {pubDateRel}
       </span>
@@ -63,7 +60,7 @@ export function ArticleMetadata({
   }
 
   if (pubDateAbs) {
-    items.push(
+    metaItems.push(
       <time key="pubDateAbs" dateTime={publishedAt ?? undefined} className="text-muted font-medium">
         {pubDateAbs}
       </time>
@@ -71,36 +68,27 @@ export function ArticleMetadata({
   }
 
   if (readingTime > 0) {
-    items.push(
+    metaItems.push(
       <span key="readingTime" className="text-muted font-medium">
         {getReadingTimeStr(readingTime)}
       </span>
     );
   }
 
-  if (author) {
-    items.push(
-      <div key="author" className="flex items-center gap-1">
-        <span className="text-muted/70 font-medium">بقلم:</span>
-        {writerHref ? (
-          <Link href={writerHref} className="text-fg font-bold hover:text-primary hover:underline transition-colors">
-            {author.name}
-          </Link>
-        ) : (
-          <span className="text-fg font-bold">{author.name}</span>
-        )}
-      </div>
-    );
-  }
-
   return (
-    <div className={`${editorialTypography.meta} editorial-meta border-y border-border/80 py-2.5 my-3`}>
-      {items.map((item, idx) => (
-        <React.Fragment key={idx}>
-          {idx > 0 && <span className="text-muted/40 px-1 font-normal select-none" aria-hidden>•</span>}
-          {item}
-        </React.Fragment>
-      ))}
+    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-3 my-4 print:hidden">
+      {/* Right side: category + dates + reading time with brand line */}
+      <div className="font-sans text-xs sm:text-sm font-bold text-muted/80 tracking-wide flex flex-wrap items-center gap-1.5 border-r-4 border-primary/80 pr-3 py-1 editorial-meta">
+        {metaItems.map((item, idx) => (
+          <React.Fragment key={idx}>
+            {idx > 0 && <span className="text-muted/40 px-2 font-normal select-none" aria-hidden>•</span>}
+            {item}
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* Left side: font size controls */}
+      <FontSizeControls />
     </div>
   );
 }

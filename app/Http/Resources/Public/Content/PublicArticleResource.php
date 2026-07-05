@@ -59,6 +59,7 @@ class PublicArticleResource extends JsonResource
                 'articles_count' => (int) ($this->author?->articles_count ?? 0),
             ]),
             'primary_category' => $this->whenLoaded('primaryCategory', fn (): array => [
+                'id' => $this->primaryCategory?->id,
                 'name' => $this->primaryCategory?->name,
                 'slug' => $this->primaryCategory?->slug,
             ]),

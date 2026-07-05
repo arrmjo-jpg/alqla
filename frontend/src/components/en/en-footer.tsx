@@ -8,6 +8,7 @@ import type { SiteSettings } from '@/lib/site-settings';
 export async function EnFooter({ settings }: { settings: SiteSettings | null }) {
   const cats = await getEnCategories();
   const name = settings?.site_name?.trim() || 'Alqalah News';
+  const logo = settings?.logo_dark?.trim() || null;
   const year = new Date().getFullYear();
   const copyright = settings?.copyright?.trim() || `© ${year} ${name}. All rights reserved.`;
   const description = settings?.description?.trim() || null;
@@ -18,7 +19,12 @@ export async function EnFooter({ settings }: { settings: SiteSettings | null }) 
       <div className="en-container">
         <div className="en-footer-grid">
           <div>
-            <div className="en-footer-brandname">{name}</div>
+            {logo ? (
+              // eslint-disable-next-line @next/next/no-img-element -- absolute backend URL, no next/image config
+              <img src={logo} alt={name} className="en-footer-logo" />
+            ) : (
+              <div className="en-footer-brandname">{name}</div>
+            )}
             {description && (
               <p className="en-body" style={{ color: '#adadad', fontSize: '0.92rem', marginTop: 14, maxWidth: '40ch' }}>
                 {description}
@@ -32,7 +38,7 @@ export async function EnFooter({ settings }: { settings: SiteSettings | null }) 
               <li><Link href="/en">Home</Link></li>
               {cats.map((c) => (
                 <li key={c.id}>
-                  <Link href={`/en/category/${encodeURIComponent(c.slug)}`}>{c.name}</Link>
+                  <Link href={c.id ? `/en/category-${c.id}/${encodeURIComponent(c.slug)}` : `/en/category/${encodeURIComponent(c.slug)}`}>{c.name}</Link>
                 </li>
               ))}
             </ul>

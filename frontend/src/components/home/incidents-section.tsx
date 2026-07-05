@@ -16,15 +16,17 @@ export async function IncidentsSection({
   categoryId,
   headingId,
   fallbackTitle,
+  count = 8,
 }: {
   categoryId: number;
   headingId: string;
   fallbackTitle?: string;
+  count?: number;
 }) {
   // **التصنيف بالـID الثابت** ⇒ الـslug/الاسم الحاليّان (مقاوم لإعادة التسمية). غير موجود/محذوف ⇒ يُخفى.
   const category = await getCategoryById(categoryId);
   if (!category) return null;
-  const items = await getCategoryFeed(category.slug, 8);
+  const items = await getCategoryFeed(category.slug, count);
   if (items.length === 0) return null;
   const title = category.name.trim() || fallbackTitle || category.slug.replace(/-/g, ' ');
   const moreHref = items[0]?.categoryHref ?? `/category/${encodeURIComponent(category.slug)}`;

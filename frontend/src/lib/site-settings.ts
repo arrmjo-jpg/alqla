@@ -13,16 +13,18 @@ const SocialSchema = z.record(z.string(), z.string());
 // Header navigation menu from the CMS (categories flagged `show_in_header`, ordered).
 // Parents may carry children → rendered as a dropdown.
 export interface NavCategory {
+  id?: number | null;
   name: string;
   slug: string;
-  children: { name: string; slug: string }[];
+  children: { id?: number | null; name: string; slug: string }[];
 }
 
 const NavCategorySchema = z
   .object({
+    id: z.number().nullish(),
     name: z.string(),
     slug: z.string(),
-    children: z.array(z.object({ name: z.string(), slug: z.string() }).passthrough()).default([]),
+    children: z.array(z.object({ id: z.number().nullish(), name: z.string(), slug: z.string() }).passthrough()).default([]),
   })
   .passthrough();
 

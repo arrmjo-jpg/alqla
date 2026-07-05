@@ -69,7 +69,7 @@ export default async function EnHome() {
 
           {publicNews.length > 0 && (
             <section className="en-section" aria-label="Public News">
-              <EnSectionHeading title="Public News" viewAllHref={enCategoryUrl('public-news')} />
+              <EnSectionHeading title="Public News" viewAllHref={enCategoryUrl(60, 'public-news')} />
               <div className="en-grid">
                 {publicNews.slice(0, 6).map((it) => (
                   <EnArticleCard key={it.id} item={it} variant="standard" />
@@ -80,7 +80,7 @@ export default async function EnHome() {
 
           {articles.length > 0 && (
             <section className="en-section" aria-label="Articles">
-              <EnSectionHeading title="Articles" viewAllHref={enCategoryUrl('articles')} />
+              <EnSectionHeading title="Articles" viewAllHref={enCategoryUrl(61, 'articles')} />
               <div className="en-grid en-grid--2">
                 {articles.slice(0, 4).map((it) => (
                   <EnArticleCard key={it.id} item={it} variant="feature" />

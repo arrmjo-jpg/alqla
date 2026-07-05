@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Check, Link2, Printer, Bookmark, Share2, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { useState } from 'react';
+import { Check, Link2, Printer, Bookmark, Share2 } from 'lucide-react';
 import { useEngagement, type EngagementMetrics } from '@/lib/use-engagement';
 import { FacebookIcon, TelegramIcon, WhatsappIcon, XIcon } from '@/components/icons/social';
 import { AudioReader } from '@/components/reading/audio-reader';
@@ -38,7 +38,6 @@ export function ReadingToolsBar({
   ttsEnabled = false,
 }: ReadingToolsProps) {
   const [copied, setCopied] = useState(false);
-  const [, setFontSize] = useState(19); // Default size 19px
 
   const { favorited, toggleFavorite } = useEngagement({
     type: 'article',
@@ -46,35 +45,6 @@ export function ReadingToolsBar({
     initialMetrics,
     hydrate: true,
   });
-
-  // Apply font size on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('article-font-size');
-    if (saved) {
-      const parsed = parseInt(saved, 10);
-      if (!isNaN(parsed) && parsed >= 15 && parsed <= 27) {
-        setFontSize(parsed);
-        document.documentElement.style.setProperty('--article-font-size', `${parsed}px`);
-      }
-    }
-  }, []);
-
-  const changeFontSize = (delta: number) => {
-    setFontSize((prev) => {
-      const next = Math.min(27, Math.max(15, prev + delta));
-      localStorage.setItem('article-font-size', String(next));
-      document.documentElement.style.setProperty('--article-font-size', `${next}px`);
-      trackEvent('font_size_changed', { font_size: next });
-      return next;
-    });
-  };
-
-  const resetFontSize = () => {
-    setFontSize(19);
-    localStorage.setItem('article-font-size', '19');
-    document.documentElement.style.setProperty('--article-font-size', '19px');
-    trackEvent('font_size_reset', { font_size: 19 });
-  };
 
   const handleShareClick = (networkName: string, href: string) => {
     trackEvent('share_clicked', { network: networkName, article_id: articleId });
@@ -115,47 +85,12 @@ export function ReadingToolsBar({
 
   return (
     <div className="flex flex-col gap-4 border-b border-border pb-4 mb-6 print:hidden">
-      {/* Top tools row */}
-      <div className="flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
-        {/* Font controls */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-muted font-bold me-1">التحكم بالخط:</span>
-          <button
-            type="button"
-            onClick={() => changeFontSize(2)}
-            className="flex h-8 w-8 items-center justify-center bg-surface-2 text-fg font-bold transition-colors hover:bg-surface-3 border border-border focus-visible:outline-2 focus-visible:outline-primary"
-            title="تكبير الخط"
-            aria-label="تكبير الخط"
-          >
-            <ZoomIn className="size-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => changeFontSize(-2)}
-            className="flex h-8 w-8 items-center justify-center bg-surface-2 text-fg font-bold transition-colors hover:bg-surface-3 border border-border focus-visible:outline-2 focus-visible:outline-primary"
-            title="تصغير الخط"
-            aria-label="تصغير الخط"
-          >
-            <ZoomOut className="size-4" />
-          </button>
-          <button
-            type="button"
-            onClick={resetFontSize}
-            className="flex h-8 w-8 items-center justify-center bg-surface-2 text-fg font-bold transition-colors hover:bg-surface-3 border border-border focus-visible:outline-2 focus-visible:outline-primary"
-            title="إعادة تعيين الخط"
-            aria-label="إعادة تعيين الخط"
-          >
-            <RotateCcw className="size-3.5" />
-          </button>
+      {/* Audio Reader (if TTS enabled) */}
+      {ttsEnabled && (
+        <div className="flex items-center">
+          <AudioReader targetId="article-content" />
         </div>
-
-        {/* Audio Reader */}
-        {ttsEnabled && (
-          <div className="flex items-center">
-            <AudioReader targetId="article-content" />
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Social actions - mobile view ONLY (hidden on desktop because sticky panel is active) */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3 lg:hidden">

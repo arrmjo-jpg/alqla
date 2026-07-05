@@ -269,7 +269,7 @@ class Article extends Model
      */
     public function canonicalPath(): string
     {
-        return '/'.trim("{$this->locale}/articles/{$this->id}-{$this->slug}", '/');
+        return '/'.trim("{$this->locale}/article/{$this->id}", '/');
     }
 
     /**

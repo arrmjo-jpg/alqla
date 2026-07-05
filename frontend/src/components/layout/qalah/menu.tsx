@@ -22,7 +22,7 @@ import { socialEntries } from '../social-map';
 import { DesktopViewToggle } from '@/components/layout/desktop-view-toggle';
 
 export type QalahMenuPage = { id: number; title: string; href: string };
-export type QalahMenuCategory = { name: string; slug: string };
+export type QalahMenuCategory = { id?: number | null; name: string; slug: string };
 
 // أيقونة لكلّ خدمة بحسب رابطها — ترفع وضوح القائمة وأناقتها.
 const SERVICE_ICON: Record<string, typeof VideoIcon> = {
@@ -119,7 +119,7 @@ export function QalahMenu({
                 {categories.map((c) => (
                   <Link
                     key={c.slug}
-                    href={`/category/${c.slug}`}
+                    href={c.id ? `/category-${c.id}/${c.slug}` : `/category/${c.slug}`}
                     onClick={close}
                     className="group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-surface-2"
                   >

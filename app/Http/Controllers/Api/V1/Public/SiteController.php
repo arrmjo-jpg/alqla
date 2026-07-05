@@ -66,10 +66,11 @@ class SiteController extends Controller
             ->orderBy('id')
             ->get(['id', 'name', 'slug'])
             ->map(fn (Category $c): array => [
+                'id' => $c->id,
                 'name' => $c->name,
                 'slug' => $c->slug,
                 'children' => $c->children
-                    ->map(fn (Category $child): array => ['name' => $child->name, 'slug' => $child->slug])
+                    ->map(fn (Category $child): array => ['id' => $child->id, 'name' => $child->name, 'slug' => $child->slug])
                     ->all(),
             ])
             ->all();

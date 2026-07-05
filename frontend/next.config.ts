@@ -17,6 +17,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     if (!API) return [];
     return [
+      { source: "/category-:id(\\d+)/:name*", destination: "/category/:id/:name*" },
+      { source: "/en/category-:id(\\d+)/:name*", destination: "/en/category/:id/:name*" },
       { source: "/:locale(ar|en)/epaper", destination: `${API}/:locale/epaper` },
       { source: "/:locale(ar|en)/epaper/:path*", destination: `${API}/:locale/epaper/:path*` },
       { source: "/build/:path*", destination: `${API}/build/:path*` },

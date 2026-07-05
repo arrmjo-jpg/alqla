@@ -1,92 +1,148 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import Link from 'next/link';
 
-// ترقيم صفحات احترافيّ قابل لإعادة الاستخدام (RTL): سابق/تالٍ + أرقام مع حذف (…) للصفحات الكثيرة.
-// **خادميّ بحت** (روابط فقط، صفر JS) — كلّ صفحة رابط مستقلّ (SEO + تنقّل Next). يُخفى عند صفحة واحدة.
-// hrefFor(page) يبني رابط الصفحة (يحتفظ بسياق المسار/الاستعلام للمستهلك). صلة rel=prev/next.
-export function Pagination({
-  currentPage,
-  totalPages,
-  hrefFor,
-}: {
+interface PaginationProps {
   currentPage: number;
   totalPages: number;
   hrefFor: (page: number) => string;
-}) {
+}
+
+export function Pagination({ currentPage, totalPages, hrefFor }: PaginationProps) {
   if (totalPages <= 1) return null;
   const page = Math.min(Math.max(1, currentPage), totalPages);
-  const items = paginationRange(page, totalPages);
 
-  const base =
-    'flex h-10 min-w-10 items-center justify-center rounded-md border px-3 text-sm font-bold tabular-nums transition';
-  const link = `${base} border-border text-fg hover:border-primary hover:text-primary`;
-  const off = `${base} border-border text-muted/40`;
+  // Generate responsive range: [1, '…', page-1, page, page+1, '…', total]
+  const range: (number | '…')[] = [];
+  const sibling = 1; // Show 1 page before and after current page
+
+  range.push(1);
+  
+  if (page - sibling > 2) {
+    range.push('…');
+  }
+
+  const start = Math.max(2, page - sibling);
+  const end = Math.min(totalPages - 1, page + sibling);
+
+  for (let i = start; i <= end; i++) {
+    range.push(i);
+  }
+
+  if (page + sibling < totalPages - 1) {
+    range.push('…');
+  }
+
+  if (totalPages > 1) {
+    range.push(totalPages);
+  }
+
+  const baseBtn =
+    'flex h-10 min-w-10 items-center justify-center rounded-xl border text-sm font-bold transition-all duration-300 active:scale-95 select-none';
+  const activeBtn = `${baseBtn} border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/20`;
+  const normalBtn = `${baseBtn} border-border/60 bg-surface text-muted-foreground hover:border-primary/40 hover:text-primary hover:bg-primary/5`;
+  const disabledBtn = `${baseBtn} border-border/40 bg-surface text-muted-foreground/30 cursor-not-allowed opacity-50 active:scale-100`;
 
   return (
-    <nav className="mt-10 flex flex-wrap items-center justify-center gap-2" aria-label="ترقيم الصفحات">
+    <nav 
+      className="mt-12 flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 print:hidden" 
+      aria-label="ترقيم الصفحات"
+    >
+      {/* First Page Button */}
       {page > 1 ? (
-        <Link href={hrefFor(page - 1)} rel="prev" aria-label="الصفحة السابقة" className={link}>
-          <ChevronRight className="size-4" aria-hidden />
+        <Link 
+          href={hrefFor(1)} 
+          title="الصفحة الأولى" 
+          className={normalBtn}
+        >
+          <ChevronsRight className="size-4" />
         </Link>
       ) : (
-        <span className={off} aria-hidden>
-          <ChevronRight className="size-4" />
+        <span className={disabledBtn} aria-hidden>
+          <ChevronsRight className="size-4" />
         </span>
       )}
 
-      {items.map((it, i) =>
-        it === '…' ? (
-          <span key={`gap-${i}`} className="px-1 text-muted" aria-hidden>
-            …
-          </span>
-        ) : it === page ? (
-          <span key={it} aria-current="page" className={`${base} border-primary bg-primary text-primary-foreground`}>
-            {it}
-          </span>
-        ) : (
-          <Link key={it} href={hrefFor(it)} className={link}>
-            {it}
-          </Link>
-        ),
-      )}
-
-      {page < totalPages ? (
-        <Link href={hrefFor(page + 1)} rel="next" aria-label="الصفحة التالية" className={link}>
-          <ChevronLeft className="size-4" aria-hidden />
+      {/* Prev Page Button */}
+      {page > 1 ? (
+        <Link 
+          href={hrefFor(page - 1)} 
+          rel="prev" 
+          className={`${normalBtn} px-3 gap-1`}
+          aria-label="الصفحة السابقة"
+        >
+          <ChevronRight className="size-4" />
+          <span className="hidden sm:inline">السابق</span>
         </Link>
       ) : (
-        <span className={off} aria-hidden>
+        <span className={`${disabledBtn} px-3 gap-1`} aria-hidden>
+          <ChevronRight className="size-4" />
+          <span className="hidden sm:inline">السابق</span>
+        </span>
+      )}
+
+      {/* Page Numbers */}
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        {range.map((item, idx) =>
+          item === '…' ? (
+            <span 
+              key={`ellipsis-${idx}`} 
+              className="flex h-10 w-8 items-center justify-center text-muted-foreground/50 font-bold"
+              aria-hidden
+            >
+              …
+            </span>
+          ) : item === page ? (
+            <span 
+              key={item} 
+              aria-current="page" 
+              className={activeBtn}
+            >
+              {item}
+            </span>
+          ) : (
+            <Link 
+              key={item} 
+              href={hrefFor(item)} 
+              className={normalBtn}
+            >
+              {item}
+            </Link>
+          )
+        )}
+      </div>
+
+      {/* Next Page Button */}
+      {page < totalPages ? (
+        <Link 
+          href={hrefFor(page + 1)} 
+          rel="next" 
+          className={`${normalBtn} px-3 gap-1`}
+          aria-label="الصفحة التالية"
+        >
+          <span className="hidden sm:inline">التالي</span>
           <ChevronLeft className="size-4" />
+        </Link>
+      ) : (
+        <span className={`${disabledBtn} px-3 gap-1`} aria-hidden>
+          <span className="hidden sm:inline">التالي</span>
+          <ChevronLeft className="size-4" />
+        </span>
+      )}
+
+      {/* Last Page Button */}
+      {page < totalPages ? (
+        <Link 
+          href={hrefFor(totalPages)} 
+          title="الصفحة الأخيرة" 
+          className={normalBtn}
+        >
+          <ChevronsLeft className="size-4" />
+        </Link>
+      ) : (
+        <span className={disabledBtn} aria-hidden>
+          <ChevronsLeft className="size-4" />
         </span>
       )}
     </nav>
   );
-}
-
-// نطاق الصفحات المعروضة مع حذف: [1, …, 4, 5, 6, …, 20]. يُظهر دائماً الأولى/الأخيرة + الحاليّة ±1.
-function paginationRange(current: number, total: number): (number | '…')[] {
-  const sibling = 1;
-  const shown = sibling * 2 + 5; // الأولى + الأخيرة + الحاليّة + شقيقتان + حذفان
-  if (total <= shown) {
-    return Array.from({ length: total }, (_, i) => i + 1);
-  }
-
-  const left = Math.max(current - sibling, 1);
-  const right = Math.min(current + sibling, total);
-  const leftDots = left > 2;
-  const rightDots = right < total - 1;
-
-  const range: (number | '…')[] = [1];
-  if (leftDots) {
-    range.push('…');
-  }
-  for (let i = leftDots ? left : 2; i <= (rightDots ? right : total - 1); i++) {
-    range.push(i);
-  }
-  if (rightDots) {
-    range.push('…');
-  }
-  range.push(total);
-
-  return range;
 }

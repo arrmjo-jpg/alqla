@@ -29,7 +29,7 @@ export async function CategoryFeatureQuad({
   const moreHref = `/category/${encodeURIComponent(category.slug)}`;
   const headingId = `quad-${categoryId}-heading`;
   // ديسكتوب: عدد الأعمدة = عدد الأخبار (4 أو 5). صريح كي يلتقطه Tailwind JIT.
-  const desktopColsClass = count >= 5 ? 'lg:grid-cols-5' : 'lg:grid-cols-4';
+  const desktopColsClass = count === 5 ? 'lg:grid-cols-5' : 'lg:grid-cols-4';
 
   const feature = items[0];
   const list = items.slice(1, count);

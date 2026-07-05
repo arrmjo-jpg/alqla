@@ -14,6 +14,7 @@ export interface FeedItem {
   imageAlt: string;
   category: string | null;
   categoryHref: string | null;
+  is_featured?: boolean;
   author: { id: number | null; name: string; avatar: string | null; isWriter: boolean } | null;
   publishedAt: string | null;
   badge: { kind: 'live' | 'breaking'; label: string } | null;
@@ -47,7 +48,8 @@ export const ItemSchema = z
     published_at: z.string().nullish(),
     is_breaking: z.boolean().nullish(),
     is_live: z.boolean().nullish(),
-    primary_category: z.object({ name: z.string().nullish(), slug: z.string().nullish() }).nullish(),
+    locale: z.string().nullish(),
+    primary_category: z.object({ id: z.number().nullish(), name: z.string().nullish(), slug: z.string().nullish() }).nullish(),
     author: z
       .object({
         id: z.number().nullish(),
@@ -78,7 +80,7 @@ function toBadge(item: Item): FeedItem['badge'] {
 }
 
 export function mapItem(it: Item): FeedItem {
-  const slug = it.primary_category?.slug;
+  const cat = it.primary_category;
   return {
     id: it.id,
     title: it.title,
@@ -86,8 +88,11 @@ export function mapItem(it: Item): FeedItem {
     href: localeless(it.canonical_path),
     image: it.cover?.medium ?? it.cover?.url ?? null,
     imageAlt: it.cover?.alt ?? it.title,
-    category: it.primary_category?.name ?? null,
-    categoryHref: slug ? `/category/${encodeURIComponent(slug)}` : null,
+    category: cat?.name ?? null,
+    categoryHref: cat?.id && cat?.slug
+      ? `${it.locale === 'en' ? '/en' : ''}/category-${cat.id}/${encodeURIComponent(cat.slug)}`
+      : null,
+    is_featured: !!it.is_featured,
     author: it.author?.name
       ? {
           id: typeof it.author.id === 'number' ? it.author.id : null,
@@ -223,7 +228,9 @@ export const getCategoryFeed = cache(
   async (slug: string, limit = 4, locale = 'ar'): Promise<FeedItem[]> => {
     if (!env.apiBaseUrl) return [];
     try {
-      const qs = new URLSearchParams({ per_page: String(limit), sort: '-published_at' });
+      // paginate=cursor: الرئيسيّة تعرض عددًا ثابتًا (feed) بلا أرقام صفحات/إجماليّ ⇒ ترقيم المؤشّر
+      // (استراتيجيّة الـfeed المدمجة أصلاً في الـendpoint) يتجنّب COUNT(*) الباهظ. نقرأ data فقط.
+      const qs = new URLSearchParams({ per_page: String(limit), sort: '-published_at', paginate: 'cursor' });
       qs.set('filter[category]', slug);
       const res = await fetch(
         `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles?${qs.toString()}`,
@@ -243,7 +250,8 @@ export const getTagFeed = cache(
   async (tag: string, limit = 4, locale = 'ar'): Promise<FeedItem[]> => {
     if (!env.apiBaseUrl) return [];
     try {
-      const qs = new URLSearchParams({ per_page: String(limit), sort: '-published_at' });
+      // feed (عدد ثابت، بلا ترقيم) ⇒ cursor يتجنّب COUNT(*).
+      const qs = new URLSearchParams({ per_page: String(limit), sort: '-published_at', paginate: 'cursor' });
       qs.set('filter[tag]', tag);
       const res = await fetch(
         `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles?${qs.toString()}`,
@@ -263,9 +271,11 @@ export const getAuthorArticles = cache(
   async (authorId: number, limit = 2, locale = 'ar'): Promise<FeedItem[]> => {
     if (!env.apiBaseUrl || !authorId) return [];
     try {
+      // feed (عدد ثابت، بلا ترقيم) ⇒ cursor يتجنّب COUNT(*).
       const qs = new URLSearchParams({
         per_page: String(limit),
         sort: '-published_at',
+        paginate: 'cursor',
         'filter[author_id]': String(authorId),
       });
       const res = await fetch(

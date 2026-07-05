@@ -19,7 +19,7 @@ const TYPES = new Set(['article', 'reel', 'video']);
 // مَن يجب أن يكون مسجّلاً (وإلا 401 ⇒ العميل يحوّل لـ/login). الحفظ يتطلّب دخولاً لكلّ الأنواع؛
 // الإعجاب يتطلّبه للفيديو/الريلز (نمطهما) ويسمح بالزائر للمقال (سلوكه الحاليّ).
 const REQUIRE_AUTH: Record<string, { react: boolean; favorite: boolean }> = {
-  article: { react: false, favorite: true },
+  article: { react: true, favorite: true },
   reel: { react: true, favorite: true },
   video: { react: true, favorite: true },
 };

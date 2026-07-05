@@ -66,7 +66,7 @@ export async function QalahHeader() {
           <ul className="header-nav-list">
             {navCategories.map((c) => (
               <li key={c.slug} className="header-nav-item">
-                <Link href={`/category/${c.slug}`}>{c.name}</Link>
+                <Link href={c.id ? `/category-${c.id}/${c.slug}` : `/category/${c.slug}`}>{c.name}</Link>
               </li>
             ))}
           </ul>

@@ -183,6 +183,7 @@ export function ArticleDetailView({
             />
 
             {/* Body wrapper containing Floated Image and Wrapping paragraphs */}
+
             <div className="my-6 block overflow-hidden">
               {article.cover && article.cover.url && (
                 <ArticleHero 

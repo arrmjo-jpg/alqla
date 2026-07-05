@@ -16,6 +16,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_BASE_URL: https://api.alpha-cms.shop/api/v1
+        VITE_PUBLIC_SITE_URL: https://alpha-cms.shop
     restart: unless-stopped
     expose:
       - "80"
@@ -38,6 +39,22 @@ services:
     volumes:
     - media:/var/www/html/storage/app/public
     - /data/uploads:/var/www/html/public/uploads:ro
+    # ── Public media on the SITE domain, served directly by the backend web server ──────────────
+    # Route `<public-site>/storage/*` to the backend nginx (→ public/storage, static + Cache-Control).
+    # So branding/media resolve on the public origin and Cloudflare caches them:
+    #   Browser → Cloudflare → Traefik → backend nginx → Laravel public/storage   (never via Next.js).
+    # The API domain (api.<domain> → backend) stays as Coolify manages it; this is an extra router.
+    # NOTE: the Host() below must equal the PUBLIC site domain (SITE_URL). priority beats the
+    # frontend catch-all so only /storage is peeled off to the backend.
+    labels:
+      - traefik.enable=true
+      - "traefik.http.routers.public-storage.rule=Host(`alpha-cms.shop`) && PathPrefix(`/storage`)"
+      - traefik.http.routers.public-storage.entrypoints=https
+      - traefik.http.routers.public-storage.tls=true
+      - traefik.http.routers.public-storage.tls.certresolver=letsencrypt
+      - traefik.http.routers.public-storage.priority=100
+      - traefik.http.routers.public-storage.service=public-storage
+      - traefik.http.services.public-storage.loadbalancer.server.port=80
 
   worker:
     <<: *backend-common

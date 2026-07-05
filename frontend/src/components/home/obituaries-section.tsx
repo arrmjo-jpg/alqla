@@ -16,13 +16,15 @@ const GOLD = '#e8c878';
 export async function ObituariesSection({
   categoryId,
   fallbackTitle,
+  count = 4,
 }: {
   categoryId: number;
   fallbackTitle?: string;
+  count?: number;
 }) {
   const category = await getCategoryById(categoryId);
   if (!category) return null;
-  const items = await getCategoryFeed(category.slug, 4);
+  const items = await getCategoryFeed(category.slug, count);
   if (items.length === 0) return null;
   const title = category.name.trim() || fallbackTitle || 'وفيات';
   const moreHref = `/category/${encodeURIComponent(category.slug)}`;
@@ -76,9 +78,9 @@ export async function ObituariesSection({
             <span className="h-px w-10 sm:w-16" style={{ background: 'linear-gradient(to right, transparent, rgba(232,200,120,0.6))' }} />
           </div>
 
-          {/* البطاقات الأربع */}
+          {/* البطاقات */}
           <div className="relative grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4">
-            {items.slice(0, 4).map((item) => (
+            {items.slice(0, count).map((item) => (
               <ObituaryCard key={item.id} item={item} />
             ))}
           </div>
