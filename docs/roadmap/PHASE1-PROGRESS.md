@@ -112,4 +112,80 @@ Resources, JSON structure, pagination, and cache tags individually.
 ---
 
 ## Task 5 — Domain event: wrap TransitionArticleStatusAction side-effects
-*(in progress)*
+
+**Commit:** `8094bea02` — Wrap article status transition side-effects in a
+domain event
+
+### What was implemented
+- `App\Events\Content\ArticleStatusChanged` — the platform's first real
+  domain event, dispatched once after a committed status transition.
+- Three listeners in `App\Support\Content\Listeners` (deliberately **not**
+  `app/Listeners` — see below): `InvalidateArticleCacheOnStatusChanged`,
+  `PurgeArticleCdnOnStatusChanged`, `NotifyWriterOnArticleStatusChanged`,
+  registered explicitly (and in that order) in
+  `AppServiceProvider::configureContentEvents()`.
+- `TransitionArticleStatusAction` now dispatches the event where it used
+  to call the three side-effects inline; nothing else in the action
+  changed.
+
+### Why
+- ADR-E2 (`docs/adr/E2-domain-events-wrap-not-replace.md`): the one real
+  architectural gap in this slice of the system — side-effects written
+  imperatively inside one Action, instead of an event spine new
+  consumers (AI, read models, analytics) can attach to without touching
+  the publish path itself.
+- Wrap, not replace: every line moved verbatim into its listener — same
+  behavior, same order, same synchronicity. Listeners are deliberately
+  **not** queued — that would change observable response timing (a
+  separate, not-yet-made architectural decision), not something to slip
+  in here.
+
+### Database changes
+None — pure application-layer refactor.
+
+### Public contracts affected
+**None.** Same HTTP response shape, same cache tags, same CDN purge
+call, same notification call, same listener execution order (verified
+via `php artisan event:list`). Timing/synchronicity explicitly
+preserved — the response still waits for all three side-effects exactly
+as before.
+
+### Test evidence
+- New: `tests/Feature/Admin/Content/ArticleStatusEventTest.php` — 5/5
+  passing (event dispatched exactly once with correct payload; not
+  dispatched when the workflow guard denies before the transaction
+  starts; cache tag still flushed, CDN batch still queued, writer still
+  notified — all via the real, non-faked listener chain).
+- **Bug caught by this task's own test, fixed before proceeding:**
+  first run showed the writer notified **twice**. `event:list` proved
+  each listener was registered twice — Laravel 11 auto-discovers
+  `app/Listeners`, and I'd also registered them explicitly, causing
+  double execution. Fixed by relocating listeners to
+  `App\Support\Content\Listeners`, mirroring the existing
+  `App\Modules\Notifications\Listeners` convention (which avoids this
+  exact trap for the same reason). Re-verified via `event:list` (each
+  listener now appears once) and the test suite (5/5 green).
+- Regression (`--filter="Article"`): baseline 217/208 passed/9 failed →
+  post-change 224/215 passed/**9 failed (identical set)**. Delta (+7
+  tests/+12 assertions) fully reconciled to the 5 new tests (whose
+  filename itself matches the filter) — **zero new failures, zero
+  fixed, zero changed** among the pre-existing 9.
+- A 10th failure surfaced outside the "Article" filter's scope
+  (`WriterNotificationTest::returns_403_for_a_non_writer_user`). Proven
+  pre-existing via an explicit stash-and-rerun against the clean
+  Task-4-only state (failed identically with zero Task 5 changes
+  present) — unrelated, spun off as `task_47f36988`, not mixed into
+  this roadmap.
+
+### Rollback procedure
+1. `git revert 8094bea02` — single commit, no migration to unwind, no
+   data implications (zero tables touched).
+2. Old/new code distinction doesn't apply here — no schema changed in
+   either direction.
+
+### Known issues discovered (tracked separately, not Phase 1 scope)
+- Notifications-list endpoint returns 200 instead of 403 for
+  non-writers — pre-existing, proven unrelated, tracked as
+  `task_47f36988`.
+
+---
