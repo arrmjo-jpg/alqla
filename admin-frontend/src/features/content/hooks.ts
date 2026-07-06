@@ -9,6 +9,7 @@ import {
 import { articlesService } from '@/services/articles.service';
 import { mediaLibraryService } from '@/services/mediaLibrary.service';
 import { categoriesService } from '@/services/categories.service';
+import { entitiesService, type EntityContentType, type EntityType } from '@/services/entities.service';
 import { liveUpdatesService } from '@/services/liveUpdates.service';
 import { tagsService } from '@/services/tags.service';
 import { usersService } from '@/services/users.service';
@@ -672,6 +673,55 @@ export function useDeleteMediaAsset() {
       success(m);
       invalidate();
     },
+  });
+}
+
+// ─── Entities (canonical registry — Task 12) ─────────────────────────────
+
+const ENTITIES = ['entities'] as const;
+
+/** Search/typeahead, optionally filtered by type. Mirrors useTagSuggestions. */
+export function useEntitySuggestions(query: string, type?: EntityType) {
+  const trimmed = query.trim();
+  return useQuery({
+    queryKey: [...ENTITIES, 'search', type, trimmed],
+    queryFn: () => entitiesService.search(trimmed, type, 20),
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
+  });
+}
+
+/** Create a new canonical entity. Caller merges the result into local widget state. */
+export function useCreateEntity() {
+  const { error } = useToast();
+  return useMutation({
+    mutationFn: entitiesService.create,
+    onError: (e: NormalizedError) => error(e.message),
+  });
+}
+
+/**
+ * Current entities tagged on a piece of content (GET, read-only) — disabled
+ * until the content has an id (a brand-new, unsaved item can't be tagged yet).
+ */
+export function useContentEntities(contentType: EntityContentType, contentId: number | undefined) {
+  return useQuery({
+    queryKey: [...ENTITIES, 'for', contentType, contentId],
+    queryFn: () => entitiesService.currentFor(contentType, contentId!),
+    enabled: contentId !== undefined,
+  });
+}
+
+/** Replace the full set of entities tagged on a piece of content. */
+export function useSyncContentEntities(contentType: EntityContentType, contentId: number | undefined) {
+  const qc = useQueryClient();
+  const { error } = useToast();
+  return useMutation({
+    mutationFn: (entityIds: number[]) => entitiesService.sync(contentType, contentId!, entityIds),
+    onSuccess: (data) => {
+      qc.setQueryData([...ENTITIES, 'for', contentType, contentId], data);
+    },
+    onError: (e: NormalizedError) => error(e.message),
   });
 }
 

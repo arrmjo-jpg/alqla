@@ -21,6 +21,7 @@ import {
   Sparkles,
   Tags as TagsIcon,
   User,
+  Users,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -54,6 +55,7 @@ import { CategoryPicker } from '../components/CategoryPicker';
 import { MediaStudio } from '../components/media/MediaStudio';
 import { SeoPanel } from '../components/SeoPanel';
 import { SlugField } from '../components/SlugField';
+import { EntityTagsInput } from '../components/EntityTagsInput';
 import { TagsInput } from '../components/TagsInput';
 import { WriterPicker } from '../components/WriterPicker';
 import { ArticleEditor } from '../editor/ArticleEditor';
@@ -952,6 +954,10 @@ export default function ArticleFormPage() {
                   </div>
                 )}
               />
+            </Section>
+
+            <Section title={t('articles.form.entities.title')} icon={Users}>
+              <EntityTagsInput contentType="article" contentId={article?.id} />
             </Section>
 
             <Section title={t('articles.form.cockpit.visibility')} hint={t('articles.form.secFlagsHint')} icon={Eye}>

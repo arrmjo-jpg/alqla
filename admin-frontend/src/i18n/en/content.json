@@ -1036,6 +1036,21 @@
         "remove": "Remove tag",
         "suggested": "Suggestions:"
       },
+      "entities": {
+        "title": "Entities",
+        "placeholder": "Search an entity (person/organization/place/topic)…",
+        "help": "Canonical tagging — links to a stable-identity registry, not free keywords.",
+        "searching": "Searching…",
+        "createAs": "No entity matches «{{name}}» — create it as:",
+        "remove": "Remove entity",
+        "saveFirst": "Save the content first to link entities.",
+        "type": {
+          "person": "Person",
+          "organization": "Organization",
+          "place": "Place",
+          "topic": "Topic"
+        }
+      },
       "cockpit": {
         "titlePlaceholder": "Headline — write the story title…",
         "summary": "Summary",
