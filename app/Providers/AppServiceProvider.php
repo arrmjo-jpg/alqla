@@ -7,6 +7,8 @@ namespace App\Providers;
 use App\Contracts\Ai\AiProvider;
 use App\Enums\ClientSource;
 use App\Events\Content\ArticleStatusChanged;
+use App\Events\Content\ReelStatusChanged;
+use App\Events\Content\VideoStatusChanged;
 use App\Health\Checks\BroadcastSourceHealthCheck;
 use App\Health\Checks\CacheTaggingCheck;
 use App\Health\Checks\EpaperOcrHealthCheck;
@@ -19,8 +21,14 @@ use App\Modules\Notifications\Events\NotificationEvent;
 use App\Modules\Notifications\Listeners\RouteNotificationEvent;
 use App\Settings\GeneralSettings;
 use App\Support\Content\Listeners\InvalidateArticleCacheOnStatusChanged;
+use App\Support\Content\Listeners\InvalidateReelCacheOnStatusChanged;
+use App\Support\Content\Listeners\InvalidateVideoCacheOnStatusChanged;
 use App\Support\Content\Listeners\NotifyWriterOnArticleStatusChanged;
+use App\Support\Content\Listeners\NotifyWriterOnReelStatusChanged;
+use App\Support\Content\Listeners\NotifyWriterOnVideoStatusChanged;
 use App\Support\Content\Listeners\PurgeArticleCdnOnStatusChanged;
+use App\Support\Content\Listeners\PurgeReelCdnOnStatusChanged;
+use App\Support\Content\Listeners\RevalidateVideoFrontendOnStatusChanged;
 use App\Settings\ThirdPartySettings;
 use App\Support\Advertising\AdClientIp;
 use App\Support\Ai\Providers\FailoverAiProvider;
@@ -110,6 +118,14 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(ArticleStatusChanged::class, InvalidateArticleCacheOnStatusChanged::class);
         Event::listen(ArticleStatusChanged::class, PurgeArticleCdnOnStatusChanged::class);
         Event::listen(ArticleStatusChanged::class, NotifyWriterOnArticleStatusChanged::class);
+
+        Event::listen(VideoStatusChanged::class, InvalidateVideoCacheOnStatusChanged::class);
+        Event::listen(VideoStatusChanged::class, RevalidateVideoFrontendOnStatusChanged::class);
+        Event::listen(VideoStatusChanged::class, NotifyWriterOnVideoStatusChanged::class);
+
+        Event::listen(ReelStatusChanged::class, InvalidateReelCacheOnStatusChanged::class);
+        Event::listen(ReelStatusChanged::class, PurgeReelCdnOnStatusChanged::class);
+        Event::listen(ReelStatusChanged::class, NotifyWriterOnReelStatusChanged::class);
     }
 
     /**
