@@ -385,3 +385,58 @@ change the system's architecture; it closes a real gap flagged in the
 Product Evolution review.
 
 ---
+
+## Task 9 — Reserve nullable `tenant_id` on core content tables
+
+**Commit:** `82e9565ed`
+
+### Pre-task review (scope correction)
+The roadmap's wording assumed one `categories` table. Verified via
+migration search: there are **three** (`categories`, `video_categories`,
+`broadcast_categories`), plus `pages`, `video_playlists`, and Task 4's
+`entities` — all genuinely core-content tables. Expanded scope to all 11
+for consistency rather than reserving the column on an arbitrary subset.
+
+### What changed
+`tenant_id` (nullable `unsignedBigInteger`, no FK — no `tenants` table
+exists) added to: articles, videos, reels, broadcasts, pages, categories,
+video_categories, broadcast_categories, video_playlists, media_assets,
+entities.
+
+### Why
+Cheap now (tables far from 2M+ rows on most of them), expensive later
+(`ALTER TABLE` on a live multi-million-row table). Matches the
+architecture review's ADR-005 (tenant identity is a first-class,
+Must-Decide-Now concern) — but only the column, nothing else.
+
+### What stayed the same
+Everything. Zero application code reads or writes this column — no
+`$fillable` addition, no cast, no query scope. **No index added** —
+deliberately: the correct composite index shape depends on real
+tenant-scoped query patterns that won't exist until Phase 6 activates
+this (gated on a real second white-label client, not a calendar date,
+per the architecture review). Guessing an index shape now would be
+speculative.
+
+### Regression / backward compatibility
+Cross-section covering every affected table type (Article, Category,
+Page, Video playlists, Broadcast, MediaAsset, Entity): 99/99 passed.
+Fully additive; no existing code path touches the new column.
+
+### Performance impact
+None measurable. One extra nullable column per row on 11 tables — no
+new queries, no new indexes, no write-path changes.
+
+### Risks
+The single real risk this task defers rather than resolves: **when**
+Phase 6 activates tenancy, retrofitting *enforcement* (scoping every
+query, every cache key, every search index by tenant) is a substantial
+undertaking regardless of whether the column exists — this task only
+removes the schema-migration part of that future cost, not the
+application-logic part.
+
+### Architecturally better, or just cleaner?
+Neither yet — this is pure optionality banking. It becomes
+architecturally significant only when Phase 6 activates it.
+
+---
