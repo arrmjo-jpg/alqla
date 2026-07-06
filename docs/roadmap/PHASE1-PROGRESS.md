@@ -189,3 +189,88 @@ as before.
   `task_47f36988`.
 
 ---
+
+## Task 6 — Editorial workflow: shared engine + event-wrapping for Video/Reel
+
+**Roadmap correction:** the original wording ("extend workflow
+guard+transition pattern to Video/Reel/Broadcast") was wrong on
+inspection. `VideoWorkflowGuard` and `ReelWorkflowGuard` already existed,
+independently evolved, not copied from Article. Broadcast has no
+transition-matrix workflow at all (verb-specific lifecycle actions:
+`StartBroadcastAction`, `EndBroadcastAction`, `FailBroadcastAction`,
+etc.) — confirmed via `app/Actions/Admin/Broadcast/` (27 actions), not
+assumed, and excluded from this task entirely.
+
+### Design review (performed before any extraction — see conversation
+for full 6-question review)
+Read all three guards + both existing transition actions side by side.
+Findings: `TRANSITIONS`/`WRITER_ALLOWED` and the guard algorithm shape
+are byte-identical across Article/Video/Reel; `isEditorial()` is also
+byte-identical in all three `*AuthorizationGuard` classes. Real,
+preserved divergences: Video/Reel gate certain transitions behind an
+extra permission (`videos.publish/archive`, `reels.publish/archive`)
+that Article's guard lacks; Video has no revision recording
+(`VideoRevisionRecorder` doesn't exist — confirmed via grep); Video has
+no dedicated CDN-purge class (Article/Reel do). Chosen architecture:
+one generic, model-agnostic `EditorialWorkflowGuard` engine consuming a
+per-type `WorkflowDefinition` (pure data) — composition, not
+inheritance — with the divergences expressed as data (an empty
+`abilityForTarget` map for Article) rather than branches.
+
+### Task 6a — shared engine + guard migration (4 commits)
+- `a94ac6a82` — `WorkflowDefinition` + `EditorialWorkflowGuard` +
+  `ApplyEditorialTransition`, new and isolated, 11 unit-level tests
+  against fabricated definitions before any real guard touched it.
+- `7d6c137c1` — `ArticleWorkflowGuard` migrated (thin wrapper, signature
+  unchanged, `abilityForTarget: []`). Regression: 225/216 passed
+  (`--filter="Article"`), same 9 pre-existing failures, zero
+  new/fixed/changed.
+- `a09deb83c` — `VideoWorkflowGuard` migrated (ability map: publish→
+  `videos.publish` for both published and scheduled, archive→
+  `videos.archive`). Regression: 89/88 passed (all VideoLibrary tests +
+  WriterNotificationTest), same 1 pre-existing failure only.
+- `a5cf40cff` — `ReelWorkflowGuard` migrated (ability map: publish/
+  archive only — Reel does **not** gate scheduling behind an ability,
+  unlike Video; preserved as a real difference, not unified).
+  Regression: 105/104 passed, same 1 pre-existing failure only.
+
+### Task 6b — event-wrapping Video/Reel (1 commit, `f5606fe2e`)
+`VideoStatusChanged` / `ReelStatusChanged`, mirroring
+`ArticleStatusChanged` exactly — separate small event classes per type
+(not one generic discriminated event, per the design review). Listeners
+placed under `App\Support\Content\Listeners` from the start (learned
+from Task 5 — verified via `event:list` that each registers exactly
+once before trusting any test). Every listener moves an existing
+imperative call verbatim; Video's still-missing CDN-purge class and
+still-missing revision recording are untouched, not silently "fixed" as
+a side effect. Regression: Video 93/92 passed (+4 new tests), Reel
+89/89 passed (+4 new tests), zero new/fixed/changed.
+
+### Database changes
+None across all of Task 6 — pure application-layer refactor.
+
+### Public contracts affected
+None. Every `*WorkflowGuard::check()` public signature is byte-identical
+to before; every Action's HTTP contract, cache tags, CDN behavior, and
+notification behavior is unchanged — only the internal implementation
+moved from copy-pasted logic to shared engine + data, and from
+imperative calls to event dispatch.
+
+### Rollback procedure
+Six independent commits (`a94ac6a82` through `f5606fe2e`), each already
+proven not to break anything on its own — revert from the end backward
+as far as needed; no migration to unwind at any point, no data
+implications (zero tables touched in Task 6).
+
+### Known issues discovered (tracked separately, not Phase 1 scope)
+- Video has no revision recording (unlike Article/Reel) — real gap,
+  not fixed here, not silently decided either way.
+- Video has no dedicated CDN-purge class (unlike Article/Reel) — same
+  treatment.
+- Error-message translation key naming has already drifted per type
+  (`article.schedule_requires_future_date` vs `video.schedule_requires_date`
+  vs `reel.schedule_future` for the same rule) — preserved exactly as-is
+  per type in each `WorkflowDefinition.messages` map; not unified, to
+  avoid an unrequested user-facing string change.
+
+---
