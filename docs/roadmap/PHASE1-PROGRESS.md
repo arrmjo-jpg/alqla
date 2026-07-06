@@ -440,3 +440,71 @@ Neither yet — this is pure optionality banking. It becomes
 architecturally significant only when Phase 6 activates it.
 
 ---
+
+## Task 10 — Add Reel and Broadcast to the Scout searchable set
+
+**Commit:** `871dfe12a`
+
+### Pre-task review
+Confirmed via grep: zero prior references to `reels_index`/
+`broadcasts_index` anywhere — fully greenfield, no conflicting
+assumption to correct. Read `Video`'s existing Scout implementation
+(the most complete precedent) and `ResilientSearchable` in full before
+writing anything, to mirror the fail-safe pattern exactly rather than
+inventing a new one.
+
+### What changed
+`Reel` and `Broadcast` now use `ResilientSearchable`, with
+`searchableAs()`/`shouldBeSearchable()`/`toSearchableArray()` +
+matching `reels_index`/`broadcasts_index` Meilisearch settings in
+`config/scout.php`.
+
+### Why
+Two of six content types had no search coverage at all — a real,
+present gap, not a duplication-driven refactor like Tasks 6/7.
+
+### What stayed the same
+Everything about Article/Video/Page/Epaper's existing search behavior.
+Neither `Reel` nor `Broadcast` needed a `makeAllSearchableUsing()`
+override (unlike `Article`) — their searchable arrays only embed IDs and
+enum values, not related entity names, so there's no N+1 to guard
+against.
+
+### Design decisions requiring judgment (recorded, not silently made)
+- **Reel** is searchable under the same condition as `scopePublished()`
+  (published + past `published_at`) — a direct mirror of existing
+  business logic, not a new rule.
+- **Broadcast** is searchable only when `status` is `Live` or `Ended`
+  **and** `is_public` is true. Draft/Scheduled/Offline/Failed/Archived
+  are excluded. This is the one real judgment call: whether *Archived*
+  broadcasts should remain searchable as historical VOD wasn't
+  specified anywhere, so I did not guess — excluded for now, flagged
+  here for a product decision if archived-broadcast search is wanted
+  later (additive change, not a breaking one).
+- **Broadcast's index uses `kind` (live/tv/radio), not `locale`** —
+  consistent with Task 7's finding that Broadcast isn't locale-
+  partitioned in this system at all.
+
+### Regression / backward compatibility
+Reel: 93/93 passed (89 baseline + 4 new). Broadcast: 144/144 passed (140
+baseline + 4 new). Zero new/fixed/changed among prior tests in either
+suite.
+
+### Performance impact
+New write-path cost: each Reel/Broadcast save now triggers a Scout sync
+(same mechanism already paid by Article/Video/Page, wrapped in the same
+fail-safe trait — a transport failure logs a warning, never fails the
+save). No new read-path cost until something actually queries these new
+indexes (nothing does yet — that's future admin/public search UI work,
+out of this task's scope).
+
+### Risks
+None identified for existing behavior. The one open question (archived
+broadcasts in search) is a product decision, not a technical risk.
+
+### Architecturally better, or just cleaner?
+Neither — this is new capability (closing a real search-coverage gap),
+consistent with the pattern already established for Article/Video, not
+a structural change.
+
+---
