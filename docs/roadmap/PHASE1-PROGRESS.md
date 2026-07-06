@@ -334,3 +334,54 @@ None new — this task's investigation confirmed prior findings
 (Reel/Page's independent scope, no fresh gaps).
 
 ---
+
+## Task 8 — MediaAsset rights/license metadata
+
+**Commit:** `d6c9c0ee9`
+
+### Pre-task review
+Confirmed `credit`/`source` already exist (added in
+`2026_05_20_110000_extend_media_assets_for_editorial_library.php`, read
+in full to match its exact style); `license_type`/`rights_expiry_at`/
+`usage_terms` genuinely absent. No architectural ambiguity found — the
+one judgment call (formal enum vs. plain string for `license_type`) is
+recorded below, not silently decided.
+
+### What changed
+Three nullable columns on `media_assets`: `license_type` (string),
+`rights_expiry_at` (timestamp), `usage_terms` (text). Added to
+`MediaAsset`'s `$fillable` and `AuditsChanges` `$auditAttributes`
+whitelist.
+
+### Why
+Real, present-day legal/compliance exposure (using media past a rights
+expiry or without required attribution), independent of scale — see the
+product-philosophy review earlier in this project's history.
+
+### What stayed the same
+Everything else. `license_type` is a **plain nullable string, not a
+formal PHP enum** — deliberately, since no admin UI consumes it yet and
+no taxonomy has been requested; committing to a specific closed set of
+values now would be inventing business rules nobody asked for. Upgrading
+to an enum later (once a real UI need defines the taxonomy) is a
+non-breaking, additive change to the cast layer only.
+
+### Regression / backward compatibility
+68/68 passed across all Media tests (65 baseline + 3 new). Grep-confirmed
+zero existing `Http\Resources` reference the new fields — no API
+response shape changes anywhere.
+
+### Performance impact
+None measurable — three new nullable columns on an existing table, no
+new queries, no new indexes needed (not queried/filtered by yet).
+
+### Risks
+None identified. Purely additive, all-null default state.
+
+### Architecturally better, or just cleaner?
+Neither, strictly — this task adds new *capability* (data the system
+didn't capture before), not a refactor of existing structure. It doesn't
+change the system's architecture; it closes a real gap flagged in the
+Product Evolution review.
+
+---
