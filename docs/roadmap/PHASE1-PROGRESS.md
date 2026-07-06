@@ -548,3 +548,129 @@ is the established, correct place for that — not a frontend build-time
 flag.
 
 ---
+
+## Task 12 — Admin UI: entity tagging widget on content edit screens
+
+**Commits:** `01db2e329` + `81074b083` (backend), `b2dd6aa8f` (Article
+widget), `05a9cae66` (Video/Reel widget + i18n generalization)
+
+### Pre-task review
+Task 4 shipped the `entities`/`content_entity` schema and `Article`'s
+`entities()` relation inert — this task is its first real consumer.
+Confirmed via grep: zero existing UI or API surface for entities before
+this task; fully greenfield, no conflicting assumption to correct on
+the backend side.
+
+### What was implemented
+**Backend (12a):** generic Actions accepting a `Article|Video|Reel`
+union (`ListEntitiesAction`, `CreateEntityAction`,
+`SyncContentEntitiesAction`) — one implementation, not three near-
+duplicates, since the sync/list logic has zero real per-type variation
+(unlike Task 7's cache tags, where variation was real). `EntityController`
+exposes search/create (`GET/POST /admin/entities`) and per-type
+read/sync (`GET/PATCH /admin/{articles,videos,reels}/{id}/entities`).
+`Video`/`Reel` gained the same `entities()` MorphToMany relation
+Article already had. New `entities` permission group (view/create/edit/
+delete), added to both the main permissions array and the separate
+group-metadata map in `RolesAndPermissionsSeeder`.
+
+**Frontend (12b + 12c):** `entities.service.ts` + four hooks
+(`useEntitySuggestions`, `useCreateEntity`, `useContentEntities`,
+`useSyncContentEntities`) + one self-contained widget
+(`EntityTagsInput`, parametrized by `contentType`/`contentId`) — chip
+input with typeahead, inline "create as person/organization/place/
+topic", disabled with a "save first" message until the content has an
+id. Wired into `ArticleFormPage`, `VideoFormPage`, and `ReelFormPage`.
+
+### Why
+Entity tagging is the roadmap's own definition-of-done item ("first
+entity-tagged content exists") — until an admin can actually attach an
+entity, Task 4's schema is unreachable. Generic Actions (not three
+per-type classes) because, unlike Task 7, there was no real logic
+variation to preserve — only the content-type string threading through
+to pick a URL/relation, which a discriminated parameter handles more
+simply than three classes would.
+
+### What stayed the same
+Everything about existing Article/Video/Reel read/write paths, `Spatie\Tags`
+(unaffected — entities are additive, not a replacement), and every
+other admin screen. `TagsInput` (free-text tags) stays Article-only
+with its own `articles.form.tags.*` keys, unchanged — it has exactly
+one consumer, so nothing about it needed generalizing.
+
+### Design decision surfaced mid-task, not silently made
+Task 12 was originally delivered for Article only (12b), even though
+the backend (12a) already supported all three content types end-to-end.
+Extending to Video/Reel wasn't purely mechanical: `EntityTagsInput`'s
+translation strings were hardcoded under `articles.form.entities.*` —
+fine with one consumer, wrong to reuse verbatim once Video/Reel became
+real second and third consumers. Presented this fork to the user rather than
+either silently leaving Video/Reel unwired or silently renaming keys;
+approved option was to relocate the keys to a shared top-level
+`entities.*` namespace in `content.json` (same Arabic/English strings,
+zero visible change) and finish wiring all three screens in this task
+(12c), rather than opening a separate follow-up for something that was
+already the original scope.
+
+### Regression / backward compatibility
+Backend: `EntityManagementTest.php` 15/15 (search, type filter, create,
+duplicate-name rejection, cross-type name reuse, permission denial,
+sync onto article/video/reel, entity removal via re-sync, invalid-id
+rejection, read current entities, empty state, permission denial on
+read) — re-run clean both immediately after 12a and again after 12c's
+unrelated frontend-only changes. Frontend: `tsc --noEmit` and
+`vite build` clean after both 12b and 12c. Zero existing i18n key
+consumers broken by the relocation — grep-confirmed `TagsInput.tsx`
+(the only other widget near the old key path) reads its own
+`articles.form.tags.*` keys, untouched.
+
+### Live verification (not just automated tests)
+Full interactive click-through against real local data: logged in,
+opened a real article (990030), typed a search query, confirmed the
+typeahead and "create as [type]" buttons render with correct labels,
+created a new "place" entity, confirmed it attached as a chip, and
+confirmed it survived a full page reload (proving server persistence,
+not just client cache). Repeated the read-path check on a real Video
+(id 1) and Reel (id 1) after 12c — both load their current entities
+(200 OK) and render the section correctly; the create+sync write path
+was not re-exercised interactively for Video/Reel since it is the
+identical, already-proven frontend code path calling a backend already
+covered by the passing "syncs entities onto a video/reel" tests.
+
+**Bug caught during live verification, fixed as an operational step
+(not a code change):** entity creation initially returned 403 Forbidden
+against the local dev database, even though the seeded test user held
+`super_admin`. Root cause: the `entities.*` permissions were added to
+`RolesAndPermissionsSeeder`'s source in 12a, but seeder *file* changes
+don't retroactively apply to an already-seeded database — the local dev
+DB had been seeded before that change. Fixed by granting the four
+`entities.*` permissions to `super_admin` directly against the local
+database (mirroring exactly what the seeder now does for any fresh
+environment). Not a code defect; flagged here because the same trap
+will recur for any other environment seeded before this commit.
+
+### Performance impact
+New write-path cost on Article/Video/Reel save is unaffected — entity
+sync is a separate, explicit PATCH the widget fires only on actual
+chip add/remove, not on the main content-form save. New read-path
+cost: one extra `GET .../entities` per content-edit page load (disabled
+until the content has an id) plus typeahead queries while the input is
+focused with text — both hit a table with zero rows today, effectively
+free; will need a query-plan check once entity volume grows, not before.
+
+### Risks
+None identified for existing behavior. The temporary local-dev-only
+state created during verification (a throwaway `preview-test@example.com`
+super_admin user, momentarily disabled reCAPTCHA) was fully reverted
+before this task closed — no residual state in the local database
+beyond the four newly-granted `entities.*` permissions on `super_admin`,
+which is exactly what a fresh seed run would also produce.
+
+### Architecturally better, or just cleaner?
+Better: this is the first schema-to-UI slice built as one generic,
+content-type-parametrized path (Action → Controller → service → hooks
+→ widget) rather than per-type duplication, and it's proven against a
+real second and third consumer (Video/Reel) in the same task, not
+speculatively generalized ahead of need.
+
+---
