@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Contracts\Ai\AiProvider;
 use App\Enums\ClientSource;
+use App\Events\Content\ArticleStatusChanged;
 use App\Health\Checks\BroadcastSourceHealthCheck;
 use App\Health\Checks\CacheTaggingCheck;
 use App\Health\Checks\EpaperOcrHealthCheck;
@@ -17,6 +18,9 @@ use App\Health\Checks\SchedulerHealthCheck;
 use App\Modules\Notifications\Events\NotificationEvent;
 use App\Modules\Notifications\Listeners\RouteNotificationEvent;
 use App\Settings\GeneralSettings;
+use App\Support\Content\Listeners\InvalidateArticleCacheOnStatusChanged;
+use App\Support\Content\Listeners\NotifyWriterOnArticleStatusChanged;
+use App\Support\Content\Listeners\PurgeArticleCdnOnStatusChanged;
 use App\Settings\ThirdPartySettings;
 use App\Support\Advertising\AdClientIp;
 use App\Support\Ai\Providers\FailoverAiProvider;
@@ -84,6 +88,7 @@ class AppServiceProvider extends ServiceProvider
         RemoteStorage::configureDisk();
         $this->configureHealthChecks();
         $this->configureNotificationRouting();
+        $this->configureContentEvents();
     }
 
     /**
@@ -93,6 +98,18 @@ class AppServiceProvider extends ServiceProvider
     private function configureNotificationRouting(): void
     {
         Event::listen(NotificationEvent::class, RouteNotificationEvent::class);
+    }
+
+    /**
+     * مستمعو ArticleStatusChanged (ADR-E2) — متزامنون عمداً وبنفس ترتيب
+     * النداءات الأمريّة السابقة (كاش ثم CDN ثم إشعار) كي يبقى السلوك مطابقاً
+     * حرفياً لِما قبل التغليف.
+     */
+    private function configureContentEvents(): void
+    {
+        Event::listen(ArticleStatusChanged::class, InvalidateArticleCacheOnStatusChanged::class);
+        Event::listen(ArticleStatusChanged::class, PurgeArticleCdnOnStatusChanged::class);
+        Event::listen(ArticleStatusChanged::class, NotifyWriterOnArticleStatusChanged::class);
     }
 
     /**
