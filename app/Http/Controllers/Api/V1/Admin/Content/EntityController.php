@@ -10,9 +10,11 @@ use App\Actions\Admin\Content\SyncContentEntitiesAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Content\CreateEntityRequest;
 use App\Http\Requests\Admin\Content\SyncContentEntitiesRequest;
+use App\Http\Resources\Admin\Content\EntityResource;
 use App\Models\Article;
 use App\Models\Reel;
 use App\Models\Video;
+use App\Support\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -50,5 +52,23 @@ class EntityController extends Controller
     public function syncForReel(SyncContentEntitiesRequest $request, Reel $reel): JsonResponse
     {
         return (new SyncContentEntitiesAction)->handle($reel, $request->validated('entity_ids'), $request->user());
+    }
+
+    /** الكيانات الموسومة حالياً على مقال (articles.edit — قراءة الحالة قبل التحرير). */
+    public function forArticle(Article $article): JsonResponse
+    {
+        return ApiResponse::success(data: EntityResource::collection($article->entities()->get()));
+    }
+
+    /** الكيانات الموسومة حالياً على فيديو (videos.edit). */
+    public function forVideo(Video $video): JsonResponse
+    {
+        return ApiResponse::success(data: EntityResource::collection($video->entities()->get()));
+    }
+
+    /** الكيانات الموسومة حالياً على ريل (reels.edit). */
+    public function forReel(Reel $reel): JsonResponse
+    {
+        return ApiResponse::success(data: EntityResource::collection($reel->entities()->get()));
     }
 }

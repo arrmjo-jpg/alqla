@@ -178,6 +178,28 @@ it('syncs entities onto a reel', function (): void {
     expect($reel->entities()->count())->toBe(1);
 });
 
+it('reads the currently tagged entities on an article', function (): void {
+    [, $token] = entityAdminToken();
+    $article = emArticle();
+    $e = Entity::create(['type' => 'topic', 'name' => 'موضوع']);
+    $article->entities()->attach($e->id);
+
+    $res = $this->withToken($token)->getJson("/api/v1/admin/articles/{$article->id}/entities");
+
+    $res->assertOk();
+    expect(collect($res->json('data'))->pluck('id'))->toContain($e->id);
+});
+
+it('returns an empty list when an article has no tagged entities', function (): void {
+    [, $token] = entityAdminToken();
+    $article = emArticle();
+
+    $res = $this->withToken($token)->getJson("/api/v1/admin/articles/{$article->id}/entities");
+
+    $res->assertOk();
+    expect($res->json('data'))->toBe([]);
+});
+
 it('denies syncing article entities without articles.edit', function (): void {
     $article = emArticle();
     $u = User::factory()->create();

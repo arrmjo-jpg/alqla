@@ -1137,12 +1137,21 @@ Route::get('entities', [EntityController::class, 'index'])
     ->middleware('permission:articles.edit|articles.create|videos.edit|reels.edit');
 Route::post('entities', [EntityController::class, 'store'])
     ->middleware('permission:entities.create');
+Route::get('articles/{article}/entities', [EntityController::class, 'forArticle'])
+    ->middleware('permission:articles.edit')
+    ->whereNumber('article');
 Route::patch('articles/{article}/entities', [EntityController::class, 'syncForArticle'])
     ->middleware('permission:articles.edit')
     ->whereNumber('article');
+Route::get('videos/{video}/entities', [EntityController::class, 'forVideo'])
+    ->middleware('permission:videos.edit')
+    ->whereNumber('video');
 Route::patch('videos/{video}/entities', [EntityController::class, 'syncForVideo'])
     ->middleware('permission:videos.edit')
     ->whereNumber('video');
+Route::get('reels/{reel}/entities', [EntityController::class, 'forReel'])
+    ->middleware('permission:reels.edit')
+    ->whereNumber('reel');
 Route::patch('reels/{reel}/entities', [EntityController::class, 'syncForReel'])
     ->middleware('permission:reels.edit')
     ->whereNumber('reel');
