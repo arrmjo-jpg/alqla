@@ -92,7 +92,7 @@ export function EntityTagsInput({ contentType, contentId }: Props) {
   if (contentId === undefined) {
     return (
       <p className="border border-dashed border-input bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-        {t('articles.form.entities.saveFirst')}
+        {t('entities.saveFirst')}
       </p>
     );
   }
@@ -113,7 +113,7 @@ export function EntityTagsInput({ contentType, contentId }: Props) {
             key={entity.id}
             className="inline-flex items-center gap-1 border border-border bg-muted/50 px-2 py-0.5 text-xs"
           >
-            <span className="text-muted-foreground">{t(`articles.form.entities.type.${entity.type}`)}</span>
+            <span className="text-muted-foreground">{t(`entities.type.${entity.type}`)}</span>
             <span>{entity.name}</span>
             <button
               type="button"
@@ -121,7 +121,7 @@ export function EntityTagsInput({ contentType, contentId }: Props) {
                 e.stopPropagation();
                 removeAt(idx);
               }}
-              aria-label={t('articles.form.entities.remove')}
+              aria-label={t('entities.remove')}
               className="text-muted-foreground hover:text-destructive"
             >
               <X className="h-3 w-3" />
@@ -135,17 +135,17 @@ export function EntityTagsInput({ contentType, contentId }: Props) {
           onKeyDown={onKey}
           onFocus={() => setFocused(true)}
           onBlur={() => setTimeout(() => setFocused(false), 150)}
-          placeholder={t('articles.form.entities.placeholder')}
+          placeholder={t('entities.placeholder')}
           className="min-w-[160px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
         />
       </div>
 
-      <p className="text-xs text-muted-foreground">{t('articles.form.entities.help')}</p>
+      <p className="text-xs text-muted-foreground">{t('entities.help')}</p>
 
       {open ? (
         <div className="border border-border bg-background shadow-soft">
           {suggestions.isLoading ? (
-            <p className="px-3 py-2 text-xs text-muted-foreground">{t('articles.form.entities.searching')}</p>
+            <p className="px-3 py-2 text-xs text-muted-foreground">{t('entities.searching')}</p>
           ) : (
             <>
               {items.map((s, i) => (
@@ -160,14 +160,14 @@ export function EntityTagsInput({ contentType, contentId }: Props) {
                   )}
                 >
                   <span className="text-xs text-muted-foreground">
-                    {t(`articles.form.entities.type.${s.type}`)}
+                    {t(`entities.type.${s.type}`)}
                   </span>
                   <span>{s.name}</span>
                 </button>
               ))}
               <div className="flex flex-wrap gap-1.5 border-t border-border p-2">
                 <span className="w-full text-xs text-muted-foreground">
-                  {t('articles.form.entities.createAs', { name: input.trim() })}
+                  {t('entities.createAs', { name: input.trim() })}
                 </span>
                 {ENTITY_TYPES.map((type) => (
                   <button
@@ -177,7 +177,7 @@ export function EntityTagsInput({ contentType, contentId }: Props) {
                     disabled={createEntity.isPending}
                     className="border border-dashed border-input bg-background px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
                   >
-                    + {t(`articles.form.entities.type.${type}`)}
+                    + {t(`entities.type.${type}`)}
                   </button>
                 ))}
               </div>

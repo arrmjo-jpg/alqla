@@ -956,7 +956,7 @@ export default function ArticleFormPage() {
               />
             </Section>
 
-            <Section title={t('articles.form.entities.title')} icon={Users}>
+            <Section title={t('entities.title')} icon={Users}>
               <EntityTagsInput contentType="article" contentId={article?.id} />
             </Section>
 
