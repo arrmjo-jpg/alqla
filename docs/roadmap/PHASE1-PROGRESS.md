@@ -405,9 +405,9 @@ entities.
 
 ### Why
 Cheap now (tables far from 2M+ rows on most of them), expensive later
-(`ALTER TABLE` on a live multi-million-row table). Matches the
-architecture review's ADR-005 (tenant identity is a first-class,
-Must-Decide-Now concern) — but only the column, nothing else.
+(`ALTER TABLE` on a live multi-million-row table). Matches
+[ADR-005](../adr/005-tenant-locale-first-class.md) (tenant identity is a
+first-class, Must-Decide-Now concern) — but only the column, nothing else.
 
 ### What stayed the same
 Everything. Zero application code reads or writes this column — no
@@ -672,5 +672,117 @@ content-type-parametrized path (Action → Controller → service → hooks
 → widget) rather than per-type duplication, and it's proven against a
 real second and third consumer (Video/Reel) in the same task, not
 speculatively generalized ahead of need.
+
+---
+
+## Task 13 — Write ADR docs for Phase 1 decisions
+
+**Commits:** `715d934fd` (foundational ADR-001–016 + architecture
+reference), `1cc864da8` (Phase 1 execution ADRs E1, E6)
+
+### Pre-task review (assumption corrected, scope expanded)
+Before writing anything, checked what already existed:
+`docs/adr/{E2,E5,E7}-*.md`. Grepping the whole repo for `ADR-` surfaced
+two problems the task's literal title didn't anticipate:
+1. `ADR-E1` is cited twice in already-shipped code (a `content_entity`
+   migration comment and inside `E5-entity-registry-not-tags.md` itself)
+   as the reason content stays in separate per-type tables during
+   Phase 1 — but the file never existed.
+2. This entry's own Task 9 section cites "the architecture review's
+   ADR-005" as a checkable decision. It wasn't checkable — no file
+   under `docs/` contained it. The full content existed only in this
+   session's raw conversation history: a complete, previously-approved
+   16-item "AlphaCMS Target Architecture" document (ADR-001–016 —
+   `ContentItem` core model, CQRS-lite, cross-context event spine,
+   tenant+locale as first-class identity, edge distribution, AI as a
+   layer, bounded contexts, deployment/evolution roadmap) that was
+   never persisted anywhere.
+
+Surfaced both findings to the user before proceeding rather than
+guessing at scope — asked specifically whether persisting the
+foundational ADR-001–016 set belonged in this task (since it predates
+and spans all phases, not just Phase 1) or a separate one. Decision:
+include it here, since the content required zero new decision-making
+(already approved verbatim) and directly resolves the dangling
+`ADR-005` citation.
+
+### What was implemented
+- `docs/architecture/TARGET-ARCHITECTURE.md` — full reference doc,
+  faithfully transcribed from the approved architecture (principles,
+  bounded contexts, core domain model, read/event/AI/deployment
+  architecture, evolution roadmap), with two clearly-marked editorial
+  notes (not part of the original approved text) cross-linking to
+  Phase 1's place within it.
+- `docs/adr/001-*.md` through `016-*.md` — the 16 foundational
+  decisions as individual records, each a faithful transcription (not
+  new authoring) of the already-approved reason/rejected-alternatives/
+  impact for that decision, with a backlink to the full reference doc.
+- `docs/adr/E1-defer-content-item-unification.md` — the confirmed
+  missing Phase-1-execution decision: written fresh (not transcribed)
+  from the actual citing context, in the fuller 6-section template
+  E2/E5/E7 already established (القرار/لماذا/البدائل المرفوضة/ماذا
+  سنندم عليه؟/قابل للتراجع؟/التكلفة).
+- `docs/adr/E6-workflow-guard-data-driven-engine.md` — Task 6's shared
+  `EditorialWorkflowGuard`/`WorkflowDefinition` engine, written fresh in
+  the same template. Judged this the one Phase-1 decision beyond E1
+  that clearly clears the same bar E2/E5/E7 set (a real, analyzed
+  architectural fork with rejected alternatives) but never got a
+  record — it's the same "data-driven scheme, not a forced interface"
+  pattern as E7, just applied to workflow guards instead of cache tags.
+- Fixed the dangling citation this task started from: Task 9's "the
+  architecture review's ADR-005" is now a working link to
+  `docs/adr/005-tenant-locale-first-class.md`.
+
+### Why
+An ADR that's cited but not retrievable is worse than no citation at
+all — it tells the next reader a decision record exists somewhere,
+sends them looking, and wastes their time. This was true twice over
+(`ADR-E1`, `ADR-005`) before this task.
+
+### What stayed the same
+`E2-domain-events-wrap-not-replace.md`, `E5-entity-registry-not-tags.md`,
+and `E7-cache-tag-scheme-data-driven.md` — byte-identical, confirmed via
+`git diff` against the commit before this task touched anything.
+Nothing about any Task 1–12 decision was re-litigated or changed; this
+task only documents decisions already made.
+
+### Design decision made, not silently: which Phase 1 tasks get an ADR
+Reviewed every Phase 1 task against the bar E2/E5/E7 already set (a
+real fork with genuinely rejected alternatives, not just an
+implementation choice). Task 6 (→ E6) cleared it. Tasks 8 (MediaAsset
+fields — self-assessed as additive capability, not architecture), 9
+(tenant_id reservation — tactical execution of already-decided ADR-005,
+not a new fork of its own), 10 (Scout searchability conditions —
+business-rule judgment calls, not architectural pattern choices), and
+12 (generic Actions over per-type duplication — real but small,
+comparable to an obvious code-review comment rather than a deep,
+regret-worthy fork) did not. This is a judgment call, stated here
+explicitly so it can be corrected if wrong — not asserted as
+uncontestable.
+
+### Regression / backward compatibility
+Not applicable in the usual sense (no code changed), but verified the
+documentation-graph equivalent: `git grep`'d every `ADR-E\d+|ADR-\d{3}`
+reference across `*.php` and `*.md` repo-wide (21 distinct references)
+and confirmed every single one now resolves to a real file under
+`docs/adr/`. Zero dangling references remain.
+
+### Performance impact
+None — documentation only.
+
+### Risks
+None identified. The one thing worth flagging: the foundational
+ADR-001–016 set was transcribed faithfully from what was already
+approved, but transcription itself carries a small risk of a copy
+error going unnoticed — mitigated by generating each file directly
+from the extracted source text rather than re-typing from memory.
+
+### Architecturally better, or just cleaner?
+Neither — this task didn't change the system. It made previously
+undocumented (or documented-but-unreachable) decisions checkable,
+which is a precondition for the comprehensive system review the user
+has asked for once Phase 1 completes: that review needs to compare the
+system against the target architecture, which required the target
+architecture to actually exist as a file first.
 
 ---
