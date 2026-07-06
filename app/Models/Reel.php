@@ -8,6 +8,7 @@ use App\Enums\ReelStatus;
 use App\Support\Audit\AuditsChanges;
 use App\Support\Content\SlugGenerator;
 use App\Support\Engagement\HasEngagement;
+use App\Support\Search\ResilientSearchable;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +28,7 @@ class Reel extends Model
 {
     use AuditsChanges;
     use HasEngagement;
+    use ResilientSearchable;
     use Sluggable;
     use SoftDeletes;
 
@@ -172,5 +174,37 @@ class Reel extends Model
     public function shareImageUrl(): ?string
     {
         return $this->mediaAsset?->posterUrl();
+    }
+
+    // ─── Scout (فهرسة فاشلة-آمنة عبر ResilientSearchable — Task 10) ──
+
+    /** فهرس مستقلّ (إعداداته في config/scout.php → meilisearch.index-settings). */
+    public function searchableAs(): string
+    {
+        return 'reels_index';
+    }
+
+    /** يُفهرَس الريل المنشور فقط — نفس معيار scopePublished. */
+    public function shouldBeSearchable(): bool
+    {
+        return $this->deleted_at === null
+            && $this->status === ReelStatus::Published
+            && $this->published_at !== null
+            && ! $this->published_at->isFuture();
+    }
+
+    /** @return array<string,mixed> */
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'title' => $this->title,
+            'description' => (string) $this->description,
+            'locale' => $this->locale,
+            'status' => $this->status->value,
+            'is_featured' => $this->is_featured,
+            'author_id' => $this->author_id,
+            'published_at' => $this->published_at?->getTimestamp(),
+        ];
     }
 }

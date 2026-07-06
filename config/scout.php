@@ -160,6 +160,20 @@ return [
                 'sortableAttributes' => ['published_at'],
                 'rankingRules' => ['words', 'typo', 'proximity', 'attribute', 'sort', 'exactness'],
             ],
+            // فهرس الريلز — مرآة videos_index دون تصنيف/visibility (الريل نطاق مستقلّ).
+            'reels_index' => [
+                'searchableAttributes' => ['title', 'description'],
+                'filterableAttributes' => ['locale', 'is_featured', 'status', 'author_id'],
+                'sortableAttributes' => ['published_at'],
+                'rankingRules' => ['words', 'typo', 'proximity', 'attribute', 'sort', 'exactness'],
+            ],
+            // فهرس البثّ — بُعد kind (live|tv|radio) بدل locale (البثّ غير مقسَّم لغوياً).
+            'broadcasts_index' => [
+                'searchableAttributes' => ['title', 'description', 'excerpt'],
+                'filterableAttributes' => ['kind', 'status', 'is_featured', 'is_public', 'category_id'],
+                'sortableAttributes' => ['started_at', 'scheduled_at'],
+                'rankingRules' => ['words', 'typo', 'proximity', 'attribute', 'sort', 'exactness'],
+            ],
             // فهرس صفحات الجريدة (بحث الأرشيف العابر — Enterprise). وثيقة لكل صفحة
             // مع نصّ OCR + ميتاداتا العدد المُغناة. الترتيب: العنوان ثمّ المتن (أولوية
             // الصلة). distinctAttribute=epaper_id ⇒ نتيجة واحدة لكل عدد (لا إغراق).
