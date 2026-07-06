@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\V1\Admin\Content\CommentController;
 use App\Http\Controllers\Api\V1\Admin\Content\LiveUpdateController;
 use App\Http\Controllers\Api\V1\Admin\Content\PageController;
 use App\Http\Controllers\Api\V1\Admin\Content\ReelController;
+use App\Http\Controllers\Api\V1\Admin\Content\EntityController;
 use App\Http\Controllers\Api\V1\Admin\Content\TagController;
 use App\Http\Controllers\Api\V1\Admin\Epaper\EpaperController;
 use App\Http\Controllers\Api\V1\Admin\Epaper\NewspaperSettingsController;
@@ -1130,6 +1131,21 @@ Route::put('tags/{tag}', [TagController::class, 'update'])
 Route::delete('tags/{tag}', [TagController::class, 'destroy'])
     ->middleware('permission:tags.delete')
     ->whereNumber('tag');
+
+// ─── Content → Entities (canonical registry — Task 12) ────────────────
+Route::get('entities', [EntityController::class, 'index'])
+    ->middleware('permission:articles.edit|articles.create|videos.edit|reels.edit');
+Route::post('entities', [EntityController::class, 'store'])
+    ->middleware('permission:entities.create');
+Route::patch('articles/{article}/entities', [EntityController::class, 'syncForArticle'])
+    ->middleware('permission:articles.edit')
+    ->whereNumber('article');
+Route::patch('videos/{video}/entities', [EntityController::class, 'syncForVideo'])
+    ->middleware('permission:videos.edit')
+    ->whereNumber('video');
+Route::patch('reels/{reel}/entities', [EntityController::class, 'syncForReel'])
+    ->middleware('permission:reels.edit')
+    ->whereNumber('reel');
 
 // ─── Content → Comments moderation (read + moderate + delete) ──────────
 Route::get('comments', [CommentController::class, 'index'])

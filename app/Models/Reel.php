@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -120,6 +121,17 @@ class Reel extends Model
     public function mediaAsset(): BelongsTo
     {
         return $this->belongsTo(MediaAsset::class, 'media_asset_id');
+    }
+
+    /**
+     * الكيانات الكنونيّة الموسومة (أشخاص/منظّمات/أماكن/مواضيع) — Task 12،
+     * توسيم يدويّ فقط. مرآة Article::entities().
+     */
+    public function entities(): MorphToMany
+    {
+        return $this->morphToMany(Entity::class, 'taggable', 'content_entity')
+            ->withPivot(['assigned_by_type', 'assigned_by_id', 'status', 'confidence'])
+            ->withTimestamps();
     }
 
     public function revisions(): HasMany

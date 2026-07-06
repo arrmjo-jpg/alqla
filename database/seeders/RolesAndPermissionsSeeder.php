@@ -33,6 +33,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'epaper' => ['display_name' => 'الجريدة الرقمية',    'icon' => 'Newspaper',      'description' => 'إدارة الأعداد الرقمية (PDF) للجريدة ودورة حياتها'],
             'categories' => ['display_name' => 'التصنيفات',         'icon' => 'FolderTree',     'description' => 'إدارة تصنيفات المحتوى'],
             'tags' => ['display_name' => 'الوسوم',            'icon' => 'Tag',            'description' => 'إدارة وسوم المحتوى'],
+            'entities' => ['display_name' => 'الكيانات',          'icon' => 'Users',          'description' => 'سجلّ الكيانات الكنونيّ (أشخاص/منظّمات/أماكن/مواضيع)'],
             'media' => ['display_name' => 'الوسائط',           'icon' => 'Image',          'description' => 'إدارة مكتبة الوسائط'],
             'settings' => ['display_name' => 'الإعدادات',         'icon' => 'Settings',       'description' => 'إعدادات النظام العامة'],
             'cdn' => ['display_name' => 'شبكة التوصيل CDN',   'icon' => 'Cloud',          'description' => 'إعدادات وتفريغ كاش الـ CDN'],
@@ -196,6 +197,13 @@ class RolesAndPermissionsSeeder extends Seeder
                 ['name' => 'tags.create', 'display_name' => 'إنشاء وسم',    'description' => 'إضافة وسم جديد'],
                 ['name' => 'tags.edit',   'display_name' => 'تعديل وسم',    'description' => 'تعديل وسم موجود'],
                 ['name' => 'tags.delete', 'display_name' => 'حذف وسم',      'description' => 'حذف وسم من النظام'],
+            ],
+
+            'entities' => [
+                ['name' => 'entities.view',   'display_name' => 'عرض الكيانات',   'description' => 'عرض/بحث سجلّ الكيانات الكنونيّ (أشخاص/منظّمات/أماكن/مواضيع)'],
+                ['name' => 'entities.create', 'display_name' => 'إنشاء كيان',     'description' => 'إضافة كيان جديد إلى السجلّ'],
+                ['name' => 'entities.edit',   'display_name' => 'تعديل كيان',     'description' => 'تعديل بيانات كيان موجود'],
+                ['name' => 'entities.delete', 'display_name' => 'حذف كيان',       'description' => 'حذف ناعم لكيان من السجلّ'],
             ],
 
             'media' => [
