@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Tags\HasTags;
 
@@ -155,6 +156,18 @@ class Article extends Model
     public function revisions(): HasMany
     {
         return $this->hasMany(ArticleRevision::class)->latest('created_at');
+    }
+
+    /**
+     * الكيانات الكنونيّة الموسومة (أشخاص/منظّمات/أماكن/مواضيع) — Phase 1،
+     * توسيم يدويّ فقط. منفصلة عن tags() (Spatie\Tags، كلمات مفتاحيّة حرّة)؛
+     * انظر docs/adr/E5-entity-registry-not-tags.md.
+     */
+    public function entities(): MorphToMany
+    {
+        return $this->morphToMany(Entity::class, 'taggable', 'content_entity')
+            ->withPivot(['assigned_by_type', 'assigned_by_id', 'status', 'confidence'])
+            ->withTimestamps();
     }
 
     /** تحديثات التغطية الحيّة (P8) — تُستهلَك فقط لمقالات type=live. */
