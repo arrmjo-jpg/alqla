@@ -424,8 +424,32 @@ Page, Video playlists, Broadcast, MediaAsset, Entity): 99/99 passed.
 Fully additive; no existing code path touches the new column.
 
 ### Performance impact
-None measurable. One extra nullable column per row on 11 tables — no
-new queries, no new indexes, no write-path changes.
+None measurable *at query time*. One extra nullable column per row on
+11 tables — no new queries, no new indexes, no write-path changes.
+
+**Correction (found during Task 14's production-readiness audit, not
+assumed at the time): the migration's own cost on `articles` was
+understated.** "Cheap now (tables far from 2M+ rows on most of them)"
+was true for 10 of the 11 tables but not for `articles` — 217,460 rows,
+and empirically confirmed via `EXPLAIN`-equivalent testing (forcing
+each `ALGORITHM=` in turn) that MySQL 8.4 **rejects both `INSTANT` and
+`INPLACE`** for `ADD COLUMN ... AFTER id` on this specific table,
+because `articles` carries a `FULLTEXT` index (on `title`) and InnoDB's
+instant/in-place DDL paths don't support tables with FULLTEXT indexes
+for this operation — only `ALGORITHM=COPY` (full table rebuild) is
+accepted. Measured directly against the real local dataset: **177
+seconds** for the rebuild. A `COPY` rebuild holds a lock that blocks
+writes to `articles` for its full duration. None of the other 10 tables
+have a FULLTEXT index, so they were genuinely cheap as described.
+
+This does not change the decision (ADR-005 and this task's column
+reservation are still correct) — it changes the deployment
+*procedure*: applying this migration to a production database should
+be scheduled during a low-traffic window with the ~3-minute
+`articles`-write-blackout communicated in advance, not run as an
+unattended step in a routine deploy pipeline. See
+[PHASE1-PRODUCTION-READINESS.md](PHASE1-PRODUCTION-READINESS.md) for
+the full methodology.
 
 ### Risks
 The single real risk this task defers rather than resolves: **when**
@@ -784,5 +808,84 @@ which is a precondition for the comprehensive system review the user
 has asked for once Phase 1 completes: that review needs to compare the
 system against the target architecture, which required the target
 architecture to actually exist as a file first.
+
+---
+
+## Task 14 — Final Phase 1 verification gate: before/after parity, backward compatibility, migration safety, performance, and drift
+
+**Full report:** [`PHASE1-PRODUCTION-READINESS.md`](PHASE1-PRODUCTION-READINESS.md)
+(no single commit — this task produced documentation plus one
+correction to Task 9's entry above; see that file's own methodology
+section for exact commands run).
+
+### What was done
+Not another per-task regression run — a from-scratch audit of all 33
+Phase 1 commits against an isolated baseline (`5b141d3c4`, checked out
+into its own `git worktree` with independent `composer install`/
+`npm run build`, not a stash of the working copy). Covered: full Pest
+suite before/after (not a filtered subset), every public API route,
+every migration's rollback safety (empirically round-tripped against a
+disposable database, not just read), live functional checks of cache
+invalidation/search resilience/notifications against real Redis/
+Meilisearch/database (not test doubles), and a targeted drift hunt
+re-checking the exact bug classes Phase 1 had already hit once
+(duplicate listeners, permission/metadata mismatches).
+
+### What was found
+Two real, evidence-based findings, both non-blocking:
+1. Task 9's "cheap now" claim was accurate for 10 of 11 tables but
+   wrong for `articles` — a FULLTEXT index forces MySQL 8.4 to reject
+   both `INSTANT` and `INPLACE` for the `ADD COLUMN` and fall back to a
+   177-second, write-blocking `COPY` rebuild (measured directly, not
+   estimated). Corrected in Task 9's entry above; the decision itself
+   (ADR-005) doesn't change, only the deployment procedure.
+2. A first, apparent 39-vs-14-failure discrepancy between baseline runs
+   turned out to be a gap in this task's own methodology (the fresh
+   worktree had no built frontend assets, so Vite-dependent view tests
+   500'd), not a real difference — traced to a `ViteManifestNotFoundException`,
+   fixed by building assets in the worktree, then fully re-verified: the
+   failure and error sets are byte-identical between baseline and HEAD.
+
+Everything else — routes, migration reversibility, cache/search/
+notification behavior, listener registration, permission/metadata
+consistency, translation-key drift, model-audit compliance — came back
+clean with zero new issues.
+
+### Why
+This is Phase 1's exit gate, not another task's regression check —
+the user explicitly asked for no assumptions and for any discovered
+regression to be stopped on, investigated, and root-caused before
+continuing. Both findings above were run down to a proven cause
+(measured MySQL algorithm rejection; a missing build step) rather than
+being reported as "probably fine" or "probably a fluke."
+
+### What stayed the same
+Every line of Phase 1's actual application code — this task is
+read-only verification plus two documentation corrections. No source
+file was modified.
+
+### Regression / backward compatibility
+The regression check, in full: 1941→2008 tests (+67, matching Phase
+1's documented new-test count exactly), identical 14-failure/4-error
+sets on both sides, 511→519 routes with zero removed/changed and all 8
+additions accounted for. See
+[`PHASE1-PRODUCTION-READINESS.md`](PHASE1-PRODUCTION-READINESS.md) for
+the full evidence.
+
+### Performance impact
+The one real finding is itself a performance finding (§4 of the
+production-readiness report) — already covered above. No other
+performance regression found.
+
+### Risks
+The `articles` migration write-lock (§4) is the only actionable risk,
+and only for an environment where that migration hasn't run yet.
+Everything else verified clean.
+
+### Architecturally better, or just cleaner?
+Neither — this task verified, it didn't change anything. Its value is
+confidence: Phase 1 is now provably regression-free against a real
+isolated baseline, not just self-reported clean by each task in
+sequence.
 
 ---
