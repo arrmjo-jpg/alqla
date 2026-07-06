@@ -274,3 +274,63 @@ implications (zero tables touched in Task 6).
   avoid an unrequested user-facing string change.
 
 ---
+
+## Task 7 — Shared cache-tag scheme (Article/Reel/Video/Page/Broadcast)
+
+**Roadmap correction (smaller than expected):** the original wording
+("kill the 7-near-duplicate cache-tag-class pattern") assumed uniform
+duplication. Reading all five side by side (`AdCacheTags`/
+`TeamMemberCacheTags` excluded — confirmed genuinely different concerns,
+zone/campaign and roster tagging, not feed/detail/category content)
+showed the identical part is only the key-string format; the
+substantive logic (`invalidationTags`) has real per-type variation:
+category cardinality (Article: many, Video/Broadcast: one, Reel/Page:
+none), sitemap presence, and — the one true outlier — Broadcast omits
+its partition dimension (`kind`) from `detail()`/`category()` keys
+entirely, unlike the other four.
+
+### Design
+`CacheTagScheme` (readonly DTO + methods) captures this as data:
+`sitemap: ?string`, `detailDimensioned`/`categoryDimensioned: bool`,
+category slugs always passed as an array (0, 1, or many elements
+uniformly — no separate single/multi code path). Hand-verified against
+each of the five classes' actual current output before touching any of
+them (10 tests in `CacheTagSchemeTest.php`), including reproducing
+Broadcast's non-dimensioned keys exactly.
+
+### Commits (6, each independently verified)
+- `6941f0050` — `CacheTagScheme`, new and isolated, 10 tests replaying
+  each type's documented behavior by hand.
+- `6fe40715d` — `ArticleCacheTags` migrated. Regression: 55/53 passed,
+  same 2 pre-existing failures only.
+- `5efb05b25` — `ReelCacheTags` migrated (no sitemap, no category).
+  Regression: 89/89 passed.
+- `098063a61` — `VideoCacheTags` migrated; `playlist()` family left
+  untouched as a genuinely Video-only concept, not forced into the
+  scheme. Regression: 93/92 passed, same 1 pre-existing failure only.
+- `8c3d4e4da` — `PageCacheTags` migrated (same shape as Reel).
+  Regression: 20/20 passed.
+- `7630c4535` — `BroadcastCacheTags` migrated — the critical case
+  (non-dimensioned keys), verified against the full 140-test Broadcast
+  suite rather than a subset. Regression: 140/140 passed.
+
+Zero new/fixed/changed failures across all six commits.
+
+### Database changes
+None — pure application-layer refactor.
+
+### Public contracts affected
+None. Every `*CacheTags` public method signature is byte-identical to
+before (verified per-commit against each type's real test suite, not
+assumed from the shared design alone).
+
+### Rollback procedure
+Six independent commits (`6941f0050` through `7630c4535`); revert from
+the end backward as far as needed. No migration to unwind, no data
+implications at any point.
+
+### Known issues discovered (tracked separately, not Phase 1 scope)
+None new — this task's investigation confirmed prior findings
+(Reel/Page's independent scope, no fresh gaps).
+
+---
