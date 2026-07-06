@@ -508,3 +508,43 @@ consistent with the pattern already established for Article/Video, not
 a structural change.
 
 ---
+
+## Task 11 — Wire `CLIENT` env into the Next.js frontend
+
+**Status: closed, no code change.** The roadmap's premise was wrong.
+
+### Pre-task review (assumption rejected)
+Original framing: `CLIENT` in `docker-compose.yml`
+(`alphacms-frontend:${CLIENT}`) is unread by any frontend code, so
+branding is "misleading" for white-label deployments. Traced the actual
+branding data flow before touching anything
+(`frontend/src/lib/site-settings.ts`): site name, logos, social links,
+navigation — **all** of it is fetched fresh per request from the
+backend's `/api/v1/site` endpoint. Nothing is hardcoded in the frontend
+build.
+
+Combined with the confirmed deployment-per-tenant architecture (each
+white-label client gets its own full backend + database + Settings),
+this means branding is **already correct per deployment** — not because
+of `CLIENT`, but because pointing a frontend build at a different
+backend's `API_BASE_URL` automatically serves that backend's branding.
+`CLIENT` only ever did one thing: tag the Docker image for
+registry/build bookkeeping — which already works today without any
+application code reading it.
+
+**Presented this finding to the user rather than implementing a fix for
+a bug that doesn't exist** (per the standing rule: stop and review when
+the roadmap's assumption doesn't hold). Decision: close with no action.
+
+### What changed
+Nothing in code. This entry exists so a future contributor doesn't
+re-investigate this and reach a different conclusion — `CLIENT`
+remaining unread by application code is correct, not a gap.
+
+### Risks
+None. If per-client *behavioral* differences (not branding) are ever
+needed, the existing backend-Settings pattern (e.g. `newspaper_enabled`)
+is the established, correct place for that — not a frontend build-time
+flag.
+
+---
