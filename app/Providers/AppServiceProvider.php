@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Contracts\Ai\AiProvider;
+use App\Contracts\Broadcast\BroadcastPushDriver;
 use App\Enums\ClientSource;
 use App\Events\Content\ArticleStatusChanged;
 use App\Events\Content\ReelStatusChanged;
 use App\Events\Content\VideoStatusChanged;
 use App\Health\Checks\ArticleSearchHealthCheck;
+use App\Health\Checks\BroadcastPushHealthCheck;
 use App\Health\Checks\BroadcastSearchHealthCheck;
 use App\Health\Checks\BroadcastSourceHealthCheck;
 use App\Health\Checks\CacheTaggingCheck;
@@ -29,6 +31,7 @@ use App\Support\Advertising\AdClientIp;
 use App\Support\Ai\Providers\FailoverAiProvider;
 use App\Support\Ai\Providers\GeminiProvider;
 use App\Support\Ai\Providers\OpenAiProvider;
+use App\Support\Broadcast\Push\LogBroadcastPushDriver;
 use App\Support\Content\Listeners\InvalidateArticleCacheOnStatusChanged;
 use App\Support\Content\Listeners\InvalidateReelCacheOnStatusChanged;
 use App\Support\Content\Listeners\InvalidateVideoCacheOnStatusChanged;
@@ -52,6 +55,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use RuntimeException;
 use Spatie\Health\Checks\Checks\CacheCheck;
 use Spatie\Health\Checks\Checks\DatabaseCheck;
 use Spatie\Health\Checks\Checks\QueueCheck;
@@ -86,6 +90,18 @@ class AppServiceProvider extends ServiceProvider
         // مزوّد OCR للعدد — المركّب الافتراضيّ: يفضّل النصّ المضمَّن (بلا تكلفة)،
         // ويصعّد إلى Google Document AI إن فُعِّل. المضيف حرّ بإعادة ربطه.
         $this->app->bind(EpaperOcrProvider::class, DefaultEpaperOcrProvider::class);
+
+        // ناقل دفع البثّ — نقطة التبديل الوحيدة لتفعيل FCM لاحقاً (إعداد فقط،
+        // بلا تعديل كود): broadcast.notifications.push_driver. اسم غير معروف
+        // يفشل هنا فوراً وبصوتٍ عالٍ بدل الرجوع الصامت لناقل السجلّ.
+        $this->app->bind(BroadcastPushDriver::class, function (): BroadcastPushDriver {
+            $driver = (string) config('broadcast.notifications.push_driver', 'log');
+
+            return match ($driver) {
+                'log' => new LogBroadcastPushDriver,
+                default => throw new RuntimeException("Unknown broadcast push driver: '{$driver}'."),
+            };
+        });
     }
 
     public function boot(): void
@@ -175,6 +191,8 @@ class AppServiceProvider extends ServiceProvider
             RemoteStorageHealthCheck::new(),
             // صحّة مصادر البثّ (B3) — يُبرز البثّ ذا المصدر الفاشل للمشغّل
             BroadcastSourceHealthCheck::new(),
+            // حالة دفع إشعارات البثّ (مُعطَّل/مُقلَّد/حقيقيّ) — Task B، مراجعة الإنتاج
+            BroadcastPushHealthCheck::new(),
             // الجريدة (Enterprise): صحّة فهرس البحث + تراكم/تعليق استخراج OCR
             EpaperSearchHealthCheck::new(),
             EpaperOcrHealthCheck::new(),
