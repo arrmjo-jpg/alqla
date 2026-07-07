@@ -241,11 +241,16 @@ class ListPublicArticlesAction
         $filterHash = substr(hash('xxh128', json_encode($relevantFilters)), 0, 16);
         $countCacheKey = "public:articles:count:{$locale}:{$filterHash}";
 
-        // Retrieve total count using cached tags (warmed up or computed)
+        // العدّ الإجماليّ مكلف على ٢١٧ ألف+ صفّ (COPY-rebuild constraint side note aside,
+        // قِيس فعليّاً ~700-1400ms على COUNT(*) الأساسيّ). TTL أطول من قائمة النتائج نفسها
+        // عمداً: خطأ في "total"/"total_pages" لدقائق إضافية غير ملحوظ عمليّاً، خلافاً
+        // لقائمة مقالات قديمة — وأيّ نشر/إلغاء نشر فعليّ يُبطِل هذا المفتاح فوراً عبر نفس
+        // وسوم الكتابة (ArticleCacheTags::writeTags) بغضّ النظر عن الـTTL؛ الوحيد الذي
+        // يعتمد على الـTTL فعلاً هو خبر مجدوَل يعبر published_at دون أي كتابة جديدة.
         $total = CachedRead::remember(
             $tags,
             $countCacheKey,
-            CacheTtl::SHORT,
+            CacheTtl::MEDIUM,
             fn () => $query->toBase()->getCountForPagination()
         );
 
