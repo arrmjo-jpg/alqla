@@ -9,17 +9,26 @@ use App\Enums\ClientSource;
 use App\Events\Content\ArticleStatusChanged;
 use App\Events\Content\ReelStatusChanged;
 use App\Events\Content\VideoStatusChanged;
+use App\Health\Checks\ArticleSearchHealthCheck;
+use App\Health\Checks\BroadcastSearchHealthCheck;
 use App\Health\Checks\BroadcastSourceHealthCheck;
 use App\Health\Checks\CacheTaggingCheck;
 use App\Health\Checks\EpaperOcrHealthCheck;
 use App\Health\Checks\EpaperSearchHealthCheck;
 use App\Health\Checks\MediaProcessingHealthCheck;
 use App\Health\Checks\RedisProductionCheck;
+use App\Health\Checks\ReelSearchHealthCheck;
 use App\Health\Checks\RemoteStorageHealthCheck;
 use App\Health\Checks\SchedulerHealthCheck;
+use App\Health\Checks\VideoSearchHealthCheck;
 use App\Modules\Notifications\Events\NotificationEvent;
 use App\Modules\Notifications\Listeners\RouteNotificationEvent;
 use App\Settings\GeneralSettings;
+use App\Settings\ThirdPartySettings;
+use App\Support\Advertising\AdClientIp;
+use App\Support\Ai\Providers\FailoverAiProvider;
+use App\Support\Ai\Providers\GeminiProvider;
+use App\Support\Ai\Providers\OpenAiProvider;
 use App\Support\Content\Listeners\InvalidateArticleCacheOnStatusChanged;
 use App\Support\Content\Listeners\InvalidateReelCacheOnStatusChanged;
 use App\Support\Content\Listeners\InvalidateVideoCacheOnStatusChanged;
@@ -29,11 +38,6 @@ use App\Support\Content\Listeners\NotifyWriterOnVideoStatusChanged;
 use App\Support\Content\Listeners\PurgeArticleCdnOnStatusChanged;
 use App\Support\Content\Listeners\PurgeReelCdnOnStatusChanged;
 use App\Support\Content\Listeners\RevalidateVideoFrontendOnStatusChanged;
-use App\Settings\ThirdPartySettings;
-use App\Support\Advertising\AdClientIp;
-use App\Support\Ai\Providers\FailoverAiProvider;
-use App\Support\Ai\Providers\GeminiProvider;
-use App\Support\Ai\Providers\OpenAiProvider;
 use App\Support\Epaper\DefaultEpaperAccessPolicy;
 use App\Support\Epaper\EpaperAccessPolicy;
 use App\Support\Epaper\Ocr\DefaultEpaperOcrProvider;
@@ -174,6 +178,11 @@ class AppServiceProvider extends ServiceProvider
             // الجريدة (Enterprise): صحّة فهرس البحث + تراكم/تعليق استخراج OCR
             EpaperSearchHealthCheck::new(),
             EpaperOcrHealthCheck::new(),
+            // صحّة فهارس Meilisearch القياسيّة (انحراف العدّ فهرس/قاعدة) — Task 14 finding
+            ArticleSearchHealthCheck::new(),
+            VideoSearchHealthCheck::new(),
+            ReelSearchHealthCheck::new(),
+            BroadcastSearchHealthCheck::new(),
             // نبض المُجدوِل (يكشف توقّفه كلياً) — يتطلّب health:schedule-check-heartbeat
             ScheduleCheck::new()->heartbeatMaxAgeInMinutes(5),
             // نبض عمّال الطوابير — heartbeat مستقلّ عن السائق (database/redis): يكشف موت العامل

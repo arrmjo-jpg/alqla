@@ -78,4 +78,11 @@ return [
         'analytics' => 'analytics',
         'ai' => 'ai',
     ],
+
+    // حدود انحراف فحص صحّة فهارس البحث (Article/Video/Reel/Broadcast) — راجع
+    // App\Health\Checks\ContentSearchHealthCheck. تحذير > النسبة الأولى، فشل > الثانية.
+    'search' => [
+        'health_warning_drift_percent' => (float) env('SEARCH_HEALTH_WARNING_DRIFT_PERCENT', 10.0),
+        'health_failure_drift_percent' => (float) env('SEARCH_HEALTH_FAILURE_DRIFT_PERCENT', 30.0),
+    ],
 ];
