@@ -56,24 +56,47 @@ respected, not just nominal.**
   module.
 - *Blocks deployment:* No.
 
-**Finding 1.3 — Dead code from an incomplete module migration.**
-- *Evidence:* `app/Actions/Admin/Settings/UpdateCdnSettingsAction.php`,
-  `TestCdnConnectionAction.php`, and
-  `app/Http/Requests/Admin/Settings/UpdateCdnSettingsRequest.php`,
-  `app/Http/Resources/Admin/Settings/CdnSettingsResource.php` are the
-  **pre-module-extraction** originals of files now properly living
-  under `app/Modules/CDN/`. Confirmed via `grep` that the live
-  `CdnController` (`app/Modules/CDN/Http/Controllers/CdnController.php`)
-  imports and calls only the `Modules\CDN` versions; the old versions
-  have zero references anywhere in `app/` or `routes/`.
-- *Severity:* Low.
-- *Production impact:* None functionally (dead code doesn't execute),
-  but real maintenance hazard — a future developer could edit the
-  unused copy and observe no effect, wasting time and potentially
-  reintroducing a stale behavior if something later re-wires it by
-  mistake.
-- *Recommendation:* Delete the 4 (or more — not exhaustively enumerated
-  beyond these 4) pre-extraction files.
+**Finding 1.3 — CORRECTED (was wrong): not dead code, a second live
+API surface for the same setting.**
+- *Original claim (retracted):* This finding originally claimed
+  `app/Actions/Admin/Settings/UpdateCdnSettingsAction.php`,
+  `TestCdnConnectionAction.php`,
+  `app/Http/Requests/Admin/Settings/UpdateCdnSettingsRequest.php`, and
+  `app/Http/Resources/Admin/Settings/CdnSettingsResource.php` were
+  dead pre-module-extraction leftovers, based on a `grep` that used
+  incorrectly escaped namespace separators and produced a false
+  negative — it never actually matched the real single-backslash `use`
+  statements in the source.
+- *What re-verification found:* `App\Http\Controllers\Api\V1\Admin\Settings\SettingsController`
+  imports and actively calls all four: `updateCdn()` uses
+  `UpdateCdnSettingsAction` + `UpdateCdnSettingsRequest`, `testCdn()`
+  uses `TestCdnConnectionAction`, and `CdnSettingsResource` is used by
+  three call sites (`ShowSettingsGroupAction`, `ShowSettingsOverviewAction`,
+  and `UpdateCdnSettingsAction` itself). `tests/Feature/Admin/Settings/SettingsWriteTest.php`
+  has 20 passing tests exercising `PUT /admin/settings/cdn` and
+  `POST /admin/settings/cdn/test` directly — deleting these files
+  would have broken a real, tested, currently-passing feature.
+- *The real, smaller finding underneath:* the admin-frontend's
+  `cdn.service.ts` reads via `GET /admin/settings/cdn` but writes and
+  tests exclusively via `Modules\CDN\CdnController` (`PUT /admin/cdn/settings`,
+  `POST /admin/cdn/test`) — confirmed by reading the actual frontend
+  service file, not assumed. So `SettingsController::updateCdn()` /
+  `testCdn()` are live, tested, and reachable, but **not currently
+  called by the one known consumer** for writes. This is a real
+  two-API-surfaces-for-one-setting situation, not dead code — and
+  deciding whether to consolidate them is a product/architecture
+  decision, not a delete-the-unused-copy cleanup.
+- *Severity:* Low (design duplication, not a functional defect).
+- *Production impact:* None currently. Two write paths to the same
+  underlying `CdnSettings` singleton is a latent risk if they ever
+  diverge in validation or behavior, but they don't today.
+- *Recommendation:* Decide deliberately (not unilaterally by an
+  audit): either (a) keep both — `/admin/settings/cdn` as the generic
+  per-settings-group contract every group follows uniformly, `/admin/cdn/*`
+  as the CDN module's richer operational API — and document why, or
+  (b) have the frontend's `cdn.service.ts` call the `/admin/settings/cdn`
+  write path too and retire the module's `updateSettings`/`test`
+  routes, or the reverse. No files were deleted in this pass.
 - *Blocks deployment:* No.
 
 ---
@@ -570,8 +593,13 @@ verified.**
 
 ## 11. Code Quality
 
-**Finding 11.1 — Dead code from incomplete CDN module migration.**
-- Covered in Finding 1.3.
+**Finding 11.1 — CORRECTED: not dead code, two live API surfaces for
+one setting.**
+- Covered in Finding 1.3 (retracted and corrected during Task D's
+  re-verification pass — the original claim was based on a grep with
+  incorrectly escaped namespace separators that produced a false
+  negative; all four files are live, imported, and covered by 20
+  passing tests). No deletion performed.
 
 **Finding 11.2 — TODO/FIXME sweep across the entire `app/` directory
 (not just Phase 1's diff) found 4 hits, all low-severity and honest.**
