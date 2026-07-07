@@ -4,6 +4,28 @@ import { z } from 'zod';
 
 import { env } from './env';
 
+interface CacheEntry {
+  value: unknown;
+  expiresAt: number;
+}
+
+const apiCache = (((globalThis as unknown) as Record<string, unknown>)._apiCache as Map<string, CacheEntry>) || new Map<string, CacheEntry>();
+((globalThis as unknown) as Record<string, unknown>)._apiCache = apiCache;
+
+async function getCached<T>(key: string, ttlMs: number, fetcher: () => Promise<T>): Promise<T> {
+  const cached = apiCache.get(key);
+  const now = Date.now();
+  if (cached && cached.expiresAt > now) {
+    return cached.value as T;
+  }
+  const value = await fetcher();
+  if (value && (!Array.isArray(value) || value.length > 0)) {
+    apiCache.set(key, { value, expiresAt: now + ttlMs });
+  }
+  return value;
+}
+
+
 // عنصر تغذية جاهز للعرض (view-model) — لا يتسرّب شكل الـAPI الخام إلى العارض.
 export interface FeedItem {
   id: number;
@@ -153,26 +175,28 @@ const HomepageEnvelopeSchema = z.object({
 // جلب تجميعيّة الصفحة الرئيسيّة كاملة بطلب واحد (BFF Aggregator) لتقليص الطلبات المتفرّقة (ADR-PE-01).
 export const getHomepageFeed = cache(async (locale = 'ar'): Promise<HomepageFeed> => {
   const empty: HomepageFeed = { hero: [], breaking: [], header: [], editors_pick: [], latest: [] };
-  if (!env.apiBaseUrl) return empty;
-  try {
-    const res = await fetch(
-      `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/homepage`,
-      { headers: env.internalHeaders, next: { revalidate: 120, tags: ['articles', 'homepage'] } }
-    );
-    if (!res.ok) return empty;
-    const parsed = HomepageEnvelopeSchema.safeParse(await res.json());
-    if (!parsed.success) return empty;
-    const d = parsed.data.data;
-    return {
-      hero: (d.hero ?? []).map(mapItem),
-      breaking: (d.breaking ?? []).map(mapItem),
-      header: (d.header ?? []).map(mapItem),
-      editors_pick: (d.editors_pick ?? []).map(mapItem),
-      latest: (d.latest ?? []).map(mapItem),
-    };
-  } catch {
-    return empty;
-  }
+  return getCached(`homepage:${locale}`, 60000, async () => {
+    if (!env.apiBaseUrl) return empty;
+    try {
+      const res = await fetch(
+        `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/homepage`,
+        { headers: env.internalHeaders, next: { revalidate: 120, tags: ['articles', 'homepage'] } }
+      );
+      if (!res.ok) return empty;
+      const parsed = HomepageEnvelopeSchema.safeParse(await res.json());
+      if (!parsed.success) return empty;
+      const d = parsed.data.data;
+      return {
+        hero: (d.hero ?? []).map(mapItem),
+        breaking: (d.breaking ?? []).map(mapItem),
+        header: (d.header ?? []).map(mapItem),
+        editors_pick: (d.editors_pick ?? []).map(mapItem),
+        latest: (d.latest ?? []).map(mapItem),
+      };
+    } catch {
+      return empty;
+    }
+  });
 });
 
 
@@ -225,30 +249,32 @@ export interface CategoryRef {
 
 const fetchCategoryIndex = cache(async (locale: string): Promise<Map<number, CategoryRef>> => {
   const index = new Map<number, CategoryRef>();
-  if (!env.apiBaseUrl) return index;
-  try {
-    const res = await fetch(`${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/categories`, {
-      headers: env.internalHeaders,
-      next: { revalidate: 300, tags: ['categories'] },
-    });
-    if (!res.ok) return index;
-    const json: unknown = await res.json();
-    const root = (json as { data?: unknown }).data;
-    if (!Array.isArray(root)) return index;
-    const walk = (nodes: unknown[]): void => {
-      for (const raw of nodes) {
-        const n = raw as { id?: unknown; name?: unknown; slug?: unknown; children?: unknown };
-        if (typeof n.id === 'number' && typeof n.slug === 'string' && n.slug) {
-          index.set(n.id, { id: n.id, name: typeof n.name === 'string' ? n.name : '', slug: n.slug });
+  return getCached(`categories:${locale}`, 300000, async () => {
+    if (!env.apiBaseUrl) return index;
+    try {
+      const res = await fetch(`${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/categories`, {
+        headers: env.internalHeaders,
+        next: { revalidate: 300, tags: ['categories'] },
+      });
+      if (!res.ok) return index;
+      const json: unknown = await res.json();
+      const root = (json as { data?: unknown }).data;
+      if (!Array.isArray(root)) return index;
+      const walk = (nodes: unknown[]): void => {
+        for (const raw of nodes) {
+          const n = raw as { id?: unknown; name?: unknown; slug?: unknown; children?: unknown };
+          if (typeof n.id === 'number' && typeof n.slug === 'string' && n.slug) {
+            index.set(n.id, { id: n.id, name: typeof n.name === 'string' ? n.name : '', slug: n.slug });
+          }
+          if (Array.isArray(n.children)) walk(n.children);
         }
-        if (Array.isArray(n.children)) walk(n.children);
-      }
-    };
-    walk(root);
-    return index;
-  } catch {
-    return index;
-  }
+      };
+      walk(root);
+      return index;
+    } catch {
+      return index;
+    }
+  });
 });
 
 // تصنيف بالـID (مقاوم لإعادة التسمية). غير موجود/محذوف ⇒ null.
@@ -270,23 +296,25 @@ export const getCategoryBySlug = cache(async (slug: string, locale = 'ar'): Prom
 // نفس مغلّف {data:[…]} ومورد القائمة ⇒ إعادة استخدام mapItem. ISR 300s؛ فشل ⇒ [] (عزل الكتلة).
 export const getCategoryFeed = cache(
   async (slug: string, limit = 4, locale = 'ar'): Promise<FeedItem[]> => {
-    if (!env.apiBaseUrl) return [];
-    try {
-      // paginate=cursor: الرئيسيّة تعرض عددًا ثابتًا (feed) بلا أرقام صفحات/إجماليّ ⇒ ترقيم المؤشّر
-      // (استراتيجيّة الـfeed المدمجة أصلاً في الـendpoint) يتجنّب COUNT(*) الباهظ. نقرأ data فقط.
-      const qs = new URLSearchParams({ per_page: String(limit), sort: '-published_at', paginate: 'cursor' });
-      qs.set('filter[category]', slug);
-      const res = await fetch(
-        `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles?${qs.toString()}`,
-        { headers: env.internalHeaders, next: { revalidate: 300, tags: ['articles', `category:${slug}`] } },
-      );
-      if (!res.ok) return [];
-      const parsed = EnvelopeSchema.safeParse(await res.json());
-      if (!parsed.success) return [];
-      return (parsed.data.data ?? []).map(mapItem);
-    } catch {
-      return [];
-    }
+    return getCached(`category-feed:${locale}:${slug}:${limit}`, 60000, async () => {
+      if (!env.apiBaseUrl) return [];
+      try {
+        // paginate=cursor: الرئيسيّة تعرض عددًا ثابتًا (feed) بلا أرقام صفحات/إجماليّ ⇒ ترقيم المؤشّر
+        // (استراتيجيّة الـfeed المدمجة أصلاً في الـendpoint) يتجنّب COUNT(*) الباهظ. نقرأ data فقط.
+        const qs = new URLSearchParams({ per_page: String(limit), sort: '-published_at', paginate: 'cursor' });
+        qs.set('filter[category]', slug);
+        const res = await fetch(
+          `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles?${qs.toString()}`,
+          { headers: env.internalHeaders, next: { revalidate: 300, tags: ['articles', `category:${slug}`] } },
+        );
+        if (!res.ok) return [];
+        const parsed = EnvelopeSchema.safeParse(await res.json());
+        if (!parsed.success) return [];
+        return (parsed.data.data ?? []).map(mapItem);
+      } catch {
+        return [];
+      }
+    });
   },
 );
 

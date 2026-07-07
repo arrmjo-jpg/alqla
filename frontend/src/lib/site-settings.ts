@@ -4,6 +4,28 @@ import { z } from 'zod';
 
 import { env } from './env';
 
+interface CacheEntry {
+  value: unknown;
+  expiresAt: number;
+}
+
+const apiCache = (((globalThis as unknown) as Record<string, unknown>)._apiCache as Map<string, CacheEntry>) || new Map<string, CacheEntry>();
+((globalThis as unknown) as Record<string, unknown>)._apiCache = apiCache;
+
+async function getCached<T>(key: string, ttlMs: number, fetcher: () => Promise<T>): Promise<T> {
+  const cached = apiCache.get(key);
+  const now = Date.now();
+  if (cached && cached.expiresAt > now) {
+    return cached.value as T;
+  }
+  const value = await fetcher();
+  if (value) {
+    apiCache.set(key, { value, expiresAt: now + ttlMs });
+  }
+  return value;
+}
+
+
 // ── Backend Site Settings contract (GET /api/v1/site?locale=…) ──────────────────────────────
 // Real fields the backend returns today + FORWARD-COMPAT optional SEO/analytics/verification fields.
 // Optional fields are consumed automatically the moment the CMS starts returning them — zero
@@ -88,17 +110,19 @@ const EnvelopeSchema = z.object({ data: SiteSettingsSchema.nullish() }).passthro
 // Cached + deduped per request (React cache) + Next data cache (tag-revalidatable).
 // Every consumer (metadata, JSON-LD, manifest, analytics) shares ONE fetch.
 export const getSiteSettings = cache(async (locale = 'ar'): Promise<SiteSettings | null> => {
-  if (!env.apiBaseUrl) return null;
-  try {
-    const res = await fetch(`${env.apiBaseUrl}/api/v1/site?locale=${encodeURIComponent(locale)}`, {
-      next: { revalidate: 300, tags: ['site-settings'] },
-    });
-    if (!res.ok) return null;
-    const parsed = EnvelopeSchema.safeParse(await res.json());
-    return parsed.success ? (parsed.data.data ?? null) : null;
-  } catch {
-    return null;
-  }
+  return getCached(`site-settings:${locale}`, 300000, async () => {
+    if (!env.apiBaseUrl) return null;
+    try {
+      const res = await fetch(`${env.apiBaseUrl}/api/v1/site?locale=${encodeURIComponent(locale)}`, {
+        next: { revalidate: 300, tags: ['site-settings'] },
+      });
+      if (!res.ok) return null;
+      const parsed = EnvelopeSchema.safeParse(await res.json());
+      return parsed.success ? (parsed.data.data ?? null) : null;
+    } catch {
+      return null;
+    }
+  });
 });
 
 // Header navigation menu (DB-driven). Empty when the admin hasn't enabled any

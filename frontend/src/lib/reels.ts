@@ -3,6 +3,28 @@ import { z } from 'zod';
 import { env } from './env';
 import { SeoSchema, type ArticleSeo } from './articles';
 
+interface CacheEntry {
+  value: unknown;
+  expiresAt: number;
+}
+
+const apiCache = (((globalThis as unknown) as Record<string, unknown>)._apiCache as Map<string, CacheEntry>) || new Map<string, CacheEntry>();
+((globalThis as unknown) as Record<string, unknown>)._apiCache = apiCache;
+
+async function getCached<T>(key: string, ttlMs: number, fetcher: () => Promise<T>): Promise<T> {
+  const cached = apiCache.get(key);
+  const now = Date.now();
+  if (cached && cached.expiresAt > now) {
+    return cached.value as T;
+  }
+  const value = await fetcher();
+  if (value) {
+    apiCache.set(key, { value, expiresAt: now + ttlMs });
+  }
+  return value;
+}
+
+
 // عنصر ريل جاهز للعرض (view-model) — لا يتسرّب شكل الـAPI الخام إلى العارض.
 export interface ReelItem {
   id: number;
@@ -112,26 +134,29 @@ export interface ReelsPage {
 
 // خلاصة الريلز (cursor للتمرير اللانهائيّ). ISR 60s (feed REALTIME)؛ فشل ⇒ صفحة فارغة.
 export async function getReelsFeed(cursor: string | null = null, locale = 'ar'): Promise<ReelsPage> {
-  if (!env.apiBaseUrl) return { items: [], nextCursor: null };
-  try {
-    const qs = new URLSearchParams({ paginate: 'cursor', per_page: '10' });
-    if (cursor) qs.set('cursor', cursor);
-    const res = await fetch(`${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/reels?${qs.toString()}`, {
-      headers: env.internalHeaders,
-      // وسم القاموس الموحَّد (يطابق FrontendCacheTags::reel) — إبطال حدثيّ من الباك إند.
-      next: { revalidate: 60, tags: [`reel-feed:${locale}`] },
-    });
-    if (!res.ok) return { items: [], nextCursor: null };
-    const parsed = FeedEnvelope.safeParse(await res.json());
-    if (!parsed.success) return { items: [], nextCursor: null };
-    const c = parsed.data.meta?.cursor;
-    return {
-      items: (parsed.data.data ?? []).map(mapReel),
-      nextCursor: c?.has_more ? (c?.next_cursor ?? null) : null,
-    };
-  } catch {
-    return { items: [], nextCursor: null };
-  }
+  const empty: ReelsPage = { items: [], nextCursor: null };
+  return getCached(`reels-feed:${locale}:${cursor ?? ''}`, 60000, async () => {
+    if (!env.apiBaseUrl) return empty;
+    try {
+      const qs = new URLSearchParams({ paginate: 'cursor', per_page: '10' });
+      if (cursor) qs.set('cursor', cursor);
+      const res = await fetch(`${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/reels?${qs.toString()}`, {
+        headers: env.internalHeaders,
+        // وسم القاموس الموحَّد (يطابق FrontendCacheTags::reel) — إبطال حدثيّ من الباك إند.
+        next: { revalidate: 60, tags: [`reel-feed:${locale}`] },
+      });
+      if (!res.ok) return empty;
+      const parsed = FeedEnvelope.safeParse(await res.json());
+      if (!parsed.success) return empty;
+      const c = parsed.data.meta?.cursor;
+      return {
+        items: (parsed.data.data ?? []).map(mapReel),
+        nextCursor: c?.has_more ? (c?.next_cursor ?? null) : null,
+      };
+    } catch {
+      return empty;
+    }
+  });
 }
 
 // ريل واحد بالـ{id-slug} (للرابط العميق). فشل/غير موجود ⇒ null.

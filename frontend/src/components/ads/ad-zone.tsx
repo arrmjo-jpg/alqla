@@ -43,17 +43,6 @@ function pageLocale(): string {
   return lang === 'en' ? 'en' : 'ar';
 }
 
-/** تحديد ارتفاع مسبق محجوز للزون لمنع CLS */
-function getZoneMinHeight(zone: string): { desktop: number; mobile: number } {
-  if (zone.includes('kbyr') || zone.includes('slaydr') || zone.includes('asfl_alhydr_mbashra')) {
-    return { desktop: 250, mobile: 100 };
-  }
-  if (zone.includes('fwq_alhydr')) {
-    return { desktop: 90, mobile: 50 };
-  }
-  return { desktop: 250, mobile: 250 };
-}
-
 
 /** منارة تتبّع — keepalive يبقى حيًّا عبر التنقّل؛ no-store؛ تُتجاهَل الأخطاء (صامد). */
 function beacon(path: string, token: string): void {
@@ -163,7 +152,7 @@ export function AdZone({ zone, className }: { zone: string; className?: string }
   // فوق الشاشة ⇒ العنصر متقاطع فورًا ⇒ عرض فوريّ (بلا تأخير ملموس)؛ أسفل الشاشة ⇒ يؤجَّل حتى الاقتراب.
   const [inView, setInView] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const sentinelRef = useRef<HTMLSpanElement | null>(null);
 
   // مراقبة موضع الزون عبر عنصر بحجم صفر (absolute فلا يؤثّر في التخطيط ولا فجوة الأبوين). عند الاقتراب
   // (rootMargin) يُسمح بالعرض مرّة واحدة. بلا IntersectionObserver ⇒ عرض فوريّ (تدهور رشيق = السلوك القديم).
@@ -251,25 +240,15 @@ export function AdZone({ zone, className }: { zone: string; className?: string }
 
   // لا إعلان بعد ⇒ عنصر مراقبة بحجم صفر (absolute: بلا مساحة/تخطيط/فجوة) = هدف الـlazy؛ يبقى لو لم يُخدَم
   // إعلان (صفر مساحة، عقد §6)، ويُستبدَل بالإبداع فور وصوله.
-  if (!ad) {
-    const dims = getZoneMinHeight(zone);
+  if (!ad)
     return (
-      <div
+      <span
         ref={sentinelRef}
         aria-hidden
         data-ad-zone-pending={zone}
-        className="ad-zone-placeholder flex items-center justify-center bg-surface-2/20 border border-dashed border-border/40"
-        style={{
-          width: '100%',
-          borderRadius: '8px',
-          '--ad-min-h-mobile': `${dims.mobile}px`,
-          '--ad-min-h-desktop': `${dims.desktop}px`,
-        } as CSSProperties}
-      >
-        <span className="text-[10px] text-muted-foreground font-medium tracking-wider uppercase opacity-45">إعلان</span>
-      </div>
+        style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}
+      />
     );
-  }
 
   // جذر الزون يتوسّط الإبداع عموديًّا (items-center) فلا يُمطّ (صورة أو HTML) لو كانت الحاوية flex
   // بـ align-items:stretch — فيلتزم كلّ إعلان بأبعاده الحقيقيّة بلا تشويه. (no-op إن لم تكن flex.)
