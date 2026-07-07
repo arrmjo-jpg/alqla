@@ -13,6 +13,9 @@ const apiCache = (((globalThis as unknown) as Record<string, unknown>)._apiCache
 ((globalThis as unknown) as Record<string, unknown>)._apiCache = apiCache;
 
 async function getCached<T>(key: string, ttlMs: number, fetcher: () => Promise<T>): Promise<T> {
+  if (process.env.NODE_ENV === 'production') {
+    return fetcher();
+  }
   const cached = apiCache.get(key);
   const now = Date.now();
   if (cached && cached.expiresAt > now) {
