@@ -132,6 +132,50 @@ const fetchFeed = cache(
   },
 );
 
+export interface HomepageFeed {
+  hero: FeedItem[];
+  breaking: FeedItem[];
+  header: FeedItem[];
+  editors_pick: FeedItem[];
+  latest: FeedItem[];
+}
+
+const HomepageEnvelopeSchema = z.object({
+  data: z.object({
+    hero: z.array(ItemSchema).nullish(),
+    breaking: z.array(ItemSchema).nullish(),
+    header: z.array(ItemSchema).nullish(),
+    editors_pick: z.array(ItemSchema).nullish(),
+    latest: z.array(ItemSchema).nullish(),
+  }).passthrough()
+}).passthrough();
+
+// جلب تجميعيّة الصفحة الرئيسيّة كاملة بطلب واحد (BFF Aggregator) لتقليص الطلبات المتفرّقة (ADR-PE-01).
+export const getHomepageFeed = cache(async (locale = 'ar'): Promise<HomepageFeed> => {
+  const empty: HomepageFeed = { hero: [], breaking: [], header: [], editors_pick: [], latest: [] };
+  if (!env.apiBaseUrl) return empty;
+  try {
+    const res = await fetch(
+      `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/homepage`,
+      { headers: env.internalHeaders, next: { revalidate: 120, tags: ['articles', 'homepage'] } }
+    );
+    if (!res.ok) return empty;
+    const parsed = HomepageEnvelopeSchema.safeParse(await res.json());
+    if (!parsed.success) return empty;
+    const d = parsed.data.data;
+    return {
+      hero: (d.hero ?? []).map(mapItem),
+      breaking: (d.breaking ?? []).map(mapItem),
+      header: (d.header ?? []).map(mapItem),
+      editors_pick: (d.editors_pick ?? []).map(mapItem),
+      latest: (d.latest ?? []).map(mapItem),
+    };
+  } catch {
+    return empty;
+  }
+});
+
+
 // كتلة الهيرو: الأخبار المميّزة (is_featured) — حدّ 5 (= hero(source:featured,limit:5))، ISR 300s.
 export const getHeroFeed = (locale = 'ar') => fetchFeed('hero', 5, locale, 300);
 

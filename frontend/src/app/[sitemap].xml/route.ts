@@ -1,11 +1,13 @@
 import { env } from '@/lib/env';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const sitemap = new URL(request.url).pathname.split('/').pop()?.replace('.xml', '') ?? '';
+  const filename = `${sitemap}.xml`;
   const backendUrl = env.apiBaseUrl.replace(/\/api\/v1$/, '').replace(/\/v1$/, '');
   const siteUrl = env.siteUrl;
 
   try {
-    const res = await fetch(`${backendUrl}/rss/news.xml`, {
+    const res = await fetch(`${backendUrl}/${filename}`, {
       headers: { ...env.internalHeaders },
       cache: 'no-store',
     });
@@ -16,8 +18,8 @@ export async function GET() {
 
     return new Response(xml, {
       headers: {
-        'Content-Type': 'application/rss+xml; charset=utf-8',
-        'Cache-Control': 'public, max-age=300, stale-while-revalidate=600',
+        'Content-Type': 'application/xml; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=7200',
       },
     });
   } catch {

@@ -1,11 +1,13 @@
 import { env } from '@/lib/env';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const feed = new URL(request.url).pathname.split('/').pop()?.replace('.xml', '') ?? '';
+  const filename = `${feed}.xml`;
   const backendUrl = env.apiBaseUrl.replace(/\/api\/v1$/, '').replace(/\/v1$/, '');
   const siteUrl = env.siteUrl;
 
   try {
-    const res = await fetch(`${backendUrl}/rss/news.xml`, {
+    const res = await fetch(`${backendUrl}/rss/${filename}`, {
       headers: { ...env.internalHeaders },
       cache: 'no-store',
     });

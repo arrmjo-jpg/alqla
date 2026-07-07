@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import { AdZone } from '@/components/ads/ad-zone';
 import { EconomyShowcase } from '@/components/economy/economy-showcase';
 import { CategoryCarousel } from '@/components/home/category-carousel';
@@ -13,8 +15,8 @@ import { TrendingLatestMostRead } from '@/components/home/trending-latest-mostre
 import { SubscribeBox } from '@/components/public-forms/subscribe-box';
 import { SportsShowcase } from '@/components/sport/sports-showcase';
 import { VideoSection } from '@/components/videos/video-section';
-import { WeatherFeature } from '@/components/weather/weather-feature';
-import { getHeroFeed } from '@/lib/feed';
+import { WeatherWrapper } from '@/components/weather/weather-wrapper';
+import { getHomepageFeed } from '@/lib/feed';
 import { getReelsFeed } from '@/lib/reels';
 import { getSiteSettings } from '@/lib/site-settings';
 
@@ -29,12 +31,24 @@ const CATEGORY_CAROUSELS = [
   { categoryId: 53, fallbackTitle: 'تكنولوجيا' },
 ] as const;
 
+function SectionLoader() {
+  return (
+    <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 mt-6">
+      <div className="h-[250px] w-full animate-pulse rounded-xl bg-surface-2" />
+    </div>
+  );
+}
+
 export default async function Home() {
-  const [heroItems, reels, settings] = await Promise.all([
-    getHeroFeed(),
+  const [homepageData, reels, settings] = await Promise.all([
+    getHomepageFeed('ar'),
     getReelsFeed(),
     getSiteSettings(),
   ]);
+  
+  const heroItems = homepageData.hero;
+  const editorsPick = homepageData.editors_pick;
+
   return (
     <>
       <FeaturedHero items={heroItems} />
@@ -50,74 +64,124 @@ export default async function Home() {
         <AdZone zone="aalan_fwq_akhr_almstjdat_ymyn" className="mt-1 flex justify-center sm:flex-1" />
         <AdZone zone="aalan_fwq_akhr_almstjdat_shmal" className="mt-1 flex justify-center sm:flex-1" />
       </div>
+      
       {/* أخبار محلية — التصميم الأصليّ (LatestUpdates، بالـID الثابت #2). */}
-      <LatestUpdates categoryId={2} fallbackTitle="أخبار محلية" />
+      <Suspense fallback={<SectionLoader />}>
+        <LatestUpdates categoryId={2} fallbackTitle="أخبار محلية" />
+      </Suspense>
+
       {/* برلمانيات — 8 أخبار (كبير + 7 صغار، بلا سكرول جوّال) (#36) بخلفية صورة شفافة. */}
-      <CategoryFeatureQuad
-        categoryId={36}
-        fallbackTitle="برلمانيات"
-        count={8}
-        bgImage="https://middle-east-online.com/sites/default/files/styles/home_special_coverage_1920xauto/public/2021-05/jo_0.jpg?itok=NWiLImq5"
-      />
+      <Suspense fallback={<SectionLoader />}>
+        <CategoryFeatureQuad
+          categoryId={36}
+          fallbackTitle="برلمانيات"
+          count={8}
+          bgImage="https://middle-east-online.com/sites/default/files/styles/home_special_coverage_1920xauto/public/2021-05/jo_0.jpg?itok=NWiLImq5"
+        />
+      </Suspense>
+
       {/* شريط الاشتراك في واتساب. */}
       <SubscribeBox variant="bar" />
+
       {/* عربي دولي — 8 أخبار (كبير + 7 صغار، بلا سكرول جوّال) (#43). */}
-      <CategoryFeatureQuad categoryId={43} fallbackTitle="عربي دولي" count={8} />
+      <Suspense fallback={<SectionLoader />}>
+        <CategoryFeatureQuad categoryId={43} fallbackTitle="عربي دولي" count={8} />
+      </Suspense>
+
       {/* أخبار ثقافية — تحت عربي دولي مباشرةً: 10 أخبار (كبير + 9 صغار، بلا سكرول) (#56) بخلفية صورة شفافة. */}
-      <CategoryFeatureQuad
-        categoryId={56}
-        fallbackTitle="أخبار ثقافية"
-        count={10}
-        bgImage="https://cnn-arabic-images.cnn.io/cloudinary/image/upload/w_1280,h_720,c_fill,q_auto,g_center/cnnarabic/2024/10/13/images/280022.jpg"
-      />
+      <Suspense fallback={<SectionLoader />}>
+        <CategoryFeatureQuad
+          categoryId={56}
+          fallbackTitle="أخبار ثقافية"
+          count={10}
+          bgImage="https://cnn-arabic-images.cnn.io/cloudinary/image/upload/w_1280,h_720,c_fill,q_auto,g_center/cnnarabic/2024/10/13/images/280022.jpg"
+        />
+      </Suspense>
+
       {/* ضيف الأسبوع — تحت أخبار ثقافية مباشرةً (تصنيف #58): 8 أخبار بنمط بطاقات عائمة. */}
-      <IncidentsSection categoryId={58} headingId="week-stories-heading" fallbackTitle="ضيف الأسبوع" count={8} />
+      <Suspense fallback={<SectionLoader />}>
+        <IncidentsSection categoryId={58} headingId="week-stories-heading" fallbackTitle="ضيف الأسبوع" count={8} />
+      </Suspense>
+
       {/* قسم الاقتصاد (تصميم خاصّ: بورصة + ذهب). */}
-      <EconomyShowcase />
+      <Suspense fallback={<SectionLoader />}>
+        <EconomyShowcase />
+      </Suspense>
+
       {/* ودجت 3 أعمدة: تريندينغ + آخر المستجدات + الأكثر قراءة. */}
-      <TrendingLatestMostRead />
+      <Suspense fallback={<SectionLoader />}>
+        <TrendingLatestMostRead editorsPick={editorsPick} />
+      </Suspense>
+
       {/* تحت الودجت مباشرةً: جامعات (4 أخبار: كبير + 3 صغار، بلا سكرول). */}
-      <CategoryFeatureQuad categoryId={42} fallbackTitle="جامعات" />
+      <Suspense fallback={<SectionLoader />}>
+        <CategoryFeatureQuad categoryId={42} fallbackTitle="جامعات" />
+      </Suspense>
+
       {/* قسم الوفيات/التعزية — تصميم خاصّ مع آية قرآنيّة، أسفل أخبار ثقافية مباشرةً. */}
-      <ObituariesSection categoryId={49} fallbackTitle="الوفيات" count={8} />
+      <Suspense fallback={<SectionLoader />}>
+        <ObituariesSection categoryId={49} fallbackTitle="الوفيات" count={8} />
+      </Suspense>
+
       {/* زوج إعلانات فوق الريلز. */}
       <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-2 px-4 sm:flex-row sm:px-6 lg:px-8">
         <AdZone zone="aalan_fwq_qsm_alrylz_ymyn" className="mt-1 flex justify-center sm:flex-1" />
         <AdZone zone="aalan_fwq_qsm_alrylz_shmal" className="mt-1 flex justify-center sm:flex-1" />
       </div>
-      <ReelsCarousel
-        items={reels.items}
-        siteName={settings?.site_name || 'صدى الشعب الأخباري'}
-        logo={settings?.logo_dark ?? settings?.logo_light ?? null}
-      />
+
+      <Suspense fallback={<SectionLoader />}>
+        <ReelsCarousel
+          items={reels.items}
+          siteName={settings?.site_name || 'صدى الشعب الأخباري'}
+          logo={settings?.logo_dark ?? settings?.logo_light ?? null}
+        />
+      </Suspense>
+
       {/* إعلان كبير فوق بقيّة الأقسام. */}
       <AdZone
         zone="aalan_kbyr_fwq_qsm_alakthr_shywha"
         className="mx-auto mt-3 flex w-full max-w-[1200px] justify-center px-4 sm:px-6 lg:px-8"
       />
+
       {/* اخبار الناس — التصميم الأصليّ (تحريريّ). */}
-      <EditorialCategorySection categoryId={31} headingId="people-news-heading" fallbackTitle="اخبار الناس" />
-      {/* «مقالات» و«مقالات مختارة» انتقلا إلى ودجت تريندينغ (كاروسيل الكُتّاب) أعلاه — أُزيلا هنا لمنع التكرار.
-          و«ضيف الأسبوع» نُقِل تحت «أخبار ثقافية» أعلاه. */}
+      <Suspense fallback={<SectionLoader />}>
+        <EditorialCategorySection categoryId={31} headingId="people-news-heading" fallbackTitle="اخبار الناس" />
+      </Suspense>
+
       {/* أخبار الفن — بتصميم القسم (شبكة بطاقات عائمة)، محلّ «حوادث» سابقًا. */}
-      <IncidentsSection categoryId={37} headingId="art-heading" fallbackTitle="أخبار الفن" />
+      <Suspense fallback={<SectionLoader />}>
+        <IncidentsSection categoryId={37} headingId="art-heading" fallbackTitle="أخبار الفن" />
+      </Suspense>
+
       {/* قسم الرياضة — نظير الاقتصاد بطابعٍ رياضيّ + جدول ترتيب الدوري مباشرةً من 365Scores (محلّ كروسل رياضة). */}
-      <SportsShowcase />
+      <Suspense fallback={<SectionLoader />}>
+        <SportsShowcase />
+      </Suspense>
+
       {/* قسم الطقس السينمائيّ — أسفل الرياضة: بطاقة «اليوم» الكبيرة (حرارة + إحساس + رطوبة/رياح + شروق/غروب) + الأسبوع. */}
-      <WeatherFeature />
+      <WeatherWrapper />
+
       {/* قسمان شبكة 2×2 — صحة وجمال + منوعات — تحت الطقس (بدل كروسليهما السابقين). */}
-      <CategoryGridPair
-        categories={[
-          { categoryId: 51, fallbackTitle: 'صحة وجمال' },
-          { categoryId: 55, fallbackTitle: 'منوعات' },
-        ]}
-      />
+      <Suspense fallback={<SectionLoader />}>
+        <CategoryGridPair
+          categories={[
+            { categoryId: 51, fallbackTitle: 'صحة وجمال' },
+            { categoryId: 55, fallbackTitle: 'منوعات' },
+          ]}
+        />
+      </Suspense>
+
       {/* بقيّة أقسام الأخبار — كروسلات. */}
-      {CATEGORY_CAROUSELS.map((s) => (
-        <CategoryCarousel key={s.categoryId} categoryId={s.categoryId} fallbackTitle={s.fallbackTitle} />
-      ))}
+      <Suspense fallback={<SectionLoader />}>
+        {CATEGORY_CAROUSELS.map((s) => (
+          <CategoryCarousel key={s.categoryId} categoryId={s.categoryId} fallbackTitle={s.fallbackTitle} />
+        ))}
+      </Suspense>
+
       {/* قسم الفيديو — آخر شيء فوق الفوتر. */}
-      <VideoSection />
+      <Suspense fallback={<SectionLoader />}>
+        <VideoSection />
+      </Suspense>
     </>
   );
 }

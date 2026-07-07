@@ -565,3 +565,14 @@
   text-align: justify !important;
   text-justify: inter-word !important;
 }
+
+/* Reserved space placeholder for AdZones to prevent CLS */
+.ad-zone-placeholder {
+  min-height: var(--ad-min-h-mobile, 250px);
+}
+@media (min-width: 1024px) {
+  .ad-zone-placeholder {
+    min-height: var(--ad-min-h-desktop, 250px);
+  }
+}
+

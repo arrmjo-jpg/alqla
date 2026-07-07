@@ -5,7 +5,7 @@ export async function GET() {
   const siteUrl = env.siteUrl;
 
   try {
-    const res = await fetch(`${backendUrl}/rss/news.xml`, {
+    const res = await fetch(`${backendUrl}/sitemap.xml`, {
       headers: { ...env.internalHeaders },
       cache: 'no-store',
     });
@@ -16,8 +16,8 @@ export async function GET() {
 
     return new Response(xml, {
       headers: {
-        'Content-Type': 'application/rss+xml; charset=utf-8',
-        'Cache-Control': 'public, max-age=300, stale-while-revalidate=600',
+        'Content-Type': 'application/xml; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=7200',
       },
     });
   } catch {

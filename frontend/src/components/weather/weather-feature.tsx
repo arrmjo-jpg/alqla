@@ -1,21 +1,53 @@
+'use client';
+
 import { Droplets, Sunrise, Sunset, Thermometer, Wind } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 import { Container } from '@/components/layout/container';
-import { getGovernorateWeatherFull, type DailyForecast } from '@/lib/weather';
-
+import type { WeatherFull } from './weather-card';
 import { AnimatedWeatherIcon } from './animated-weather-icon';
 
 // قسم الطقس السينمائيّ — بطاقة «اليوم» الكبيرة (أيقونة متحرّكة ضخمة + الحرارة + الإحساس + الرطوبة/الرياح +
 // شروق/غروب) بجانب توقّع الأسبوع، بخلفيّة سماويّة تتبدّل نهارًا/ليلًا. بيانات حقيقيّة من OpenWeather. لا طقس ⇒ يُخفى.
 const CITY_ID = 'amman';
 
-export async function WeatherFeature() {
-  const weather = await getGovernorateWeatherFull(CITY_ID);
+export function WeatherFeature() {
+  const [weather, setWeather] = useState<WeatherFull | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    fetch(`/api/weather?gov=${encodeURIComponent(CITY_ID)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (active && data) {
+          setWeather(data as WeatherFull);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="mt-6 sm:mt-8" dir="rtl" aria-label="حالة الطقس">
+        <Container>
+          <div className="h-[120px] w-full animate-pulse rounded-xl bg-surface-2" />
+        </Container>
+      </section>
+    );
+  }
+
   if (!weather) return null;
 
   const { current } = weather;
-  const days = weather.daily.slice(0, 7);
+  const days = (weather.daily ?? []).slice(0, 7);
   const night = current.icon.endsWith('n');
   const bg = night
     ? 'linear-gradient(120deg, #0a1430 0%, #15235a 52%, #25407f 100%)'
@@ -23,6 +55,7 @@ export async function WeatherFeature() {
   const glow = night
     ? 'radial-gradient(52% 120% at 82% -12%, rgba(170,195,255,0.28), transparent 62%)'
     : 'radial-gradient(58% 130% at 82% -12%, rgba(255,214,120,0.38), transparent 60%)';
+
 
   return (
     <section className="mt-6 sm:mt-8" dir="rtl" aria-label="حالة الطقس">
@@ -91,7 +124,20 @@ export async function WeatherFeature() {
   );
 }
 
-function DayMini({ day, today }: { day: DailyForecast; today: boolean }) {
+function DayMini({
+  day,
+  today,
+}: {
+  day: {
+    date: string;
+    dayLabel: string;
+    tempMin: number;
+    tempMax: number;
+    icon: string;
+    description?: string;
+  };
+  today: boolean;
+}) {
   return (
     <div
       className={`flex min-w-[54px] flex-1 flex-col items-center justify-center gap-0.5 px-1 py-1.5 ${

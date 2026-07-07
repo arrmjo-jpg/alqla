@@ -10,15 +10,15 @@ import { getCategoryById, getCategoryFeed, getEditorsPickFeed, type FeedItem } f
 //  • تريندينغ = is_editor_pick (صندوق أحمر، أرقام + صور).
 //  • قسمَا الكُتّاب = مقالات كلّ تصنيف ببطاقات كاتب تنزلق تلقائيًّا (WritersCarousel، مكوّن عميل)؛ **اسم الكاتب
 //    يفتح بروفيله وكلّ مقالاته**. الصورة = غلاف المقال، ولمقال الرأي بلا غلاف تُستخدَم صورة الكاتب تلقائيًّا. Server Component، ISR.
-export async function TrendingLatestMostRead() {
-  const editorsPick = await getEditorsPickFeed('ar', 5);
+export async function TrendingLatestMostRead({ editorsPick }: { editorsPick?: FeedItem[] }) {
+  const resolvedEditorsPick = editorsPick ?? (await getEditorsPickFeed('ar', 5));
 
   return (
     <section className="mt-6 sm:mt-8" dir="rtl" aria-label="تريندينغ وأقلام الكُتّاب">
       <Container>
         {/* RTL: تريندينغ (يمين، ثلث) ← قسمَا كُتّاب مكدّسان فوق بعض (يسار، ثلثان). */}
         <div className="grid items-stretch gap-6 lg:grid-cols-3">
-          <TrendingBox items={editorsPick.slice(0, 5)} />
+          <TrendingBox items={resolvedEditorsPick.slice(0, 5)} />
           <div className="flex min-w-0 flex-col gap-6 lg:col-span-2">
             {/* قسمان مميّزان فوق بعض بشكلين مختلفين: «مقالات» (#20، عموديّ) ثمّ (#57، دائريّ). */}
             <WritersRow categoryId={20} variant="portrait" />

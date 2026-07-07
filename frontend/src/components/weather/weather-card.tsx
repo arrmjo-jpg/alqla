@@ -20,6 +20,8 @@ interface Snapshot {
   pressure: number;
   description: string;
   icon: string;
+  sunrise?: string | null;
+  sunset?: string | null;
 }
 interface Hourly {
   time: string;
@@ -32,6 +34,7 @@ interface Daily {
   tempMin: number;
   tempMax: number;
   icon: string;
+  description?: string;
 }
 export interface WeatherFull {
   govId: string;

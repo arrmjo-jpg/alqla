@@ -7,7 +7,7 @@ import { NewsTicker } from '@/components/layout/news-ticker';
 import { QalahFooter } from '@/components/layout/qalah/footer';
 import { QalahHeader } from '@/components/layout/qalah/header';
 import { QalahNavbar } from '@/components/layout/qalah/navbar';
-import { getBreakingFeed, getLatestFeed } from '@/lib/feed';
+import { getHomepageFeed } from '@/lib/feed';
 import { getSiteSettings } from '@/lib/site-settings';
 import { DesktopViewProvider } from '@/lib/desktop-view-context';
 import { MobileTopToggleBanner } from '@/components/layout/desktop-view-toggle';
@@ -17,11 +17,12 @@ import { MobileTopToggleBanner } from '@/components/layout/desktop-view-toggle';
 // التراجع للقشرة القديمة: استبدل QalahNavbar/QalahHeader/QalahFooter بـ SiteHeader/SectionsBar/SiteFooter
 // واحذف صنفَي qalah-skin/site-frame من الغلاف (المكوّنات القديمة ما زالت بمكانها).
 export default async function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const [settings, latest, breaking] = await Promise.all([
+  const [settings, homepageData] = await Promise.all([
     getSiteSettings(),
-    getLatestFeed('ar'),
-    getBreakingFeed('ar', 5),
+    getHomepageFeed('ar'),
   ]);
+  const { latest, breaking } = homepageData;
+
 
   return (
     <DesktopViewProvider>
