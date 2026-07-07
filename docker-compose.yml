@@ -38,7 +38,7 @@ services:
       - "80"
     volumes:
     - media:/var/www/html/storage/app/public
-    - /data/uploads:/var/www/html/public/uploads:ro
+    - /data/uploads:/var/www/html/public/uploads:rw
     # ── Public media on the SITE domain, served directly by the backend web server ──────────────
     # Route `<public-site>/storage/*` to the backend nginx (→ public/storage, static + Cache-Control).
     # So branding/media resolve on the public origin and Cloudflare caches them:
