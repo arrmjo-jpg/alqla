@@ -58,6 +58,8 @@ export interface ArticleDetail {
   gallery: ArticleImage[];
   tags: string[];
   seo: ArticleSeo | null;
+  hasVideo: boolean;
+  video: { url: string; mime: string }[];
 }
 
 // ─── Zod (مطابقة PublicArticleResource) ───
@@ -255,6 +257,10 @@ function mapArticle(a: RawArticle): ArticleDetail {
     gallery: (a.media?.gallery ?? []).map(mapImage).filter((x): x is ArticleImage => x !== null),
     tags: a.tags ?? [],
     seo: a.seo ?? null,
+    hasVideo: (a.media?.video ?? []).length > 0 || /<iframe|<video/i.test(a.content_html ?? ''),
+    video: (a.media?.video ?? [])
+      .filter((v): v is { url: string | null; mime: string | null } => Boolean(v?.url) && Boolean(v?.mime))
+      .map((v) => ({ url: v.url!, mime: v.mime! })),
   };
 }
 

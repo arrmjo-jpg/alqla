@@ -134,7 +134,7 @@ export function SubscribeBox({ variant = 'card', termsHref, termsLabel, privacyH
   // ── النسخة الأفقيّة (bar) — بعرض الموقع، أسفل «آخر المستجدات» بالرئيسية ──────────
   if (variant === 'bar') {
     return (
-      <section dir="rtl" className="mt-8" aria-labelledby="wa-bar-heading">
+      <section dir="rtl" className="mt-8 print:hidden" aria-labelledby="wa-bar-heading">
         <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
           <div className="relative border border-border bg-surface-2 p-5 md:p-6">
             {closeButton}
@@ -169,7 +169,7 @@ export function SubscribeBox({ variant = 'card', termsHref, termsLabel, privacyH
 
   // ── النسخة الرأسيّة (card) — داخل الخبر ───────────────────────────────────────
   return (
-    <section dir="rtl" className="relative mt-8 border border-border bg-surface-2 p-6 md:p-10">
+    <section dir="rtl" className="relative mt-8 border border-border bg-surface-2 p-6 md:p-10 print:hidden">
       {closeButton}
 
       <div className="mx-auto max-w-3xl text-center">

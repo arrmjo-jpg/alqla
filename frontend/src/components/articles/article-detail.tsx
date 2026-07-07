@@ -5,6 +5,8 @@ import { type ArticleDetail, type LiveUpdateItem } from '@/lib/articles';
 import type { EngagementMetrics } from '@/lib/engagement';
 import type { FeedItem } from '@/lib/feed';
 import type { Heading } from '@/lib/reading';
+import { LivePulse } from '@/components/ui/live-pulse';
+import { SiteLogo } from '@/components/branding/site-logo';
 
 // Import our presentation blocks and design tokens
 import { ArticleHeader } from './blocks/article-header';
@@ -62,11 +64,32 @@ export function ArticleDetailView({
   // Resolve page layouts to exactly TWO main templates: opinion or standard
   const template = isOpinion ? 'opinion' : 'standard';
 
-  const bodyHtml = contentHtml ?? article.contentHtml;
+  const bodyHtml = stripTitleFromHtml(contentHtml ?? article.contentHtml, article.title, article.subtitle);
   const writerHref = article.author?.isWriter && article.author.id ? `/writer/${article.author.id}` : null;
+
+  const cleanExcerpt = (() => {
+    if (!article.excerpt) return null;
+    const exc = article.excerpt.trim().toLowerCase().replace(/[-\s\u200b-\u200d\ufeff]/g, '');
+    const title = article.title.trim().toLowerCase().replace(/[-\s\u200b-\u200d\ufeff]/g, '');
+    const sub = (article.subtitle || '').trim().toLowerCase().replace(/[-\s\u200b-\u200d\ufeff]/g, '');
+    
+    // Check for exact matches
+    if (exc === title || exc === sub) return null;
+    
+    // Check for substring matches (if long enough to avoid false matches)
+    if (title.length > 8 && (exc.includes(title) || title.includes(exc))) return null;
+    if (sub.length > 8 && (exc.includes(sub) || sub.includes(exc))) return null;
+    
+    return article.excerpt;
+  })();
 
   return (
     <article className="min-w-0 w-full">
+      {/* Print-only Website Header */}
+      <div className="hidden print:flex justify-center border-b-2 border-primary pb-4 mb-6">
+        <SiteLogo variant="light" className="h-16 w-auto" />
+      </div>
+
       {/* 1. Opinion Template Layout */}
       {template === 'opinion' && (
         <div className="space-y-6">
@@ -82,7 +105,6 @@ export function ArticleDetailView({
 
           {/* Metadata */}
           <ArticleMetadata
-            category={article.primaryCategory}
             publishedAt={article.publishedAt}
             readingTime={article.readingTime}
             author={article.author}
@@ -91,7 +113,7 @@ export function ArticleDetailView({
           {/* Cover image vs Author avatar top banner */}
           {article.cover && article.cover.url ? (
             <div className="my-6">
-              <ArticleHero cover={article.cover} defaultTitle={article.title} layout="full" />
+              <ArticleHero cover={article.cover} defaultTitle={article.title} layout="full" hasVideo={article.hasVideo} videoUrl={article.video[0]?.url} />
             </div>
           ) : (
             <div className="bg-surface-2 border border-border/80 p-6 my-6 flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-6 font-sans">
@@ -133,7 +155,7 @@ export function ArticleDetailView({
             />
 
             <div className={editorialSpacing.readingColumn}>
-              <ArticleBody contentHtml={bodyHtml} excerpt={article.excerpt} />
+              <ArticleBody contentHtml={bodyHtml} excerpt={cleanExcerpt} />
             </div>
           </div>
 
@@ -153,27 +175,23 @@ export function ArticleDetailView({
 
       {/* 2. Standard News Template Layout (News, Live updates, and Special coverages) */}
       {template === 'standard' && (
-        <div className="space-y-6">
-          {/* Article Header Block */}
-          <ArticleHeader
-            title={article.title}
-            subtitle={article.subtitle}
-            isLive={isLive}
-            isOpinion={false}
-            breaking={article.flags.breaking}
-            featured={article.flags.featured}
-          />
+        <div className="space-y-2">
+          {/* 1. Metadata Row with top border */}
+          <div className="border-t border-border/80 pt-1">
+            <ArticleMetadata
+              publishedAt={article.publishedAt}
+              readingTime={article.readingTime}
+              author={article.author} // Restored author name inside metadata row
+            />
+          </div>
 
-          {/* Article Metadata */}
-          <ArticleMetadata
-            category={article.primaryCategory}
-            publishedAt={article.publishedAt}
-            readingTime={article.readingTime}
-            author={article.author} // Restored author name inside metadata row
-          />
+          {/* 2. Title with 22px font size */}
+          <h1 className="text-[22px] font-extrabold leading-snug text-primary !mt-2 !mb-2 py-0">
+            {article.subtitle || article.title}
+          </h1>
 
-          {/* Reading tools, Cover Image, and Body */}
-          <div className="w-full space-y-6">
+          {/* 4. Reading tools, Cover Image, and Body */}
+          <div className="w-full space-y-2 pt-0">
             <ReadingToolsBar
               articleId={article.id}
               url={shareUrl}
@@ -184,16 +202,43 @@ export function ArticleDetailView({
 
             {/* Body wrapper containing Floated Image and Wrapping paragraphs */}
 
-            <div className="my-6 block overflow-hidden">
-              {article.cover && article.cover.url && (
+            <div className="mt-2 mb-6 block overflow-hidden">
+              {article.cover && article.cover.url ? (
                 <ArticleHero 
                   cover={article.cover} 
                   defaultTitle={article.title} 
                   layout="float" 
+                  isLive={isLive}
+                  breaking={article.flags.breaking}
+                  featured={article.flags.featured}
+                  hasVideo={article.hasVideo}
+                  videoUrl={article.video[0]?.url}
                 />
+              ) : (
+                /* Badges above the body if there is no cover image */
+                (isLive || article.flags.breaking || article.flags.featured) && (
+                  <div className="flex flex-wrap gap-1.5 mb-4 justify-start print:hidden">
+                    {isLive && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-white bg-primary">
+                        <LivePulse />
+                        <span>مباشر الآن</span>
+                      </span>
+                    )}
+                    {article.flags.breaking && (
+                      <span className="px-3 py-1 text-xs font-bold text-white bg-[#dc2626] animate-pulse">
+                        عاجل
+                      </span>
+                    )}
+                    {article.flags.featured && (
+                      <span className="px-3 py-1 text-xs font-bold text-white bg-primary">
+                        تغطية خاصة
+                      </span>
+                    )}
+                  </div>
+                )
               )}
               
-              <ArticleBody contentHtml={bodyHtml} excerpt={article.excerpt} />
+              <ArticleBody contentHtml={bodyHtml} excerpt={cleanExcerpt} />
             </div>
 
             {/* Collapsible mobile TOC if headings exist */}
@@ -236,4 +281,36 @@ export function ArticleDetailView({
       )}
     </article>
   );
+}
+
+function stripTitleFromHtml(html: string, title: string, subtitle: string | null): string {
+  if (!html) return html;
+  
+  let currentHtml = html.trim();
+  const cleanTitle = title.trim().toLowerCase().replace(/[-\s\u200b-\u200d\ufeff]/g, '');
+  const cleanSub = (subtitle || '').trim().toLowerCase().replace(/[-\s\u200b-\u200d\ufeff]/g, '');
+  const blockSeparatorRegex = /(<\/p>|<br\s*\/?>|<\/div>|<\/h[1-6]>|\n\n)/i;
+
+  for (let i = 0; i < 2; i++) {
+    const parts = currentHtml.split(blockSeparatorRegex);
+    if (parts.length === 0) break;
+
+    const firstBlock = parts[0];
+    const innerText = firstBlock.replace(/<[^>]*>/g, '').trim();
+    const cleanInner = innerText.toLowerCase().replace(/[-\s\u200b-\u200d\ufeff]/g, '');
+
+    if (
+      cleanInner &&
+      (cleanInner === cleanTitle ||
+       cleanInner === cleanSub ||
+       (cleanTitle.includes(cleanInner) && cleanInner.length > 8) ||
+       (cleanInner.includes(cleanTitle) && cleanTitle.length > 8))
+    ) {
+      const separator = parts[1] || '';
+      currentHtml = currentHtml.substring(firstBlock.length + separator.length).trim();
+    } else {
+      break;
+    }
+  }
+  return currentHtml;
 }

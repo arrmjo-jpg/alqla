@@ -49,9 +49,9 @@ export default async function CategoryPage({
 
   const result = await getCategoryPage(category.slug, page, PER_PAGE, 'ar');
 
-  // Choose the featured hero item:
-  const featuredItem = result.items.find((it) => it.is_featured === true) || result.items[0] || null;
-  const gridItems = featuredItem ? result.items.filter((it) => it.id !== featuredItem.id) : [];
+  // Choose the top 2 featured hero items
+  const heroItems = result.items.slice(0, 2);
+  const gridItems = result.items.slice(2);
 
   // Helper to preserve all other query filters/parameters during navigation
   const buildQuery = (pageNum: number) => {
@@ -94,10 +94,12 @@ export default async function CategoryPage({
             </div>
           ) : (
             <>
-              {/* Featured Category Hero Article */}
-              {featuredItem && (
-                <div className="w-full">
-                  <FeaturedCategoryCard item={featuredItem} />
+              {/* Top 2 Featured Hero Articles — side by side */}
+              {heroItems.length > 0 && (
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:gap-6">
+                  {heroItems.map((item) => (
+                    <FeaturedCategoryCard key={item.id} item={item} />
+                  ))}
                 </div>
               )}
 

@@ -15,10 +15,12 @@ export async function CategoryFeatureQuad({
   categoryId,
   fallbackTitle,
   count = 4,
+  bgImage,
 }: {
   categoryId: number;
   fallbackTitle?: string;
   count?: number;
+  bgImage?: string;
 }) {
   const category = await getCategoryById(categoryId);
   if (!category) return null;
@@ -28,14 +30,25 @@ export async function CategoryFeatureQuad({
   const title = category.name.trim() || fallbackTitle || category.slug.replace(/-/g, ' ');
   const moreHref = `/category/${encodeURIComponent(category.slug)}`;
   const headingId = `quad-${categoryId}-heading`;
-  // ديسكتوب: عدد الأعمدة = عدد الأخبار (4 أو 5). صريح كي يلتقطه Tailwind JIT.
-  const desktopColsClass = count === 5 ? 'lg:grid-cols-5' : 'lg:grid-cols-4';
+  // ديسكتوب: عدد الأعمدة = عدد الأخبار (4 أو 5 أو 10). صريح كي يلتقطه Tailwind JIT.
+  const desktopColsClass = (count === 5 || count === 10) ? 'lg:grid-cols-5' : 'lg:grid-cols-4';
 
   const feature = items[0];
   const list = items.slice(1, count);
 
   return (
-    <section className="mt-6 sm:mt-8" aria-labelledby={headingId}>
+    <section
+      className={`relative z-0 mt-6 sm:mt-8 overflow-hidden ${
+        bgImage ? 'py-8 sm:py-10 border-y border-border' : ''
+      }`}
+      aria-labelledby={headingId}
+    >
+      {bgImage && (
+        <div
+          className="absolute inset-0 -z-10 bg-cover bg-center pointer-events-none"
+          style={{ backgroundImage: `url(${bgImage})`, opacity: 0.15 }}
+        />
+      )}
       <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6">
         {/* الترويسة الموحّدة: اسم القسم بخلفيّة حمراء + خطّ أبيض (بلا شحطة، بلا رابط علويّ). */}
         <SectionHeader title={title} headingId={headingId} href={moreHref} />

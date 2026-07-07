@@ -331,11 +331,12 @@
   display: flex;
   align-items: center;
   padding-top: 0.25rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding-bottom: 0.75rem;
 }
 .qalah-skin .header-nav-list {
   display: flex;
   list-style: none;
-  gap: 1.25rem;
   overflow-x: auto;
   white-space: nowrap;
   width: 100%;
@@ -343,6 +344,18 @@
   margin: 0;
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+.qalah-skin .header-nav-item {
+  padding-inline: 0.85rem;
+}
+.qalah-skin .header-nav-item:not(:first-child) {
+  border-inline-start: 1px solid rgba(0, 0, 0, 0.08);
+}
+.qalah-skin .header-nav-item:first-child {
+  padding-inline-start: 0;
+}
+.qalah-skin .header-nav-item:last-child {
+  padding-inline-end: 0;
 }
 .qalah-skin .header-nav-list::-webkit-scrollbar {
   display: none;
@@ -354,9 +367,12 @@
   font-weight: 700;
   transition: var(--transition-smooth);
   padding: 0.25rem 0;
+  border-bottom: 2px solid transparent;
 }
-.qalah-skin .header-nav-item a:hover {
+.qalah-skin .header-nav-item a:hover,
+.qalah-skin .header-nav-item.active a {
   color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
 }
 
 /* مجموعة أكشن الموبايل (بحث/إشعارات/حساب) داخل الصفّ العلويّ — مخفيّة على سطح المكتب */

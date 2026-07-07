@@ -52,16 +52,26 @@ export default async function Home() {
       </div>
       {/* أخبار محلية — التصميم الأصليّ (LatestUpdates، بالـID الثابت #2). */}
       <LatestUpdates categoryId={2} fallbackTitle="أخبار محلية" />
-      {/* برلمانيات — 8 أخبار (كبير + 7 صغار، بلا سكرول جوّال) (#36). */}
-      <CategoryFeatureQuad categoryId={36} fallbackTitle="برلمانيات" count={8} />
+      {/* برلمانيات — 8 أخبار (كبير + 7 صغار، بلا سكرول جوّال) (#36) بخلفية صورة شفافة. */}
+      <CategoryFeatureQuad
+        categoryId={36}
+        fallbackTitle="برلمانيات"
+        count={8}
+        bgImage="https://middle-east-online.com/sites/default/files/styles/home_special_coverage_1920xauto/public/2021-05/jo_0.jpg?itok=NWiLImq5"
+      />
       {/* شريط الاشتراك في واتساب. */}
       <SubscribeBox variant="bar" />
       {/* عربي دولي — 8 أخبار (كبير + 7 صغار، بلا سكرول جوّال) (#43). */}
       <CategoryFeatureQuad categoryId={43} fallbackTitle="عربي دولي" count={8} />
-      {/* أخبار ثقافية — تحت عربي دولي مباشرةً: 5 أخبار (كبير + 4 صغار، بلا سكرول) (#56). */}
-      <CategoryFeatureQuad categoryId={56} fallbackTitle="أخبار ثقافية" count={5} />
-      {/* ضيف الأسبوع — تحت أخبار ثقافية مباشرةً (تصنيف #58): 4 أخبار بنمط بطاقات عائمة. */}
-      <IncidentsSection categoryId={58} headingId="week-stories-heading" fallbackTitle="ضيف الأسبوع" count={4} />
+      {/* أخبار ثقافية — تحت عربي دولي مباشرةً: 10 أخبار (كبير + 9 صغار، بلا سكرول) (#56) بخلفية صورة شفافة. */}
+      <CategoryFeatureQuad
+        categoryId={56}
+        fallbackTitle="أخبار ثقافية"
+        count={10}
+        bgImage="https://cnn-arabic-images.cnn.io/cloudinary/image/upload/w_1280,h_720,c_fill,q_auto,g_center/cnnarabic/2024/10/13/images/280022.jpg"
+      />
+      {/* ضيف الأسبوع — تحت أخبار ثقافية مباشرةً (تصنيف #58): 8 أخبار بنمط بطاقات عائمة. */}
+      <IncidentsSection categoryId={58} headingId="week-stories-heading" fallbackTitle="ضيف الأسبوع" count={8} />
       {/* قسم الاقتصاد (تصميم خاصّ: بورصة + ذهب). */}
       <EconomyShowcase />
       {/* ودجت 3 أعمدة: تريندينغ + آخر المستجدات + الأكثر قراءة. */}

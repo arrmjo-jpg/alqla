@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { env } from '@/lib/env';
 
 interface BreadcrumbProps {
-  category: { name: string; slug: string } | null;
+  category: { id: number | string; name: string; slug: string } | null;
   title: string;
   articleUrl: string;
 }
@@ -26,7 +26,7 @@ export function ArticleBreadcrumb({ category, title, articleUrl }: BreadcrumbPro
               '@type': 'ListItem',
               'position': 2,
               'name': category.name,
-              'item': `${siteUrl}/category/${encodeURIComponent(category.slug)}`,
+              'item': `${siteUrl}/category-${category.id}/${encodeURIComponent(category.slug)}`,
             },
           ]
         : []),
@@ -45,7 +45,7 @@ export function ArticleBreadcrumb({ category, title, articleUrl }: BreadcrumbPro
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
       />
-      <nav aria-label="مسار التنقّل" className="mb-6 flex flex-wrap items-center text-xs text-muted sm:text-sm print:hidden">
+      <nav aria-label="مسار التنقّل" className="mb-1 flex flex-wrap items-center text-xs text-muted sm:text-sm print:hidden">
         <ol itemScope itemType="https://schema.org/BreadcrumbList" className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem" className="flex items-center">
             <Link itemProp="item" href="/" className="transition-colors hover:text-primary font-medium">
@@ -60,7 +60,7 @@ export function ArticleBreadcrumb({ category, title, articleUrl }: BreadcrumbPro
               <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem" className="flex items-center">
                 <Link
                   itemProp="item"
-                  href={`/category/${encodeURIComponent(category.slug)}`}
+                  href={`/category-${category.id}/${encodeURIComponent(category.slug)}`}
                   className="transition-colors hover:text-primary font-medium"
                 >
                   <span itemProp="name">{category.name}</span>

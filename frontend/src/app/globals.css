@@ -1,6 +1,57 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* ── Alilato Font Family Declarations ── */
+@font-face {
+  font-family: 'Alilato-Medium';
+  src: url('./fonts/Alilato-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Alilato-Medium';
+  src: url('./fonts/Alilato-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Alilato-Medium';
+  src: url('./fonts/Alilato-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Alilato-Medium';
+  src: url('./fonts/Alilato-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Alilato-Medium';
+  src: url('./fonts/Alilato-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Alilato-Medium';
+  src: url('./fonts/Alilato-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Alilato-Medium';
+  src: url('./fonts/Alilato-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ══════════════════════════════════════════════════════════════════════
    AlphaCMS · frontend — Global Design System (Tailwind v4, RTL-first)
    Tokens only. No component styles here. Premium media-platform palette.
@@ -222,13 +273,132 @@
 
 /* طباعة نظيفة لصفحات المحتوى/المقالات: نصّ أسود على أبيض (الكروم مخفيّ عبر print:hidden). */
 @media print {
-  body {
-    background: #fff !important;
+  /* Force a pure white background on the entire document and remove background graphics */
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
   }
+  
+  html,
+  body,
+  main,
   article,
-  article * {
+  .site-frame,
+  .qalah-skin {
+    background: #fff !important;
+    background-color: #fff !important;
+  }
+
+  /* Hide all headers, footers, navigation, sidebars, progress bars, view toggle, cookie policy, tickers, comments, feeds */
+  header,
+  footer,
+  aside,
+  nav,
+  iframe,
+  ins,
+  .adsbygoogle,
+  [class*="ad-"],
+  [id*="ad-"],
+  .ad-zone,
+  [class*="ad-zone"],
+  .AdZone,
+  amp-ad,
+  .qalah-navbar,
+  .qalah-header,
+  .qalah-footer,
+  .news-ticker,
+  .breaking-news-bar,
+  .mobile-bottom-nav,
+  .mobile-top-banner,
+  .desktop-view-toggle,
+  .print\:hidden,
+  .cookie-policy-modal,
+  .ScrollTopButton,
+  .font-size-controls,
+  .subscribe-box,
+  .subscribe-section,
+  .comment-section,
+  .comments-section,
+  .feed-section,
+  .breadcrumb,
+  .ArticleInteractionBar,
+  [aria-labelledby="wa-bar-heading"] {
+    display: none !important;
+  }
+
+  /* Make the main article content full width */
+  main,
+  article,
+  .site-frame,
+  .qalah-skin {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    float: none !important;
+  }
+
+
+  /* Ensure the title is in its primary color or black */
+  h1 {
+    color: #dc2626 !important;
+    font-size: 24pt !important;
+    margin-bottom: 12pt !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* Reset cover image dimensions and wrapper to prevent pagination/blank page bugs */
+  figure, 
+  figure > div {
+    padding-bottom: 0 !important;
+    height: auto !important;
+    position: relative !important;
+    overflow: visible !important;
+    background: transparent !important;
+    border: none !important;
+  }
+  
+  figure img {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 600px !important;
+    height: auto !important;
+    margin: 18pt auto !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 4px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Set content/body text to exactly 14px with clean line height */
+  article,
+  article p,
+  .tiptap-content,
+  .tiptap-content p,
+  .tiptap-content * {
+    font-size: 14px !important;
+    line-height: 1.6 !important;
     color: #000 !important;
   }
+
+  article p {
+    margin-bottom: 12pt !important;
+    text-align: justify !important;
+  }
+
+  /* Refine metadata row styling in print */
+  .editorial-meta,
+  .editorial-meta * {
+    color: #4b5563 !important;
+    font-size: 11px !important;
+  }
+
   .tiptap-content a {
     text-decoration: underline;
   }
@@ -370,10 +540,28 @@
 @media (min-width: 1024px) {
   .editorial-float-left {
     float: left;
-    margin-inline-end: 2.5rem;
-    margin-block-end: 1.5rem;
-    width: 45%;
-    max-width: 480px;
+    margin-inline-start: 2.5rem !important;
+    margin-inline-end: 0 !important;
+    margin-block-end: 1.5rem !important;
+    width: 500px !important;
+    height: 358px !important;
     clear: both;
   }
+  .editorial-float-left > div {
+    padding-bottom: 0 !important;
+    height: 100% !important;
+  }
+}
+
+/* Global font-family override */
+*, ::before, ::after {
+  font-family: Alilato-Medium, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif !important;
+}
+
+/* Force article body paragraphs and excerpt lead to always be justified */
+.tiptap-content p,
+.tiptap-content,
+.editorial-lead {
+  text-align: justify !important;
+  text-justify: inter-word !important;
 }

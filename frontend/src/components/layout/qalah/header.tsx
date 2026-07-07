@@ -7,6 +7,7 @@ import { getStaticPages } from '@/lib/static-pages';
 import { socialEntries } from '../social-map';
 import { QalahHeaderAuth } from './header-auth';
 import { QalahMenu } from './menu';
+import { QalahNavLinks } from './nav-links';
 import { QalahSearch } from './search';
 import { QalahSearchModal } from './search-modal';
 
@@ -41,6 +42,13 @@ export async function QalahHeader() {
         )}
       </div>
 
+      {/* صفّ 3: أقسام الموقع التحريريّة من الـCMS (مخفيّ على الموبايل — موجود في القائمة الجانبيّة) */}
+      {navCategories.length > 0 && (
+        <div className="header-nav-row">
+          <QalahNavLinks categories={navCategories} />
+        </div>
+      )}
+
       {/* صفّ 2: الهامبرغر + الشعار | (سطح المكتب) البث + البحث + الإشعارات + الحساب */}
       <div className="header-main-row">
         <div className="header-logo-group">
@@ -59,19 +67,6 @@ export async function QalahHeader() {
           <QalahHeaderAuth />
         </div>
       </div>
-
-      {/* صفّ 3: أقسام الموقع التحريريّة من الـCMS (مخفيّ على الموبايل — موجود في القائمة الجانبيّة) */}
-      {navCategories.length > 0 && (
-        <div className="header-nav-row">
-          <ul className="header-nav-list">
-            {navCategories.map((c) => (
-              <li key={c.slug} className="header-nav-item">
-                <Link href={c.id ? `/category-${c.id}/${c.slug}` : `/category/${c.slug}`}>{c.name}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </header>
   );
 }

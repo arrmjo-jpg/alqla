@@ -49,7 +49,7 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
       {/* إعلان كبير (leaderboard) أسفل الهيدر مباشرة — صفّ كامل بعرض الحاوية. */}
       <AdZone
         zone="aalan_kbyr_asfl_alhydr_mbashra"
-        className="mx-auto mt-1 flex w-full max-w-[1200px] justify-center px-4 sm:px-6 lg:px-8"
+        className="mx-auto mt-6 flex w-full max-w-[1200px] justify-center px-4 sm:px-6 lg:px-8"
       />
 
       {/* إعلانان مباشرةً فوق الهيرو — على الرئيسية فقط (HomeOnly)؛ جمب بعض على المتصفّح (sm:flex-row +

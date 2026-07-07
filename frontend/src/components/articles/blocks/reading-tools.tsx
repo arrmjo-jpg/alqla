@@ -84,7 +84,7 @@ export function ReadingToolsBar({
   };
 
   return (
-    <div className="flex flex-col gap-4 border-b border-border pb-4 mb-6 print:hidden">
+    <div className="flex flex-col gap-3 pb-0 mb-1 print:hidden">
       {/* Audio Reader (if TTS enabled) */}
       {ttsEnabled && (
         <div className="flex items-center">
@@ -96,15 +96,14 @@ export function ReadingToolsBar({
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3 lg:hidden">
         {/* Social networks share icons */}
         <div className="flex items-center gap-2">
-          {getNetworks(url, title).map(({ key, label, href, Icon, brand }) => (
+          {getNetworks(url, title).map(({ key, label, href, Icon }) => (
             <button
               key={key}
               type="button"
               onClick={() => handleShareClick(key, href)}
               aria-label={`مشاركة عبر ${label}`}
               title={label}
-              className="flex size-9 items-center justify-center bg-surface-2 transition-all hover:-translate-y-0.5 hover:bg-surface-3 focus-visible:outline-2 focus-visible:outline-primary"
-              style={{ color: brand }}
+              className="flex size-9 items-center justify-center bg-primary text-white transition-all hover:-translate-y-0.5 hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary"
             >
               <Icon size={18} />
             </button>
@@ -130,12 +129,12 @@ export function ReadingToolsBar({
             onClick={handleCopyLink}
             aria-label="نسخ الرابط"
             title="نسخ الرابط"
-            className="flex h-9 px-3 items-center gap-1.5 bg-surface-2 text-fg text-xs font-bold transition-all hover:bg-surface-3"
+            className="flex h-9 px-3 items-center gap-1.5 bg-primary text-white text-xs font-bold transition-all hover:bg-primary/90"
           >
             {copied ? (
               <>
-                <Check className="size-4 text-success" />
-                <span className="text-success">تم النسخ</span>
+                <Check className="size-4 text-white animate-pulse" />
+                <span className="text-white font-bold">تم النسخ</span>
               </>
             ) : (
               <>
@@ -151,7 +150,7 @@ export function ReadingToolsBar({
             onClick={handlePrint}
             aria-label="طباعة الخبر"
             title="طباعة"
-            className="flex size-9 items-center justify-center bg-surface-2 text-fg transition-all hover:bg-surface-3"
+            className="flex size-9 items-center justify-center bg-primary text-white transition-all hover:bg-primary/90"
           >
             <Printer className="size-4" />
           </button>
@@ -162,9 +161,7 @@ export function ReadingToolsBar({
             onClick={handleBookmark}
             aria-label={favorited ? 'إزالة من المفضّلة' : 'حفظ في المفضّلة'}
             title={favorited ? 'محفوظ' : 'حفظ'}
-            className={`flex h-9 px-3 items-center gap-1.5 transition-all ${
-              favorited ? 'bg-primary text-white font-bold' : 'bg-surface-2 text-fg hover:bg-surface-3'
-            }`}
+            className="flex h-9 px-3 items-center gap-1.5 bg-primary text-white font-bold transition-all hover:bg-primary/90"
           >
             <Bookmark className={`size-4 ${favorited ? 'fill-current' : ''}`} />
             <span>{favorited ? 'محفوظ' : 'حفظ'}</span>
@@ -229,17 +226,14 @@ export function StickyShareSidebar({
       </span>
 
       {/* Share Networks */}
-      {getNetworks(url, title).map(({ key, label, href, Icon, brand }) => (
+      {getNetworks(url, title).map(({ key, label, href, Icon }) => (
         <button
           key={key}
           type="button"
           onClick={() => handleShareClick(key, href)}
           aria-label={`مشاركة عبر ${label}`}
           title={label}
-          className="flex size-10 items-center justify-center bg-surface border border-border text-muted transition-all hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-primary"
-          style={{ '--hover-color': brand } as React.CSSProperties}
-          onMouseEnter={(e) => (e.currentTarget.style.color = brand)}
-          onMouseLeave={(e) => (e.currentTarget.style.color = '')}
+          className="flex size-10 items-center justify-center bg-primary text-white transition-all hover:-translate-y-0.5 hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary"
         >
           <Icon size={18} />
         </button>
@@ -254,8 +248,8 @@ export function StickyShareSidebar({
         onClick={handleCopyLink}
         aria-label="نسخ رابط المقال"
         title="نسخ الرابط"
-        className={`flex size-10 items-center justify-center bg-surface border border-border transition-all hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-primary ${
-          copied ? 'text-success border-success' : 'text-fg hover:text-primary'
+        className={`flex size-10 items-center justify-center transition-all hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-primary ${
+          copied ? 'bg-primary border-primary text-white font-bold animate-pulse' : 'bg-primary text-white border-primary/20'
         }`}
       >
         <Link2 size={18} />
@@ -267,7 +261,7 @@ export function StickyShareSidebar({
         onClick={handlePrint}
         aria-label="طباعة الخبر"
         title="طباعة الخبر"
-        className="flex size-10 items-center justify-center bg-surface border border-border text-fg transition-all hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-primary hover:text-primary"
+        className="flex size-10 items-center justify-center bg-primary text-white border border-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-primary"
       >
         <Printer size={18} />
       </button>
@@ -278,11 +272,7 @@ export function StickyShareSidebar({
         onClick={handleBookmark}
         aria-label={favorited ? 'إزالة من المفضّلة' : 'حفظ في المفضّلة'}
         title={favorited ? 'إزالة من المفضّلة' : 'حفظ في المفضّلة'}
-        className={`flex size-10 items-center justify-center border transition-all hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-primary ${
-          favorited
-            ? 'bg-primary border-primary text-white'
-            : 'bg-surface border-border text-fg hover:text-primary'
-        }`}
+        className="flex size-10 items-center justify-center bg-primary text-white border border-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-primary"
       >
         <Bookmark size={18} className={favorited ? 'fill-current' : ''} />
       </button>

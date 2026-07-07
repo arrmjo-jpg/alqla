@@ -126,13 +126,17 @@ export default async function ArticlePage({ params }: { params: Promise<{ id: st
         </aside>
 
         {/* 2. Center Main Article Column */}
-        <main className="min-w-0 lg:col-span-8 space-y-3">
+        <main className="min-w-0 lg:col-span-8 space-y-3 lg:border-l lg:border-primary/40 lg:pl-8">
           {/* visual Breadcrumb inside the main column flow to align sidebar to the top of the page */}
-          <ArticleBreadcrumb
-            category={article.primaryCategory}
-            title={article.title}
-            articleUrl={article.href}
-          />
+          <div className="print:hidden">
+            <div className="border-r-4 border-primary/80 pr-3 py-0.5">
+              <ArticleBreadcrumb
+                category={article.primaryCategory}
+                title={article.title}
+                articleUrl={article.href}
+              />
+            </div>
+          </div>
 
           <ArticleDetailView
             article={article}

@@ -34,7 +34,8 @@ export function formatRelativeTime(iso?: string | null): string {
   let duration = (d.getTime() - Date.now()) / 1000;
   for (const division of RELATIVE_DIVISIONS) {
     if (Math.abs(duration) < division.amount) {
-      return RELATIVE.format(Math.round(duration), division.unit);
+      const formatted = RELATIVE.format(Math.round(duration), division.unit);
+      return formatted.replace(/^قبل\s+/, 'منذ ');
     }
     duration /= division.amount;
   }
