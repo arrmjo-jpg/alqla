@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
@@ -55,13 +55,13 @@ class RevalidateFrontendCacheJob implements ShouldQueue
                     'status' => $response->status(),
                     'tags' => $this->tags,
                 ]);
+                $response->throw();
             }
         } catch (\Throwable $e) {
-            // معزول الفشل: انقطاع الواجهة لا يكسر مسار النشر ولا يُفجِّر إعادة محاولة.
-            Log::warning('[frontend-revalidate] failed', [
-                'error' => $e->getMessage(),
+            Log::error('[frontend-revalidate] failed: ' . $e->getMessage(), [
                 'tags' => $this->tags,
             ]);
+            throw $e;
         }
     }
 }
