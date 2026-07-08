@@ -43,6 +43,12 @@ class ListPublicArticlesAction
         // وضع cursor (للجوّال/التمرير العميق): ثابت وسريع بلا COUNT ولا إزاحة عناصر.
         $cursorMode = $request->query('paginate') === 'cursor';
 
+        // حماية الإنتاج: نمنع الوصول لصفحات عميقة جداً (مثل page=3324) عبر الترقيم التقليدي
+        // لأن OFFSET يدمر الأداء مع OR EXISTS. (أول 100 صفحة تكفي للـ SEO).
+        if (! $cursorMode && $page > 100) {
+            abort(404, 'Page limit exceeded. Use cursor pagination for deep scrolling.');
+        }
+
         $queryHash = $this->hashQuery($request, $perPage, $page);
 
         // إبطال حبيبي: قائمة مفلترة بتصنيف تُوسَم بوسم ذلك التصنيف (تُبطَل عند تغيّر
@@ -251,7 +257,39 @@ class ListPublicArticlesAction
             $tags,
             $countCacheKey,
             CacheTtl::MEDIUM,
-            fn () => $query->toBase()->getCountForPagination()
+            function () use ($query, $request, $locale) {
+                // إصلاح جذري لـ DEPENDENT SUBQUERY Stampede:
+                // إذا كان الطلب مفلتراً بتصنيف فقط (بدون بحث أو وسوم إضافية)، 
+                // نستخدم UNION سريع (~145ms) بدلاً من OR EXISTS البطيء (~44,000ms).
+                $filters = $request->query('filter', []);
+                $catSlug = (string) ($filters['category'] ?? '');
+                
+                if ($catSlug !== '' && empty($filters['q']) && empty($filters['tag']) && empty($filters['type'])) {
+                    $category = \App\Models\Category::where('slug', $catSlug)->where('locale', $locale)->first();
+                    if ($category) {
+                        $now = now()->toDateTimeString();
+                        $unionSql = "
+                            SELECT id FROM articles
+                            WHERE status = 'published' AND published_at IS NOT NULL
+                              AND published_at <= ? AND locale = ?
+                              AND primary_category_id = ? AND deleted_at IS NULL
+                            UNION
+                            SELECT a.id FROM articles AS a
+                            INNER JOIN article_category AS ac ON ac.article_id = a.id
+                            INNER JOIN categories AS c        ON c.id = ac.category_id
+                            WHERE a.status = 'published' AND a.published_at IS NOT NULL
+                              AND a.published_at <= ? AND a.locale = ?
+                              AND c.id = ? AND c.deleted_at IS NULL AND a.deleted_at IS NULL
+                        ";
+                        
+                        return \Illuminate\Support\Facades\DB::table(\Illuminate\Support\Facades\DB::raw("({$unionSql}) as unioned"))
+                            ->setBindings([$now, $locale, $category->id, $now, $locale, $category->id])
+                            ->count();
+                    }
+                }
+
+                return $query->toBase()->getCountForPagination();
+            }
         );
 
         $page = max(1, (int) $request->integer('page', 1));
