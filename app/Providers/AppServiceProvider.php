@@ -51,7 +51,9 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -117,6 +119,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureHealthChecks();
         $this->configureNotificationRouting();
         $this->configureContentEvents();
+        $this->configureSlowQueryLog();
     }
 
     /**
@@ -126,6 +129,40 @@ class AppServiceProvider extends ServiceProvider
     private function configureNotificationRouting(): void
     {
         Event::listen(NotificationEvent::class, RouteNotificationEvent::class);
+    }
+
+    /**
+     * يسجّل SQL queries التي تتجاوز الحد الأدنى (بالمللي ثانية) في قناة perf.
+     *
+     * مُعطَّل افتراضياً (PERF_SLOW_QUERY_MS=0) — صفر overhead في الإنتاج العادي.
+     * فعّله وقت التحقيق فقط: PERF_SLOW_QUERY_MS=200
+     *
+     * كل سطر في perf.log سيحتوي: sql, time_ms, bindings, request_id, url, pid
+     * مما يعطيك الدليل القاطع على أي SQL هو الذي أكل الوقت.
+     */
+    private function configureSlowQueryLog(): void
+    {
+        $threshold = (int) env('PERF_SLOW_QUERY_MS', 0);
+
+        if ($threshold <= 0) {
+            return;
+        }
+
+        DB::listen(function (\Illuminate\Database\Events\QueryExecuted $query) use ($threshold): void {
+            if ($query->time < $threshold) {
+                return;
+            }
+
+            Log::channel('perf')->warning('SlowQuery detected', [
+                'sql'        => $query->sql,
+                'time_ms'    => $query->time,
+                'bindings'   => array_map(fn ($b) => is_string($b) ? mb_strimwidth($b, 0, 80) : $b, $query->bindings),
+                'connection' => $query->connectionName,
+                'request_id' => request()->header('X-Request-ID', 'n/a'),
+                'url'        => request()->fullUrl(),
+                'pid'        => getmypid(),
+            ]);
+        });
     }
 
     /**
