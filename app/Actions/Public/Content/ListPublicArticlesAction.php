@@ -45,7 +45,8 @@ class ListPublicArticlesAction
 
         // حماية الإنتاج: نمنع الوصول لصفحات عميقة جداً (مثل page=3324) عبر الترقيم التقليدي
         // لأن OFFSET يدمر الأداء مع OR EXISTS. (أول 100 صفحة تكفي للـ SEO).
-        if (! $cursorMode && $page > 100) {
+        $maxPage = (int) config('performance.pagination.max_page', 100);
+        if (! $cursorMode && $maxPage > 0 && $page > $maxPage) {
             abort(404, 'Page limit exceeded. Use cursor pagination for deep scrolling.');
         }
 
