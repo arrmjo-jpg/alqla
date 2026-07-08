@@ -12,6 +12,8 @@ import { getSiteSettings } from '@/lib/site-settings';
 import { DesktopViewProvider } from '@/lib/desktop-view-context';
 import { MobileTopToggleBanner } from '@/components/layout/desktop-view-toggle';
 
+import { NetworkGrid } from '@/components/home/network-grid';
+
 // قشرة الموقع العامّ — تصميم «القلعة نيوز» الجديد، مُنطّق داخل .qalah-skin (إطار 1450px + هويّة).
 // الإعلانات وقوائم الموبايل ومودال الكوكيز تبقى كما كانت. لوحة /account خارج هذه المجموعة بقالبها الخاصّ.
 // التراجع للقشرة القديمة: استبدل QalahNavbar/QalahHeader/QalahFooter بـ SiteHeader/SectionsBar/SiteFooter
@@ -55,7 +57,11 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
 
       {/* إعلانان مباشرةً فوق الهيرو — على الرئيسية فقط (HomeOnly)؛ جمب بعض على المتصفّح (sm:flex-row +
           flex-1)، تحت بعض على الجوّال (flex-col). على باقي الصفحات يُخفيان (لا يُجلبان). */}
+      {/* الإعلانات وشبكة الأخبار على الرئيسية فقط (HomeOnly) */}
       <HomeOnly>
+        {/* شبكة 8 أخبار من الموقع كامل أسفل الشريط الإخباري مباشرة */}
+        <NetworkGrid items={latest.slice(0, 8)} />
+
         {/* إعلان السلايدر الكبير (aalan_fy_qsm_slaydr_kbyr_1410) — إعلان واحد كبير فوق الهيرو والإعلانين. */}
         <AdZone zone="aalan_fy_qsm_slaydr_kbyr_1410" className="mb-2 flex justify-center px-4" />
         <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-2 px-4 sm:flex-row sm:px-6 lg:px-8">
