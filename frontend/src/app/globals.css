@@ -544,12 +544,8 @@
     margin-inline-end: 0 !important;
     margin-block-end: 1.5rem !important;
     width: 500px !important;
-    height: 358px !important;
+    height: auto !important;
     clear: both;
-  }
-  .editorial-float-left > div {
-    padding-bottom: 0 !important;
-    height: 100% !important;
   }
 }
 

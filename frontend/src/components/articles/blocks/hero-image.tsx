@@ -34,7 +34,7 @@ export function ArticleHero({
   // Determine aspect ratio to set height pad percentage (for zero CLS)
   const width = cover.width ?? 1600;
   const height = cover.height ?? 900;
-  const padPercentage = layout === 'float' ? 71.6 : (height / width) * 100;
+  const padPercentage = (height / width) * 100;
   
   // Dynamic media aspect check
   const isVertical = height > width;
