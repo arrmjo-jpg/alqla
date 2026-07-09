@@ -907,30 +907,16 @@
   .qalah-skin .news-ticker-track { animation: none; }
 }
 
-/* شريط الأخبار العاجلة — مستوحى من «صوت الحق»: ثابت أسفل الموقع، خبر واحد دوّار + شارة بيضاء + مشاركة + إغلاق */
+/* شريط الأخبار العاجلة — يظهر كشريط طبيعي تحت الشريط الإخباري */
 .qalah-skin .breaking-bar {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 1450px;
-  max-width: 100%;
-  height: 70px;
-  z-index: 55;
+  position: relative;
+  width: 100%;
+  height: 60px;
   background: #b90000;
   color: #fff;
   align-items: center;
   overflow: hidden;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 -10px 40px rgba(185, 0, 0, 0.4);
-  animation: breaking-rise 0.5s ease both;
-}
-@keyframes breaking-rise {
-  from { transform: translate(-50%, 100%); }
-  to { transform: translate(-50%, 0); }
-}
-@media (max-width: 1023px) {
-  .qalah-skin .breaking-bar { bottom: 3.5rem; }
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 /* الشارة البيضاء «عاجل» مع حافة بيضاء مائلة تنفذ في الأحمر */

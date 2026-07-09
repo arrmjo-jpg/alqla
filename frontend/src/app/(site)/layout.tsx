@@ -48,6 +48,8 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
       {/* الشريط الإخباريّ — آخر ١٠ أخبار تحت المنيو (آلة كاتبة على الديسكتوب / تكير متحرّك على الجوّال). */}
       <NewsTicker items={latest.slice(0, 10).map((i) => ({ id: i.id, title: i.title, href: i.href }))} />
 
+      {/* شريط الأخبار العاجلة (يظهر تحت الشريط الإخباري في حال وجود عاجل) */}
+      <BreakingNewsBar items={breaking.slice(0, 5).map((i) => ({ id: i.id, title: i.title, href: i.href }))} />
 
       {/* إعلان كبير (leaderboard) أسفل الهيدر مباشرة — صفّ كامل بعرض الحاوية. */}
       <AdZone
@@ -55,8 +57,6 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
         className="mx-auto mt-6 flex w-full max-w-[1200px] justify-center px-4 sm:px-6 lg:px-8"
       />
 
-      {/* إعلانان مباشرةً فوق الهيرو — على الرئيسية فقط (HomeOnly)؛ جمب بعض على المتصفّح (sm:flex-row +
-          flex-1)، تحت بعض على الجوّال (flex-col). على باقي الصفحات يُخفيان (لا يُجلبان). */}
       {/* الإعلانات وشبكة الأخبار على الرئيسية فقط (HomeOnly) */}
       <HomeOnly>
         {/* شبكة 8 أخبار من الموقع كامل أسفل الشريط الإخباري مباشرة */}
@@ -77,10 +77,6 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
       {/* فاصل يمنع شريط التنقّل السفليّ الثابت من تغطية آخر الفوتر على الموبايل */}
       <div className="h-14 lg:hidden" aria-hidden />
       <MobileBottomNav />
-
-      {/* شريط الأخبار العاجلة (تصميم «صوت الحق»): ديسكتوب شريط دوّار أسفل الموقع + جوّال مودال منبثق. */}
-      {/* المكوّن يدير فاصله الخاصّ (ديسكتوب فقط وعند الفتح) ويُخفى تلقائيًّا إن لا عاجل. */}
-      <BreakingNewsBar items={breaking.slice(0, 5).map((i) => ({ id: i.id, title: i.title, href: i.href }))} />
 
       <CookiePolicyModal text={settings?.cookie_policy?.trim() || ''} hideTrigger autoOpenKey="acm_cookie_ack" />
       </AdBatchProvider>

@@ -23,134 +23,79 @@ const FACEBOOK_PATH = 'M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 
 export function BreakingNewsBar({ items }: { items: BreakingItem[] }) {
   const [index, setIndex] = useState(0);
   const [desktopOpen, setDesktopOpen] = useState(true);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [origin, setOrigin] = useState('');
 
-  // بعد التركيب: أصل الرابط (للمشاركة) + فتح المودال على الجوّال إن وُجد عاجل غير مقروء
+  // بعد التركيب: أصل الرابط (للمشاركة)
   useEffect(() => {
     if (items.length === 0) return;
     setOrigin(window.location.origin);
-    let seen: number[] = [];
-    try {
-      seen = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    } catch {
-      seen = [];
-    }
-    const hasUnseen = items.some((it) => !seen.includes(it.id));
-    if (hasUnseen && window.innerWidth < 768) setMobileOpen(true);
   }, [items]);
 
-  // تدوير العناوين على الديسكتوب كل ٥ ثوانٍ
+  // تدوير العناوين كل ٥ ثوانٍ
   useEffect(() => {
     if (items.length <= 1) return;
     const t = setInterval(() => setIndex((i) => (i + 1) % items.length), 5000);
     return () => clearInterval(t);
   }, [items.length]);
 
-  if (items.length === 0) return null;
-
-  const dismissMobile = () => {
-    setMobileOpen(false);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items.map((i) => i.id)));
-    } catch {
-      /* تجاهل */
-    }
-  };
+  if (items.length === 0 || !desktopOpen) return null;
 
   const shareUrl = (href: string) => (origin ? origin + href : href);
 
   return (
-    <>
-      {/* ===== ديسكتوب: شريط سفليّ دوّار ===== */}
-      {desktopOpen && (
-        <>
-          <aside className="breaking-bar hidden md:flex" aria-label="أخبار عاجلة">
-            {/* شارة «عاجل» */}
-            <div className="breaking-badge">
-              <span className="breaking-badge-text">عاجل</span>
-              <span className="breaking-badge-skew" aria-hidden />
-            </div>
+    <aside className="breaking-bar flex" aria-label="أخبار عاجلة">
+      {/* شارة «عاجل» */}
+      <div className="breaking-badge">
+        <span className="breaking-badge-text">عاجل</span>
+        <span className="breaking-badge-skew" aria-hidden />
+      </div>
 
-            {/* مسرح العناوين — خبر واحد ظاهر */}
-            <div className="breaking-stage">
-              {items.map((it, i) => (
-                <div key={it.id} className="breaking-slide" data-active={i === index} aria-hidden={i !== index}>
-                  <Link href={it.href} className="breaking-headline" tabIndex={i === index ? 0 : -1}>
-                    {it.title}
-                  </Link>
-                  {origin && (
-                    <div className="breaking-share">
-                      <span className="breaking-share-label">شارك:</span>
-                      <a
-                        href={`https://wa.me/?text=${encodeURIComponent(`${it.title} ${shareUrl(it.href)}`)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="مشاركة عبر واتساب"
-                        className="breaking-share-btn"
-                        tabIndex={i === index ? 0 : -1}
-                      >
-                        <svg viewBox="0 0 24 24" className="size-5 fill-current" aria-hidden>
-                          <path d={WHATSAPP_PATH} />
-                        </svg>
-                      </a>
-                      <a
-                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl(it.href))}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="مشاركة عبر فيسبوك"
-                        className="breaking-share-btn"
-                        tabIndex={i === index ? 0 : -1}
-                      >
-                        <svg viewBox="0 0 24 24" className="size-5 fill-current" aria-hidden>
-                          <path d={FACEBOOK_PATH} />
-                        </svg>
-                      </a>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* زرّ الإغلاق */}
-            <button onClick={() => setDesktopOpen(false)} className="breaking-close" aria-label="إغلاق شريط العاجل">
-              <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </aside>
-
-          {/* فاصل بارتفاع الشريط (ديسكتوب فقط) كي لا يغطّي الفوتر */}
-          <div className="hidden h-[70px] md:block" aria-hidden />
-        </>
-      )}
-
-      {/* ===== جوّال: مودال منبثق ===== */}
-      {mobileOpen && (
-        <div
-          className="breaking-modal md:hidden"
-          role="dialog"
-          aria-modal="true"
-          aria-label="أخبار عاجلة"
-          onClick={dismissMobile}
-        >
-          <div className="breaking-modal-card" onClick={(e) => e.stopPropagation()}>
-            <div className="breaking-modal-head">عاجل</div>
-            <div className="breaking-modal-body">
-              <div className="breaking-modal-list">
-                {items.map((it) => (
-                  <Link key={it.id} href={it.href} className="breaking-modal-item" onClick={dismissMobile}>
-                    {it.title}
-                  </Link>
-                ))}
+      {/* مسرح العناوين — خبر واحد ظاهر */}
+      <div className="breaking-stage">
+        {items.map((it, i) => (
+          <div key={it.id} className="breaking-slide" data-active={i === index} aria-hidden={i !== index}>
+            <Link href={it.href} className="breaking-headline" tabIndex={i === index ? 0 : -1}>
+              {it.title}
+            </Link>
+            {origin && (
+              <div className="breaking-share">
+                <span className="breaking-share-label">شارك:</span>
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(`${it.title} ${shareUrl(it.href)}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="مشاركة عبر واتساب"
+                  className="breaking-share-btn"
+                  tabIndex={i === index ? 0 : -1}
+                >
+                  <svg viewBox="0 0 24 24" className="size-5 fill-current" aria-hidden>
+                    <path d={WHATSAPP_PATH} />
+                  </svg>
+                </a>
+                <a
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl(it.href))}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="مشاركة عبر فيسبوك"
+                  className="breaking-share-btn"
+                  tabIndex={i === index ? 0 : -1}
+                >
+                  <svg viewBox="0 0 24 24" className="size-5 fill-current" aria-hidden>
+                    <path d={FACEBOOK_PATH} />
+                  </svg>
+                </a>
               </div>
-              <button onClick={dismissMobile} className="breaking-modal-dismiss">
-                إغلاق التنبيه
-              </button>
-            </div>
+            )}
           </div>
-        </div>
-      )}
-    </>
+        ))}
+      </div>
+
+      {/* زرّ الإغلاق */}
+      <button onClick={() => setDesktopOpen(false)} className="breaking-close" aria-label="إغلاق شريط العاجل">
+        <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </aside>
   );
 }
