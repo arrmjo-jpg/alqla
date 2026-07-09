@@ -34,6 +34,7 @@ final class FrontendCacheTags
         $slug = (string) $article->slug;
 
         $tags = [
+            'homepage',        // getHomepageFeed (Hero, Latest, Breaking, Editors Pick)
             'feed:latest',     // getLatestFeed (صفحة /latest + الشريط الجانبيّ)
             'feed:most_read',  // getMostReadFeed («الأكثر شيوعا» + /trending)
             "article:{$slug}", // getArticle (صفحة تفاصيل المقال)
