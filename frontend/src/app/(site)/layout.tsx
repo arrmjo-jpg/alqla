@@ -59,8 +59,8 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
 
       {/* الإعلانات وشبكة الأخبار على الرئيسية فقط (HomeOnly) */}
       <HomeOnly>
-        {/* شبكة 8 أخبار من الموقع كامل أسفل الشريط الإخباري مباشرة */}
-        <NetworkGrid items={latest.slice(0, 8)} />
+        {/* شبكة أخبار من الموقع كامل أسفل الشريط الإخباري مباشرة (تظهر فقط إذا كان is_squares true) */}
+        <NetworkGrid items={latest.filter((i) => i.is_squares).slice(0, 8)} />
 
         {/* إعلان السلايدر الكبير (aalan_fy_qsm_slaydr_kbyr_1410) — إعلان واحد كبير فوق الهيرو والإعلانين. */}
         <AdZone zone="aalan_fy_qsm_slaydr_kbyr_1410" className="mb-2 flex justify-center px-4" />

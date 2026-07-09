@@ -40,6 +40,7 @@ export interface FeedItem {
   category: string | null;
   categoryHref: string | null;
   is_featured?: boolean;
+  is_squares?: boolean;
   author: { id: number | null; name: string; avatar: string | null; isWriter: boolean } | null;
   publishedAt: string | null;
   badge: { kind: 'live' | 'breaking'; label: string } | null;
@@ -72,6 +73,7 @@ export const ItemSchema = z
     canonical_path: z.string().nullish(),
     published_at: z.string().nullish(),
     is_breaking: z.boolean().nullish(),
+    is_squares: z.boolean().nullish(),
     is_live: z.boolean().nullish(),
     locale: z.string().nullish(),
     primary_category: z.object({ id: z.number().nullish(), name: z.string().nullish(), slug: z.string().nullish() }).nullish(),
@@ -118,6 +120,7 @@ export function mapItem(it: Item): FeedItem {
       ? `${it.locale === 'en' ? '/en' : ''}/category-${cat.id}/${encodeURIComponent(cat.slug)}`
       : null,
     is_featured: !!it.is_featured,
+    is_squares: !!it.is_squares,
     author: it.author?.name
       ? {
           id: typeof it.author.id === 'number' ? it.author.id : null,

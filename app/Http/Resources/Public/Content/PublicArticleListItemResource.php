@@ -29,6 +29,7 @@ class PublicArticleListItemResource extends JsonResource
             'published_at' => $this->published_at?->toISOString(),
             // أعلام شارة كرت الهيرو (مصدر حقيقيّ، لا تلفيق) — مطابقة مورد التفصيل: عاجل + مباشر.
             'is_breaking' => (bool) $this->is_breaking,
+            'is_squares' => (bool) $this->is_squares,
             'is_live' => $this->type->value === 'live'
                 && $this->event_status?->value === 'live',
             'canonical_path' => $this->canonicalPath(),
