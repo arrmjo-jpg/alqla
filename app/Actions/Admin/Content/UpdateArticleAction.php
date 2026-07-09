@@ -56,6 +56,9 @@ class UpdateArticleAction
         $oldPath = $article->canonicalPath();
         $oldLocale = $article->locale;
         $oldSlug = (string) $article->slug;
+        $oldAuthorId = $article->author_id;
+        $oldTags = $article->tags->pluck('name')->all();
+
         // slugs التصنيفات قبل التعديل — للإبطال الحبيبي الدقيق عند تغيّر العضوية.
         $oldCategorySlugs = collect([$article->primaryCategory])
             ->merge($article->categories)
@@ -132,7 +135,7 @@ class UpdateArticleAction
         Cache::tags(
             ArticleCacheTags::writeTags($article->fresh(), $oldLocale, $oldSlug, $oldCategorySlugs)
         )->flush();
-        ArticleCdnPurge::purge($article, $oldPath);
+        ArticleCdnPurge::purge($article, $oldPath, $oldCategorySlugs, $oldTags, $oldAuthorId);
 
         return ApiResponse::success(
             __('article.updated'),
