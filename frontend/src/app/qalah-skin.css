@@ -111,6 +111,9 @@
     display: none;
   }
 }
+.qalah-skin .navbar-item:not(:first-child) {
+  border-inline-start: 1px solid rgba(255, 255, 255, 0.4);
+}
 .qalah-skin .navbar-item a {
   color: rgba(255, 255, 255, 0.92);
   text-decoration: none;
@@ -345,15 +348,15 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-.qalah-skin .header-nav-item {
-  padding-inline: 0.85rem;
-}
-.qalah-skin .header-nav-item:not(:first-child) {
-  border-inline-start: 1px solid rgba(0, 0, 0, 0.08);
-}
-.qalah-skin .header-nav-item:first-child {
-  padding-inline-start: 0;
-}
+  .qalah-skin .header-nav-item {
+    padding-inline: 0.85rem;
+  }
+  .qalah-skin .header-nav-item:not(:first-child) {
+    border-inline-start: 2px solid rgba(0, 0, 0, 0.3);
+  }
+  .qalah-skin .header-nav-item:first-child {
+    padding-inline-start: 0;
+  }
 .qalah-skin .header-nav-item:last-child {
   padding-inline-end: 0;
 }
