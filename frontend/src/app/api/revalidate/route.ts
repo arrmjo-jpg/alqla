@@ -1,4 +1,4 @@
-import { revalidateTag } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { type NextRequest, NextResponse } from 'next/server';
 
 // نقطة إبطال كاش الواجهة عند الطلب — يستدعيها الباك إند (RevalidateFrontendCacheJob) بعد كتابة محتوى.
@@ -23,7 +23,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const tags = Array.isArray(raw) ? raw.filter((t): t is string => typeof t === 'string' && t.length > 0) : [];
   if (tags.length === 0) return NextResponse.json({ error: 'no_tags' }, { status: 422 });
 
-  for (const tag of tags) revalidateTag(tag);
+  for (const tag of tags) {
+    revalidateTag(tag);
+    if (tag === 'homepage') {
+      revalidatePath('/');
+      revalidatePath('/en');
+    }
+  }
 
   return NextResponse.json({ revalidated: true, count: tags.length, tags });
 }
