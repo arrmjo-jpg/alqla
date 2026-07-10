@@ -56,8 +56,10 @@ export default async function EnCategoryPage({
 
   const result = await getCategoryPage(category.slug, page, PER_PAGE, 'en');
 
-  // Choose the featured hero item:
-  const featuredItem = result.items.find((it) => it.is_featured === true) || result.items[0] || null;
+  // Hero slot: newest item in the category (is_featured is deliberately absent from the public
+  // list resource - DEC-001 in docs/architecture/DECISION-LOG.md; dedicated feeds like getHeroFeed
+  // exist for actual featured-content curation).
+  const featuredItem = result.items[0] || null;
   const gridItems = featuredItem ? result.items.filter((it) => it.id !== featuredItem.id) : [];
 
   // Helper to preserve all other query filters/parameters during navigation
