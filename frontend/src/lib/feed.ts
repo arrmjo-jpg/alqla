@@ -303,78 +303,67 @@ export const getCategoryBySlug = cache(async (slug: string, locale = 'ar'): Prom
   return null;
 });
 
-// مقالات تصنيف محدّد (slug) — قائمة المقالات العامّة بمرشّح allow-list `filter[category]`.
-// نفس مغلّف {data:[…]} ومورد القائمة ⇒ إعادة استخدام mapItem. ISR 300s؛ فشل ⇒ [] (عزل الكتلة).
-export const getCategoryFeed = cache(
-  async (slug: string, limit = 4, locale = 'ar'): Promise<FeedItem[]> => {
-    return getCached(`category-feed:${locale}:${slug}:${limit}`, 60000, async () => {
-      if (!env.apiBaseUrl) return [];
-      try {
-        // paginate=cursor: الرئيسيّة تعرض عددًا ثابتًا (feed) بلا أرقام صفحات/إجماليّ ⇒ ترقيم المؤشّر
-        // (استراتيجيّة الـfeed المدمجة أصلاً في الـendpoint) يتجنّب COUNT(*) الباهظ. نقرأ data فقط.
-        const qs = new URLSearchParams({ per_page: String(limit), sort: '-published_at', paginate: 'cursor' });
-        qs.set('filter[category]', slug);
-        const res = await fetch(
-          `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles?${qs.toString()}`,
-          { headers: env.internalHeaders, next: { revalidate: 300, tags: ['articles', `category:${slug}`] } },
-        );
-        if (!res.ok) return [];
-        const parsed = EnvelopeSchema.safeParse(await res.json());
-        if (!parsed.success) return [];
-        return (parsed.data.data ?? []).map(mapItem);
-      } catch {
-        return [];
-      }
+// نداء مُوحَّد لكل "feed" غير مُرقَّم (عدد ثابت، بلا صفحات/إجماليّ) — الثلاثة أدناه كانوا يكرّرون نفس
+// paginate=cursor + fetch + EnvelopeSchema + mapItem حرفيّاً، يختلفون فقط بالفلتر ووسم الكاش.
+// cursor (لا offset) يتجنّب COUNT(*) الباهظ — استراتيجيّة الـfeed المدمجة أصلاً في الـendpoint.
+// انظر IMPLEMENTATION-ROADMAP.md 2.3.
+async function fetchCursorFeed(opts: {
+  locale: string;
+  limit: number;
+  filters: Record<string, string>;
+  revalidate: number;
+  tags: string[];
+}): Promise<FeedItem[]> {
+  const { locale, limit, filters, revalidate, tags } = opts;
+  if (!env.apiBaseUrl) return [];
+  try {
+    const qs = new URLSearchParams({ per_page: String(limit), sort: '-published_at', paginate: 'cursor' });
+    for (const [key, value] of Object.entries(filters)) qs.set(key, value);
+    const res = await fetch(`${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles?${qs.toString()}`, {
+      headers: env.internalHeaders,
+      next: { revalidate, tags },
     });
-  },
+    if (!res.ok) return [];
+    const parsed = EnvelopeSchema.safeParse(await res.json());
+    if (!parsed.success) return [];
+    return (parsed.data.data ?? []).map(mapItem);
+  } catch {
+    return [];
+  }
+}
+
+// مقالات تصنيف محدّد (slug) — قائمة المقالات العامّة بمرشّح allow-list `filter[category]`.
+// ISR 300s + كاش عبوريّ إضافيّ 60ث (getCached) — الوحيد بين الثلاثة الذي يحمل هذه الطبقة الإضافيّة.
+export const getCategoryFeed = cache(
+  async (slug: string, limit = 4, locale = 'ar'): Promise<FeedItem[]> =>
+    getCached(`category-feed:${locale}:${slug}:${limit}`, 60000, () =>
+      fetchCursorFeed({
+        locale,
+        limit,
+        filters: { 'filter[category]': slug },
+        revalidate: 300,
+        tags: ['articles', `category:${slug}`],
+      }),
+    ),
 );
 
 export const getTagFeed = cache(
-  async (tag: string, limit = 4, locale = 'ar'): Promise<FeedItem[]> => {
-    if (!env.apiBaseUrl) return [];
-    try {
-      // feed (عدد ثابت، بلا ترقيم) ⇒ cursor يتجنّب COUNT(*).
-      const qs = new URLSearchParams({ per_page: String(limit), sort: '-published_at', paginate: 'cursor' });
-      qs.set('filter[tag]', tag);
-      const res = await fetch(
-        `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles?${qs.toString()}`,
-        { headers: env.internalHeaders, next: { revalidate: 300, tags: ['articles', `tag:${tag}`] } },
-      );
-      if (!res.ok) return [];
-      const parsed = EnvelopeSchema.safeParse(await res.json());
-      if (!parsed.success) return [];
-      return (parsed.data.data ?? []).map(mapItem);
-    } catch {
-      return [];
-    }
-  },
+  async (tag: string, limit = 4, locale = 'ar'): Promise<FeedItem[]> =>
+    fetchCursorFeed({
+      locale,
+      limit,
+      filters: { 'filter[tag]': tag },
+      revalidate: 300,
+      tags: ['articles', `tag:${tag}`],
+    }),
 );
 
 export const getAuthorArticles = cache(
   async (authorId: number, limit = 2, locale = 'ar', type?: string): Promise<FeedItem[]> => {
-    if (!env.apiBaseUrl || !authorId) return [];
-    try {
-      // feed (عدد ثابت، بلا ترقيم) ⇒ cursor يتجنّب COUNT(*).
-      const qs = new URLSearchParams({
-        per_page: String(limit),
-        sort: '-published_at',
-        paginate: 'cursor',
-        'filter[author_id]': String(authorId),
-      });
-      if (type) {
-        qs.set('filter[type]', type);
-      }
-      const res = await fetch(
-        `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles?${qs.toString()}`,
-        { headers: env.internalHeaders, next: { revalidate: 300, tags: ['articles', `author_articles:${authorId}`] } },
-      );
-      if (!res.ok) return [];
-      const parsed = EnvelopeSchema.safeParse(await res.json());
-      if (!parsed.success) return [];
-      return (parsed.data.data ?? []).map(mapItem);
-    } catch {
-      return [];
-    }
+    if (!authorId) return [];
+    const filters: Record<string, string> = { 'filter[author_id]': String(authorId) };
+    if (type) filters['filter[type]'] = type;
+    return fetchCursorFeed({ locale, limit, filters, revalidate: 300, tags: ['articles', `author_articles:${authorId}`] });
   },
 );
 
