@@ -9,6 +9,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const slug = request.nextUrl.searchParams.get('slug') ?? '';
   if (!slug) return NextResponse.json({ error: 'bad_slug' }, { status: 400 });
+  const locale = request.nextUrl.searchParams.get('locale') === 'en' ? 'en' : 'ar';
 
   const headers: Record<string, string> = { Accept: 'application/json' };
   const inm = request.headers.get('if-none-match');
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   try {
     const res = await fetch(
-      `${env.apiBaseUrl}/api/v1/ar/articles/${encodeURIComponent(slug)}/live-updates?per_page=40`,
+      `${env.apiBaseUrl}/api/v1/${locale}/articles/${encodeURIComponent(slug)}/live-updates?per_page=40`,
       { headers, cache: 'no-store' },
     );
     const etag = res.headers.get('etag') ?? '';

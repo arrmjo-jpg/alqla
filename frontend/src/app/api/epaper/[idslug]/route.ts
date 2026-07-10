@@ -7,7 +7,7 @@ import { env } from '@/lib/env';
 export const dynamic = 'force-dynamic';
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ idslug: string }> },
 ): Promise<Response> {
   const { idslug } = await params;
@@ -15,8 +15,9 @@ export async function GET(
   if (!Number.isInteger(id) || id <= 0) return new Response('Bad request', { status: 400 });
   if (!env.apiBaseUrl) return new Response('Service unavailable', { status: 503 });
 
+  const locale = new URL(req.url).searchParams.get('locale') === 'en' ? 'en' : 'ar';
   // whereKey يقصّ الرقم في الباك إند ⇒ slug اصطناعيّ ASCII يكفي ويتجنّب ترميز العربيّة.
-  const upstream = `${env.apiBaseUrl}/ar/epaper/${id}-doc/document`;
+  const upstream = `${env.apiBaseUrl}/${locale}/epaper/${id}-doc/document`;
   let res: Response;
   try {
     res = await fetch(upstream, {

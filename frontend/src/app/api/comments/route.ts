@@ -19,6 +19,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const p = (payload ?? {}) as Record<string, unknown>;
   const slug = typeof p.slug === 'string' ? p.slug : '';
   const body = typeof p.body === 'string' ? p.body.trim() : '';
+  const locale = p.locale === 'en' ? 'en' : 'ar';
   if (!slug || body.length < 2) return NextResponse.json({ error: 'invalid' }, { status: 422 });
 
   const forward: Record<string, unknown> = { body };
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (token) headers.Authorization = `Bearer ${token}`;
 
   try {
-    const res = await fetch(`${env.apiBaseUrl}/api/v1/ar/articles/${encodeURIComponent(slug)}/comments`, {
+    const res = await fetch(`${env.apiBaseUrl}/api/v1/${locale}/articles/${encodeURIComponent(slug)}/comments`, {
       method: 'POST',
       headers,
       body: JSON.stringify(forward),
