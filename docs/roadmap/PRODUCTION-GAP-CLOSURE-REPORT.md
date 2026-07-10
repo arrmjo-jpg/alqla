@@ -107,14 +107,24 @@ initial mitigation it was scoped to be.
 1. **New (this closure): `UserManagementTest` failure** — one-line test fix
    needed; see §0. Low severity, test-only, no production impact (the
    *code* behavior is intentional and correct; only the test is stale).
-2. **Pre-existing SEO/canonical-URL cluster** — 5 of the 14 known failures
-   (`PublicArticleSeoTest`, `ArticleRedirectTest`, `NewsSeoTest` ×2,
-   `SeoDeliveryTest`) share one root cause: canonical URL generation
-   currently produces `/ar/article/{id}` instead of the expected
-   `/ar/articles/{id}-{slug}-{hash}` format. This is a real, currently-
-   live SEO gap (bad canonical URLs, broken redirect-history coverage,
-   broken news-sitemap slugs), pre-dating Tasks A–G. Worth a dedicated
-   follow-up given it affects public SEO surface area, not just tests.
+2. **CORRECTED (was wrong): SEO/canonical-URL cluster is stale tests, not a
+   live gap.** Originally written here as "a real, currently-live SEO gap."
+   Frontend audit evidence (read the same day) shows that's backwards.
+   `frontend/src/app/(site)/article/[id]/page.tsx` is the complete, current
+   article detail page — its own `generateMetadata` fallback canonical is
+   `${env.siteUrl}/article/${id}` (id-only), and it self-canonicalizes via
+   `permanentRedirect` on numeric ID alone, no slug. The sibling route
+   `frontend/src/app/(site)/articles/[idslug]/page.tsx` exists solely to
+   301-redirect the OLD slugged format to the id-only one — its component
+   is literally named `OldArticlesRedirectPage`. So `/article/{id}` is the
+   intentional, fully-implemented current scheme on both sides (backend
+   emits it, frontend serves and self-canonicalizes to it); the 5 failing
+   tests (`PublicArticleSeoTest`, `ArticleRedirectTest`, `NewsSeoTest` ×2,
+   `SeoDeliveryTest`) assert the retired slugged contract and were never
+   updated after the simplification. Real issue, correctly scoped: **test
+   hygiene debt (5 stale assertions)**, not a live SEO defect. Downgraded
+   from a "dedicated follow-up on public SEO surface" to "update or remove
+   5 stale test assertions" — much smaller than originally stated here.
 3. **`publicWriterToken()` undefined** — 4 `WriterArticleMediaTest` errors,
    unchanged since the original Task-14 baseline; a missing test helper,
    not a production defect.
