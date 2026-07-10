@@ -119,7 +119,7 @@ export default async function EnCategoryPage({
         
         {/* Sidebar Column */}
         <aside className="hidden lg:col-span-4 lg:block">
-          <ReadingSidebar />
+          <ReadingSidebar locale="en" />
         </aside>
       </div>
     </Container>

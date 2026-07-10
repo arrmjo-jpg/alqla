@@ -5,12 +5,30 @@ import Link from 'next/link';
 
 import type { FeedItem } from '@/lib/feed';
 import { formatRelativeTime } from '@/lib/format';
+import { enRelative } from '@/lib/en';
 
 // تبويبات أخبار الشريط الجانبيّ (client) — «آخر الأخبار» / «الأكثر شيوعًا». تبديل لحظيّ بلا جلب
 // إضافيّ (القائمتان مُمرَّرتان خادميًّا). صفّ مُدمج: صورة مصغّرة + عنوان + تاريخ نسبيّ، رابط متراكب.
-export function NewsTabs({ latest, popular }: { latest: FeedItem[]; popular: FeedItem[] }) {
+// locale يتحكّم بتسميات التبويب وتنسيق التاريخ النسبيّ (كانا عربيَّين ثابتَين حتى لو كانت
+// عناصر latest/popular إنجليزيّة بالفعل من خلال SidebarNewsWidget).
+const LABELS = {
+  ar: { latest: 'آخر الأخبار', popular: 'الأكثر شيوعًا', empty: 'لا يوجد محتوى بعد.' },
+  en: { latest: 'Latest News', popular: 'Most Read', empty: 'No content yet.' },
+} as const;
+
+export function NewsTabs({
+  latest,
+  popular,
+  locale = 'ar',
+}: {
+  latest: FeedItem[];
+  popular: FeedItem[];
+  locale?: string;
+}) {
   const [tab, setTab] = useState<'latest' | 'popular'>('latest');
   const items = tab === 'latest' ? latest : popular;
+  const t = locale === 'en' ? LABELS.en : LABELS.ar;
+  const relative = locale === 'en' ? enRelative : formatRelativeTime;
 
   const tabCls = (active: boolean) =>
     `flex-1 border-b-2 px-2 py-2.5 text-sm font-bold transition-colors ${
@@ -27,7 +45,7 @@ export function NewsTabs({ latest, popular }: { latest: FeedItem[]; popular: Fee
           onClick={() => setTab('latest')}
           className={tabCls(tab === 'latest')}
         >
-          آخر الأخبار
+          {t.latest}
         </button>
         <button
           type="button"
@@ -36,12 +54,12 @@ export function NewsTabs({ latest, popular }: { latest: FeedItem[]; popular: Fee
           onClick={() => setTab('popular')}
           className={tabCls(tab === 'popular')}
         >
-          الأكثر شيوعًا
+          {t.popular}
         </button>
       </div>
 
       {items.length === 0 ? (
-        <p className="px-3 py-6 text-center text-sm text-muted">لا يوجد محتوى بعد.</p>
+        <p className="px-3 py-6 text-center text-sm text-muted">{t.empty}</p>
       ) : (
         <ol className="divide-y divide-border">
           {items.map((item) => (
@@ -67,7 +85,7 @@ export function NewsTabs({ latest, popular }: { latest: FeedItem[]; popular: Fee
                   </h4>
                   {item.publishedAt && (
                     <time dateTime={item.publishedAt} className="mt-1 block text-caption text-muted">
-                      {formatRelativeTime(item.publishedAt)}
+                      {relative(item.publishedAt)}
                     </time>
                   )}
                 </div>
