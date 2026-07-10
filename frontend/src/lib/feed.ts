@@ -404,34 +404,55 @@ export const PaginatedEnvelope = z
   })
   .passthrough();
 
+// نداء مُوحَّد لكل استهلاكيّ `/articles` المُرقَّم بوضع offset (قسم/كاتب/بحث) — الثلاثة كانوا يكرّرون
+// نفس بناء الـquerystring + fetch + تحليل PaginatedEnvelope + mapItem + استخراج pagination حرفيّاً،
+// يختلفون فقط بالفلتر (filter[category]/filter[author_id]/filter[q])، الفرز (بحث بلا sort عمداً —
+// يُبقي ترتيب صلة Meilisearch)، ISR (ثانية revalidate)، ووسم الكاش. انظر IMPLEMENTATION-ROADMAP.md 2.2.
+export async function fetchPaginatedArticles(opts: {
+  locale: string;
+  page: number;
+  perPage: number;
+  filters: Record<string, string>;
+  sort?: string;
+  revalidate: number;
+  tags: string[];
+}): Promise<CategoryPageResult> {
+  const { locale, page, perPage, filters, sort, revalidate, tags } = opts;
+  const empty: CategoryPageResult = { items: [], total: 0, page, totalPages: 0 };
+  if (!env.apiBaseUrl) return empty;
+  try {
+    const qs = new URLSearchParams({ per_page: String(perPage), page: String(Math.max(1, page)) });
+    if (sort) qs.set('sort', sort);
+    for (const [key, value] of Object.entries(filters)) qs.set(key, value);
+    const res = await fetch(`${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles?${qs.toString()}`, {
+      headers: env.internalHeaders,
+      next: { revalidate, tags },
+    });
+    if (!res.ok) return empty;
+    const parsed = PaginatedEnvelope.safeParse(await res.json());
+    if (!parsed.success) return empty;
+    const items = (parsed.data.data ?? []).map(mapItem);
+    const pg = parsed.data.meta?.pagination;
+    return {
+      items,
+      total: pg?.total ?? items.length,
+      page: pg?.current_page ?? page,
+      totalPages: pg?.total_pages ?? 1,
+    };
+  } catch {
+    return empty;
+  }
+}
+
 export const getCategoryPage = cache(
-  async (slug: string, page = 1, perPage = 18, locale = 'ar'): Promise<CategoryPageResult> => {
-    const empty: CategoryPageResult = { items: [], total: 0, page, totalPages: 0 };
-    if (!env.apiBaseUrl) return empty;
-    try {
-      const qs = new URLSearchParams({
-        per_page: String(perPage),
-        page: String(Math.max(1, page)),
-        sort: '-published_at',
-      });
-      qs.set('filter[category]', slug);
-      const res = await fetch(
-        `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles?${qs.toString()}`,
-        { headers: env.internalHeaders, next: { revalidate: 300, tags: ['articles', `category:${slug}`] } },
-      );
-      if (!res.ok) return empty;
-      const parsed = PaginatedEnvelope.safeParse(await res.json());
-      if (!parsed.success) return empty;
-      const items = (parsed.data.data ?? []).map(mapItem);
-      const pg = parsed.data.meta?.pagination;
-      return {
-        items,
-        total: pg?.total ?? items.length,
-        page: pg?.current_page ?? page,
-        totalPages: pg?.total_pages ?? 1,
-      };
-    } catch {
-      return empty;
-    }
-  },
+  async (slug: string, page = 1, perPage = 18, locale = 'ar'): Promise<CategoryPageResult> =>
+    fetchPaginatedArticles({
+      locale,
+      page,
+      perPage,
+      filters: { 'filter[category]': slug },
+      sort: '-published_at',
+      revalidate: 300,
+      tags: ['articles', `category:${slug}`],
+    }),
 );

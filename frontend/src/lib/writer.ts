@@ -56,45 +56,25 @@ export const getWriterProfile = cache(async (id: number, locale = 'ar'): Promise
 });
 
 // ─── مقالات الكاتب مع الترقيم ───
-// تعتمد نفس الـ Contract المستخدم في صفحات الأقسام لضمان الاتساق.
+// تعتمد نفس الـ Contract المستخدم في صفحات الأقسام لضمان الاتساق، وتعيد استخدام نداء الجلب
+// المُرقَّم المشترك (IMPLEMENTATION-ROADMAP.md 2.2 — صفر تكرار مع getCategoryPage/searchArticles).
 import type { CategoryPageResult } from './feed';
-import { PaginatedEnvelope, mapItem } from './feed';
+import { fetchPaginatedArticles } from './feed';
 
 export const getWriterArticles = cache(
   async (authorId: number, page = 1, perPage = 18, locale = 'ar', type?: string): Promise<CategoryPageResult> => {
-    const empty: CategoryPageResult = { items: [], total: 0, page, totalPages: 0 };
-    if (!env.apiBaseUrl || !authorId) return empty;
-    try {
-      const qs = new URLSearchParams({
-        per_page: String(perPage),
-        page: String(Math.max(1, page)),
-        sort: '-published_at',
-      });
-      qs.set('filter[author_id]', String(authorId));
-      if (type) {
-        qs.set('filter[type]', type);
-      }
-      
-      const res = await fetch(
-        `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles?${qs.toString()}`,
-        { headers: env.internalHeaders, next: { revalidate: 300, tags: ['articles', `author_articles:${authorId}`] } },
-      );
-      if (!res.ok) return empty;
-      
-      const parsed = PaginatedEnvelope.safeParse(await res.json());
-      if (!parsed.success) return empty;
-      
-      const items = (parsed.data.data ?? []).map(mapItem);
-      const pg = parsed.data.meta?.pagination;
-      return {
-        items,
-        total: pg?.total ?? items.length,
-        page: pg?.current_page ?? page,
-        totalPages: pg?.total_pages ?? 1,
-      };
-    } catch {
-      return empty;
-    }
+    if (!authorId) return { items: [], total: 0, page, totalPages: 0 };
+    const filters: Record<string, string> = { 'filter[author_id]': String(authorId) };
+    if (type) filters['filter[type]'] = type;
+    return fetchPaginatedArticles({
+      locale,
+      page,
+      perPage,
+      filters,
+      sort: '-published_at',
+      revalidate: 300,
+      tags: ['articles', `author_articles:${authorId}`],
+    });
   }
 );
 
