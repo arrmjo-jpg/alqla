@@ -1,10 +1,9 @@
-import { Clock } from 'lucide-react';
+
 import Link from 'next/link';
 
 import { FeedBadge } from '@/components/home/featured-hero';
 import { SectionHeader, SectionMore } from '@/components/home/section-header';
 import { getCategoryById, getCategoryFeed, type FeedItem } from '@/lib/feed';
-import { formatRelativeTime } from '@/lib/format';
 
 // قسم مخصص لتصميم 3 أعمدة (صورة رئيسية كبيرة في الوسط، وبطاقات على الأطراف)
 // مخصص لقسم "عربي دولي" ليعطيه شكلاً إخبارياً كلاسيكياً فخماً.

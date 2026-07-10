@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, PenLine, FileText, Calendar, LayoutGrid, ChevronRight } from 'lucide-react';
+import { PenLine, LayoutGrid, ChevronRight } from 'lucide-react';
 
 import { Container } from '@/components/layout/container';
 import { Pagination } from '@/components/ui/pagination';
 import { HorizontalArticleCard } from '@/components/articles/HorizontalArticleCard';
-import { FeaturedCategoryCard } from '@/components/articles/FeaturedCategoryCard';
 import { ReadingSidebar } from '@/components/reading/reading-sidebar';
 import { getWriterProfile } from '@/lib/writer';
 import { getWriterArticles } from '@/lib/writer';
@@ -89,18 +88,10 @@ export default async function WriterProfilePage({
   if (!writer) notFound();
 
   const socials = Object.entries(writer.social).filter(([, url]) => typeof url === 'string' && url.trim());
-  const jobTitle = translateRole((writer as any).role); // Cast just in case role is added later
+  const jobTitle = translateRole((writer as Record<string, unknown>).role as string | undefined);
   const totalArticles = articlesPage.total;
 
-  // Compute stats securely from available data
-  const lastPublished = articlesPage.items.length > 0 && articlesPage.items[0].publishedAt
-    ? new Date(articlesPage.items[0].publishedAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })
-    : null;
 
-  // Article grid setup
-  const hasArticles = articlesPage.items.length > 0;
-  const featured = hasArticles ? articlesPage.items[0] : null;
-  const remaining = hasArticles ? articlesPage.items.slice(1) : [];
 
   // URL builder for Pagination
   const buildQuery = (pageNum: number) => {

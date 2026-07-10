@@ -1,5 +1,4 @@
 import { LivePulse } from '@/components/ui/live-pulse';
-import { editorialTypography } from '@/lib/design-tokens';
 
 interface ArticleHeaderProps {
   title: string;

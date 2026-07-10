@@ -2,7 +2,6 @@ import { Flame } from 'lucide-react';
 import Link from 'next/link';
 
 import { Container } from '@/components/layout/container';
-import { WritersCarousel } from '@/components/home/writers-carousel';
 import { LivePulse } from '@/components/ui/live-pulse';
 import { getCategoryById, getCategoryFeed, getEditorsPickFeed, type FeedItem } from '@/lib/feed';
 
