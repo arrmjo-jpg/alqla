@@ -12,7 +12,7 @@ import { ReelsThemeToggle } from './reels-theme-toggle';
 // شعار + تنقّل أساسيّ + خدمات الموقع (بدل الأقسام) + بطاقة حساب/دخول + روابط سوشيل + زرّ الثيم.
 export async function ReelsSidebar() {
   const [settings, user] = await Promise.all([getSiteSettings(), getCurrentUser()]);
-  const siteName = settings?.site_name || 'صدى الشعب الأخباري';
+  const siteName = settings?.site_name || 'القلعة نيوز';
   const logoDark = settings?.logo_dark ?? settings?.logo_light ?? null;
   const logoLight = settings?.logo_light ?? settings?.logo_dark ?? null;
   const social = socialEntries(settings?.social);
