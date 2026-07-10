@@ -221,16 +221,16 @@ export const getHeaderFeed = (locale = 'ar') => fetchFeed('header', 9, locale, 3
 export const getLatestFeed = (locale = 'ar') => fetchFeed('latest', 30, locale, 60);
 
 // كتلة «تريندينغ»: اختيارات المحرّر (is_editor_pick) — من كلّ الأقسام حين ينطبق العلم. ISR 300s.
-export const getEditorsPickFeed = (locale = 'ar', limit = 5) => fetchFeed('editors_pick', limit, locale, 300);
+export const getEditorsPickFeed = (limit = 5, locale = 'ar') => fetchFeed('editors_pick', limit, locale, 300);
 
 // كتلة «عاجل» (is_breaking) — للشريط السفليّ. حدّ 5، ISR قصير 120s (العاجل حسّاس للوقت). فارغ ⇒ يُخفى.
-export const getBreakingFeed = (locale = 'ar', limit = 5) => fetchFeed('breaking', limit, locale, 120);
+export const getBreakingFeed = (limit = 5, locale = 'ar') => fetchFeed('breaking', limit, locale, 120);
 
 // كتلة «الأكثر شيوعا»: الأكثر قراءة (مشاهدات مُتتبَّعة، بلا نافذة 7 أيام الضيّقة) — المطابق الدلاليّ
 // لـ«الأكثر شيوعا/الأكثر قراءة». endpoint مستقلّ بمُعامل per_page (ليس /feed/{kind})، لكنّه يعيد نفس
 // مغلّف {data:[…]} ومورد القائمة ⇒ إعادة استخدام EnvelopeSchema/mapItem. ISR 300s؛ أي فشل ⇒ [] (عزل الكتلة).
 // (الرائج /articles/trending متاح أيضاً لكن نافذته 7 أيام تُفرغه إن لم يوجد محتوى حديث.)
-export const getMostReadFeed = cache(async (locale = 'ar', limit = 6, days = 0): Promise<FeedItem[]> => {
+export const getMostReadFeed = cache(async (limit = 6, locale = 'ar', days = 0): Promise<FeedItem[]> => {
   if (!env.apiBaseUrl) return [];
   try {
     // days>0 ⇒ نافذة زمنية (الشهر = 30) للأكثر قراءة ضمنها؛ 0 = كل الأوقات.

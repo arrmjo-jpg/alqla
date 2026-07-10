@@ -46,7 +46,7 @@ export default async function WritersPage(props: WritersPageProps) {
   const [result, latestFeed, mostReadFeed] = await Promise.all([
     getWriters(page, 24, q),
     getLatestFeed('ar'),
-    getMostReadFeed('ar', 5)
+    getMostReadFeed(5, 'ar')
   ]);
   
   if (page > 1 && result.items.length === 0) {

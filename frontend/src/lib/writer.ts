@@ -62,7 +62,7 @@ import type { CategoryPageResult } from './feed';
 import { fetchPaginatedArticles } from './feed';
 
 export const getWriterArticles = cache(
-  async (authorId: number, page = 1, perPage = 18, locale = 'ar', type?: string): Promise<CategoryPageResult> => {
+  async (authorId: number, page = 1, perPage = 18, type?: string, locale = 'ar'): Promise<CategoryPageResult> => {
     if (!authorId) return { items: [], total: 0, page, totalPages: 0 };
     const filters: Record<string, string> = { 'filter[author_id]': String(authorId) };
     if (type) filters['filter[type]'] = type;

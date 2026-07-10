@@ -26,7 +26,7 @@ export default async function SearchPage({
   const page = Math.max(1, Number(typeof sp.page === 'string' ? sp.page : '1') || 1);
 
   const result = q
-    ? await searchArticles(q, page, 'ar', PER_PAGE)
+    ? await searchArticles(q, page, PER_PAGE, 'ar')
     : { items: [], total: 0, page: 1, totalPages: 0 };
 
   const linkTo = (p: number) => `/search?q=${encodeURIComponent(q)}&page=${p}`;

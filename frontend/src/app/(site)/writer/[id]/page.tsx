@@ -83,9 +83,9 @@ export default async function WriterProfilePage({
   // Parallel fetch: author info + paginated articles + extra feeds to fill the page
   const [writer, articlesPage, latestFeed, mostReadFeed] = await Promise.all([
     getWriterProfile(numericId),
-    getWriterArticles(numericId, page, PER_PAGE, 'ar', 'opinion'),
+    getWriterArticles(numericId, page, PER_PAGE, 'opinion', 'ar'),
     getLatestFeed('ar'),
-    getMostReadFeed('ar', 5)
+    getMostReadFeed(5, 'ar')
   ]);
 
   // Handle 404 cleanly

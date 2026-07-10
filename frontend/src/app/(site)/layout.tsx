@@ -25,7 +25,7 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
   const [settings, latest, breaking] = await Promise.all([
     getSiteSettings(),
     getLatestFeed('ar'),
-    getBreakingFeed('ar'),
+    getBreakingFeed(5, 'ar'),
   ]);
 
 

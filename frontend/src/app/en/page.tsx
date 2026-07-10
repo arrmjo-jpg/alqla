@@ -21,8 +21,8 @@ export default async function EnHome() {
     getLatestFeed('en'),
     getCategoryFeed('public-news', 7, 'en'),
     getCategoryFeed('articles', 6, 'en'),
-    getMostReadFeed('en', 6),
-    getEditorsPickFeed('en', 5),
+    getMostReadFeed(6, 'en'),
+    getEditorsPickFeed(5, 'en'),
   ]);
 
   // Lede: prefer featured (hero); fall back to the latest feed.

@@ -16,7 +16,7 @@ export interface SearchResult {
 // 2.2؛ الثلاثة مستهلكي `/articles` المُرقَّمين وُحِّدوا على هذا النداء المشترك). فشل/غياب/خطأ ⇒ نتيجة
 // فارغة (تدهور رشيق — يطابق تدهور الباك إند عند تعطّل المحرّك). ISR قصير لتخفيف ضغط الاستعلامات المتكرّرة.
 export const searchArticles = cache(
-  async (query: string, page = 1, locale = 'ar', perPage = 20): Promise<SearchResult> => {
+  async (query: string, page = 1, perPage = 20, locale = 'ar'): Promise<SearchResult> => {
     const q = query.trim();
     if (q === '') return { items: [], total: 0, page, totalPages: 0 };
     // بلا sort: يُبقي الباك‑إند ترتيب صلة Meilisearch (العنوان أوّلًا) بدل التاريخ.

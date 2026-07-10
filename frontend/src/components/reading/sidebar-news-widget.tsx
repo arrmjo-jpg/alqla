@@ -9,7 +9,7 @@ import { NewsTabs } from './news-tabs';
 export async function SidebarNewsWidget({ locale = 'ar' }: { locale?: string } = {}) {
   const [latestRaw, popular] = await Promise.all([
     getLatestFeed(locale),
-    getMostReadFeed(locale, 10),
+    getMostReadFeed(10, locale),
   ]);
   const latest = latestRaw.slice(0, 10);
 

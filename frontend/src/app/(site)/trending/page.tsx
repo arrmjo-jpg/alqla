@@ -13,7 +13,7 @@ export const revalidate = 300;
 export const metadata: Metadata = { title: 'الأكثر شيوعا' };
 
 export default async function TrendingPage() {
-  const items = await getMostReadFeed('ar', 30);
+  const items = await getMostReadFeed(30, 'ar');
 
   return (
     <Container className="py-8 sm:py-10">

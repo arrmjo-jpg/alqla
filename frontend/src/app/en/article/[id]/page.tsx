@@ -52,9 +52,9 @@ export default async function EnArticlePage({ params }: { params: Promise<{ id: 
       ? getCategoryFeed(article.primaryCategory.slug, 5, 'en')
       : Promise.resolve<FeedItem[]>([]),
     article.tags.length ? getTagFeed(article.tags[0], 5, 'en') : Promise.resolve<FeedItem[]>([]),
-    getEditorsPickFeed('en', 5),
+    getEditorsPickFeed(5, 'en'),
     getLatestFeed('en'),
-    getMostReadFeed('en', 5),
+    getMostReadFeed(5, 'en'),
   ]);
 
   const notCurrent = (items: FeedItem[]) => items.filter((it) => it.href !== article.href);

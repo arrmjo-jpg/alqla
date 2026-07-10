@@ -10,7 +10,7 @@ import { getCategoryById, getCategoryFeed, getEditorsPickFeed, type FeedItem } f
 //  • قسمَا الكُتّاب = مقالات كلّ تصنيف ببطاقات كاتب تنزلق تلقائيًّا (WritersCarousel، مكوّن عميل)؛ **اسم الكاتب
 //    يفتح بروفيله وكلّ مقالاته**. الصورة = غلاف المقال، ولمقال الرأي بلا غلاف تُستخدَم صورة الكاتب تلقائيًّا. Server Component، ISR.
 export async function TrendingLatestMostRead({ editorsPick }: { editorsPick?: FeedItem[] }) {
-  const resolvedEditorsPick = editorsPick ?? (await getEditorsPickFeed('ar', 5));
+  const resolvedEditorsPick = editorsPick ?? (await getEditorsPickFeed(5, 'ar'));
 
   return (
     <section className="mt-6 sm:mt-8" dir="rtl" aria-label="تريندينغ وأقلام الكُتّاب">
