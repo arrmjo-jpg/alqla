@@ -1,4 +1,5 @@
 import 'server-only';
+import { cache } from 'react';
 import { z } from 'zod';
 
 // مصدر البيانات الوحيد = 365Scores العامّ `web/stats/?competitions={id}` (هدّافو البطولة). لا Mock.
@@ -133,11 +134,11 @@ async function fetchScorers(competitionId: number, limit: number): Promise<Score
 
 // هدّافو عدّة بطولات (طلب لكلّ بطولة على حدة — الاستدعاء متعدّد البطولات لا يُرجع إلا الأولى).
 // تُستبعَد البطولات بلا هدّافين (خارج الموسم) ⇒ لا تبويبات فارغة، لا تلفيق.
-export async function getTopScorers(competitionIds: number[], limit = 5): Promise<ScorerCompetition[]> {
+export const getTopScorers = cache(async (competitionIds: number[], limit = 5): Promise<ScorerCompetition[]> => {
   if (!competitionIds.length) return [];
   const results = await Promise.all(competitionIds.map((id) => fetchScorers(id, limit)));
   return results.filter((r): r is ScorerCompetition => r !== null && r.scorers.length > 0);
-}
+});
 
 // ===== صفحة البطولة — تبويب الإحصائيات (كلّ الفئات) =====
 // (هدّافون/صنّاع/أهداف+صناعة/بطاقات/شباك نظيفة) — القيمة الرئيسيّة = stats[0]، الوحدة = statsTypes[0].name.
@@ -160,7 +161,7 @@ export interface CompetitionStats {
   categories: StatCategory[];
 }
 
-export async function getCompetitionStats(competitionId: number, limit = 20): Promise<CompetitionStats | null> {
+export const getCompetitionStats = cache(async (competitionId: number, limit = 20): Promise<CompetitionStats | null> => {
   if (!Number.isInteger(competitionId) || competitionId <= 0) return null;
   try {
     const res = await fetch(`${BASE}/stats/?${COMMON}&competitions=${competitionId}`, {
@@ -198,7 +199,7 @@ export async function getCompetitionStats(competitionId: number, limit = 20): Pr
   } catch {
     return null;
   }
-}
+});
 
 // ===== صفحة البطولة — meta + الفرق + الأبطال =====
 export interface CompetitionMeta {
@@ -244,7 +245,7 @@ const CompMetaResponse = z
   .passthrough();
 
 // meta البطولة (خفيف) — الاسم/الشعار/الدولة + أعلام الأقسام المتاحة (hasStats/hasHistory/hasBrackets) لاشتقاق التبويبات.
-export async function getCompetitionMeta(id: number): Promise<CompetitionMeta | null> {
+export const getCompetitionMeta = cache(async (id: number): Promise<CompetitionMeta | null> => {
   if (!Number.isInteger(id) || id <= 0) return null;
   try {
     const res = await fetch(`${BASE}/competitions/?${COMMON}&competitions=${id}`, {
@@ -271,10 +272,10 @@ export async function getCompetitionMeta(id: number): Promise<CompetitionMeta | 
   } catch {
     return null;
   }
-}
+});
 
 // فرق البطولة — من `competitors[]` لنداء web/stats (مرتّبة أبجديّاً).
-export async function getCompetitionTeams(id: number): Promise<TeamLite[]> {
+export const getCompetitionTeams = cache(async (id: number): Promise<TeamLite[]> => {
   if (!Number.isInteger(id) || id <= 0) return [];
   try {
     const res = await fetch(`${BASE}/stats/?${COMMON}&competitions=${id}`, {
@@ -290,7 +291,7 @@ export async function getCompetitionTeams(id: number): Promise<TeamLite[]> {
   } catch {
     return [];
   }
-}
+});
 
 // ===== صفحة البطولة — خروج المغلوب (شجرة الأدوار الإقصائيّة) =====
 // `web/brackets`: مراحل الإقصاء (دور الـ32→النهائي)، كلّ مواجهة (group) = مشاركان (`name`/صيغة تأهّل مثل
@@ -345,7 +346,7 @@ const BracketsResponse = z
   })
   .passthrough();
 
-export async function getCompetitionBrackets(competitionId: number): Promise<BracketStageView[]> {
+export const getCompetitionBrackets = cache(async (competitionId: number): Promise<BracketStageView[]> => {
   if (!Number.isInteger(competitionId) || competitionId <= 0) return [];
   try {
     const res = await fetch(`${BASE}/brackets/?${COMMON}&competitions=${competitionId}`, {
@@ -381,7 +382,7 @@ export async function getCompetitionBrackets(competitionId: number): Promise<Bra
   } catch {
     return [];
   }
-}
+});
 
 // ===== صفحة الفريق `/sport/team/[id]` =====
 // المصدر web/competitors/?competitors={id} (معلومات الفريق + بطولاته + mainCompetitionId). لا نقطة مباريات للفريق
@@ -417,7 +418,7 @@ const TeamResponse = z
   })
   .passthrough();
 
-export async function getTeam(id: number): Promise<TeamPage | null> {
+export const getTeam = cache(async (id: number): Promise<TeamPage | null> => {
   if (!Number.isInteger(id) || id <= 0) return null;
   try {
     const res = await fetch(`${BASE}/competitors/?${COMMON}&competitors=${id}`, {
@@ -447,7 +448,7 @@ export async function getTeam(id: number): Promise<TeamPage | null> {
   } catch {
     return null;
   }
-}
+});
 
 const HistoryParticipant = z
   .object({ name: z.string().nullish(), competitorId: z.number().nullish(), isQualified: z.boolean().nullish() })
@@ -554,7 +555,7 @@ const StandingsResponse = z
   })
   .passthrough();
 
-export async function getStandings(competitionId: number): Promise<Standings | null> {
+export const getStandings = cache(async (competitionId: number): Promise<Standings | null> => {
   if (!Number.isInteger(competitionId) || competitionId <= 0) return null;
   try {
     const res = await fetch(`${BASE}/standings/?${COMMON}&competitions=${competitionId}`, {
@@ -606,10 +607,10 @@ export async function getStandings(competitionId: number): Promise<Standings | n
   } catch {
     return null;
   }
-}
+});
 
 // الأبطال — كلّ موسم نهائيّه (مشاركان باسم؛ المواسم القديمة بلا أسماء تُستبعَد). الفائز = isQualified. لا تلفيق.
-export async function getCompetitionHistory(id: number): Promise<ChampionRow[]> {
+export const getCompetitionHistory = cache(async (id: number): Promise<ChampionRow[]> => {
   if (!Number.isInteger(id) || id <= 0) return [];
   try {
     // appTypeId=5 (لا 3) عمداً: هو وحده يُعيد `group.games`/`secondaryTitle`/`entityId` (مفحوص حيًّا؛ appTypeId=3 يُعيد صفوفاً عارية).
@@ -641,4 +642,4 @@ export async function getCompetitionHistory(id: number): Promise<ChampionRow[]> 
   } catch {
     return [];
   }
-}
+});

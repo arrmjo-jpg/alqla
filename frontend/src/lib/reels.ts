@@ -1,4 +1,5 @@
 import 'server-only';
+import { cache } from 'react';
 import { z } from 'zod';
 import { env } from './env';
 import { SeoSchema, type ArticleSeo } from './articles';
@@ -136,7 +137,7 @@ export interface ReelsPage {
 }
 
 // خلاصة الريلز (cursor للتمرير اللانهائيّ). ISR 60s (feed REALTIME)؛ فشل ⇒ صفحة فارغة.
-export async function getReelsFeed(cursor: string | null = null, locale = 'ar'): Promise<ReelsPage> {
+export const getReelsFeed = cache(async (cursor: string | null = null, locale = 'ar'): Promise<ReelsPage> => {
   const empty: ReelsPage = { items: [], nextCursor: null };
   return getCached(`reels-feed:${locale}:${cursor ?? ''}`, 60000, async () => {
     if (!env.apiBaseUrl) return empty;
@@ -160,10 +161,10 @@ export async function getReelsFeed(cursor: string | null = null, locale = 'ar'):
       return empty;
     }
   });
-}
+});
 
 // ريل واحد بالـ{id-slug} (للرابط العميق). فشل/غير موجود ⇒ null.
-export async function getReelByIdSlug(idSlug: string, locale = 'ar'): Promise<ReelItem | null> {
+export const getReelByIdSlug = cache(async (idSlug: string, locale = 'ar'): Promise<ReelItem | null> => {
   if (!env.apiBaseUrl) return null;
   // الرابط القانونيّ {id}-{slug} يصل مُرمَّزاً من Next؛ نقطة تفاصيل الريل في الباك إند تقبل **السلَغ
   // المجرَّد** فقط ⇒ فُكّ الترميز ثمّ اقشر بادئة المعرّف (^\d+-). نفس نمط صفحة الفيديو (bareSlug).
@@ -187,4 +188,4 @@ export async function getReelByIdSlug(idSlug: string, locale = 'ar'): Promise<Re
   } catch {
     return null;
   }
-}
+});

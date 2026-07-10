@@ -1,4 +1,5 @@
 import 'server-only';
+import { cache } from 'react';
 import { z } from 'zod';
 
 // صفحة اللاعب — المصدر 365 العامّ. `web/athletes/?athletes={id}` يعطي: الملف (اسم/مركز/جنسية/عمر/صورة) + النادي
@@ -75,7 +76,7 @@ function competitionLogo(id: number, countryId: number | null | undefined, versi
   return `https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_2,d_Countries:Round:${countryId}.png/v${version}/Competitions/${id}`;
 }
 
-export async function getPlayer(id: number): Promise<PlayerProfile | null> {
+export const getPlayer = cache(async (id: number): Promise<PlayerProfile | null> => {
   if (!Number.isInteger(id) || id <= 0) return null;
   try {
     const res = await fetch(`${BASE}/athletes/?${COMMON}&athletes=${id}`, {
@@ -121,7 +122,7 @@ export async function getPlayer(id: number): Promise<PlayerProfile | null> {
   } catch {
     return null;
   }
-}
+});
 
 // بطاقات الإحصاء (نمط 365) — نختار مقاييس محدّدة بـtypeId من فئات `athletesStats`. أوّل ظهور لكلّ typeId يفوز
 // (كلّ فئة تتصدّرها مقياسها الأساسيّ). نُعيد المتوفّر فقط. typeId: 1=أهداف·2=صناعة·36=تقييم·3=صفراء·4=حمراء·10=جزاء.
@@ -143,7 +144,7 @@ const StatsResponse = z
   .object({ stats: z.object({ athletesStats: z.array(AthleteStatCat).nullish() }).passthrough().nullish() })
   .passthrough();
 
-export async function getPlayerStats(id: number, competitionId: number): Promise<PlayerStat[]> {
+export const getPlayerStats = cache(async (id: number, competitionId: number): Promise<PlayerStat[]> => {
   if (!Number.isInteger(id) || id <= 0 || !Number.isInteger(competitionId) || competitionId <= 0) return [];
   try {
     const res = await fetch(`${BASE}/stats/?${COMMON}&athletes=${id}&competitions=${competitionId}`, {
@@ -164,7 +165,7 @@ export async function getPlayerStats(id: number, competitionId: number): Promise
   } catch {
     return [];
   }
-}
+});
 
 // قائمة لاعبي الفريق (تشكيلة) — المصدر `web/squads/?competitors={teamId}` (مفحوص حيًّا: athletes مع قميص/طول/ميلاد).
 // تُستعمل لـ«قد تكون مهتمًا بـ» (زملاء اللاعب) ولاستخراج تفاصيل اللاعب نفسه (طول/قميص/ميلاد، غير المتوفّرة في athletes/).
@@ -232,7 +233,7 @@ const AthleteGame = z
   .passthrough();
 const PlayerGamesResponse = z.object({ games: z.array(AthleteGame).nullish() }).passthrough();
 
-export async function getPlayerLastMatches(athleteId: number, limit = 10): Promise<PlayerGame[]> {
+export const getPlayerLastMatches = cache(async (athleteId: number, limit = 10): Promise<PlayerGame[]> => {
   if (!Number.isInteger(athleteId) || athleteId <= 0) return [];
   try {
     const res = await fetch(`${BASE}/athletes/games/?${COMMON}&athleteId=${athleteId}&lastMatchLimit=${limit}`, {
@@ -267,7 +268,7 @@ export async function getPlayerLastMatches(athleteId: number, limit = 10): Promi
   } catch {
     return [];
   }
-}
+});
 
 // ===== مسيرة اللاعب (مسيرته عبر الأندية/البطولات بالإحصاء) — `web/athletes/career?athleteId={id}&seasonKey={season}` =====
 // (مفحوص حيًّا: يلزم seasonKey؛ يردّ stats.categories[نادٍ/منتخب] + stats.tables[أعمدة×صفوف بطولات بإحصاءاتها]).
@@ -340,7 +341,7 @@ export interface PlayerCareerData {
 }
 // career يلزمه seasonKey ويعطي بطولات ذلك الموسم فقط ⇒ نمسح ١٠ مواسم بالتوازي: العرض من أحدث موسم فيه بيانات،
 // وقائمة البطولات (للألقاب) = اتّحاد كلّ المواسم (تكشف بطولات قديمة فاز بها اللاعب خارج موسمه الحاليّ، مثبَت لإليجاه).
-export async function getPlayerCareerData(athleteId: number): Promise<PlayerCareerData> {
+export const getPlayerCareerData = cache(async (athleteId: number): Promise<PlayerCareerData> => {
   if (!Number.isInteger(athleteId) || athleteId <= 0) return { sections: [], competitions: [] };
   const y = new Date().getFullYear();
   const seasons = Array.from({ length: 10 }, (_, i) => y - i);
@@ -349,7 +350,7 @@ export async function getPlayerCareerData(athleteId: number): Promise<PlayerCare
   const map = new Map<number, string>();
   for (const r of all) for (const c of r?.comps ?? []) if (!map.has(c.id)) map.set(c.id, c.name);
   return { sections, competitions: [...map].map(([id, name]) => ({ id, name })) };
-}
+});
 
 // ===== ألقاب اللاعب — `web/athletes/trophies/stats?athleteId={id}&competitionId={c}` =====
 // (مفحوص حيًّا: 204 لبطولة بلا ألقاب، 200 ببطولة لها ألقاب — مثل 5830 Eastern Suburbs). نستعلم لبطولات مسيرته.
@@ -394,10 +395,10 @@ const TrophyResponse = z
   })
   .passthrough();
 
-export async function getPlayerTrophies(
+export const getPlayerTrophies = cache(async (
   athleteId: number,
   competitions: { id: number; name: string }[],
-): Promise<TrophyGroup[]> {
+): Promise<TrophyGroup[]> => {
   if (!Number.isInteger(athleteId) || athleteId <= 0 || !competitions.length) return [];
   const list = competitions.slice(0, 20);
   const results = await Promise.all(
@@ -427,9 +428,9 @@ export async function getPlayerTrophies(
     }),
   );
   return results.filter((r): r is TrophyGroup => r !== null);
-}
+});
 
-export async function getTeamSquad(teamId: number): Promise<SquadPlayer[]> {
+export const getTeamSquad = cache(async (teamId: number): Promise<SquadPlayer[]> => {
   if (!Number.isInteger(teamId) || teamId <= 0) return [];
   try {
     const res = await fetch(`${BASE}/squads/?${COMMON}&competitors=${teamId}`, {
@@ -452,4 +453,4 @@ export async function getTeamSquad(teamId: number): Promise<SquadPlayer[]> {
   } catch {
     return [];
   }
-}
+});

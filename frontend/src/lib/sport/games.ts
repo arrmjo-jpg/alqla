@@ -1,4 +1,5 @@
 import 'server-only';
+import { cache } from 'react';
 import { z } from 'zod';
 import { todayAmman, ymdToDmy } from './day';
 
@@ -144,7 +145,7 @@ function classify(group: number | null | undefined, home: MatchSide, away: Match
   return 'upcoming';
 }
 
-export async function getMatchesByCompetition(sportId = 1, date?: string): Promise<CompetitionGroup[]> {
+export const getMatchesByCompetition = cache(async (sportId = 1, date?: string): Promise<CompetitionGroup[]> => {
   const data = await fetchAllScores(sportId, date);
   if (!data?.games) return [];
   const compMeta = new Map<number, { countryId: number | null; imageVersion: number | null }>();
@@ -176,7 +177,7 @@ export async function getMatchesByCompetition(sportId = 1, date?: string): Promi
     map.get(cid)!.matches.push({ id: g.id, kind, statusText: g.statusText ?? null, minute, startTime: g.startTime ?? null, home, away });
   }
   return order.map((id) => map.get(id)!);
-}
+});
 
 // الدوريات العربية — مباريات يومٍ مُعيَّن مُجمّعة بالبطولة، مُرشَّحة لبطولات الدول العربية فقط (الفلتر على
 // **اسم دولة البطولة من المصدر** — أسماء عربيّة قصيرة كما يعيدها 365Scores بـlangId=27). يُعاد استخدامه
@@ -187,10 +188,10 @@ const ARAB_COUNTRIES = new Set<string>([
   'موريتانيا', 'الصومال', 'جيبوتي', 'جزر القمر',
 ]);
 
-export async function getArabMatchesByCompetition(date?: string, limit = 12): Promise<CompetitionGroup[]> {
+export const getArabMatchesByCompetition = cache(async (date?: string, limit = 12): Promise<CompetitionGroup[]> => {
   const all = await getMatchesByCompetition(1, date);
   return all.filter((g) => g.country !== null && ARAB_COUNTRIES.has(g.country)).slice(0, limit);
-}
+});
 
 // تجميع مباريات اليوم **بالدولة → البطولة → المباريات** (لقائمة «الدول» المنسدلة). يتبع التاريخ المختار؛ مرتّب بعدد المباريات.
 export interface CountryMatchGroup {
@@ -202,7 +203,7 @@ export interface CountryMatchGroup {
   competitions: CompetitionGroup[];
 }
 
-export async function getMatchesByCountry(sportId = 1, date?: string, limit = 20): Promise<CountryMatchGroup[]> {
+export const getMatchesByCountry = cache(async (sportId = 1, date?: string, limit = 20): Promise<CountryMatchGroup[]> => {
   const data = await fetchAllScores(sportId, date);
   if (!data?.games) return [];
   const compMeta = new Map<number, { countryId: number | null; imageVersion: number | null; name: string }>();
@@ -257,7 +258,7 @@ export async function getMatchesByCountry(sportId = 1, date?: string, limit = 20
     .map(({ group, comps }) => ({ ...group, competitions: [...comps.values()] }))
     .sort((a, b) => b.gameCount - a.gameCount)
     .slice(0, limit);
-}
+});
 
 // مباريات بطولة بعينها — جدول (قادمة) + نتائج (منتهية) لصفحة البطولة. كلّ صفّ MatchRow يربط لتفاصيل المباراة.
 // المصدر `web/games/fixtures` و`web/games/results` (`competitions={id}`)؛ نُرشِّح لمعرّف البطولة (يُرجع بطولات فرعيّة أيضاً).
@@ -292,13 +293,13 @@ async function fetchCompGames(path: 'fixtures' | 'results', competitionId: numbe
   }
 }
 
-export async function getCompetitionGames(competitionId: number, limit = 25): Promise<CompetitionGames> {
+export const getCompetitionGames = cache(async (competitionId: number, limit = 25): Promise<CompetitionGames> => {
   if (!Number.isInteger(competitionId) || competitionId <= 0) return { fixtures: [], results: [] };
   const [fx, rs] = await Promise.all([fetchCompGames('fixtures', competitionId), fetchCompGames('results', competitionId)]);
   const fixtures = fx.sort((a, b) => (a.startTime ?? '').localeCompare(b.startTime ?? '')).slice(0, limit);
   const results = rs.sort((a, b) => (b.startTime ?? '').localeCompare(a.startTime ?? '')).slice(0, limit);
   return { fixtures, results };
-}
+});
 
 function gameToMatch(g: z.infer<typeof Game>): SportMatch {
   const home = toSide(g.homeCompetitor);
@@ -314,7 +315,7 @@ function gameToMatch(g: z.infer<typeof Game>): SportMatch {
 // مباريات فريق (لصفحة اللاعب «المباريات الأخيرة» = مباريات فرقه) — المصدر **`web/games/results|fixtures/?competitors={teamId}`**
 // (مفحوص حيًّا: results يردّ سجلّ الفريق الكامل، مثلاً ماذرويل ٢٣ مباراة؛ الـfeed العامّ `games/?competitors` متفرّق).
 // نُرشِّح بمعرّف الفريق ونرتّب الأحدث أولاً. ملاحظة: مباريات الفريق لا حضور اللاعب بعينه (غير متاح عامًّا) ⇒ تُؤطَّر بصدق.
-export async function getTeamGames(teamId: number, limit = 12): Promise<SportMatch[]> {
+export const getTeamGames = cache(async (teamId: number, limit = 12): Promise<SportMatch[]> => {
   if (!Number.isInteger(teamId) || teamId <= 0) return [];
   const fetchPath = async (path: 'results' | 'fixtures'): Promise<SportMatch[]> => {
     try {
@@ -334,7 +335,7 @@ export async function getTeamGames(teamId: number, limit = 12): Promise<SportMat
   };
   const [rs, fx] = await Promise.all([fetchPath('results'), fetchPath('fixtures')]);
   return [...rs, ...fx].sort((a, b) => (b.startTime ?? '').localeCompare(a.startTime ?? '')).slice(0, limit);
-}
+});
 
 // ===== قائمة مباريات البطولة للشريط الجانبيّ (كل المباريات/نتائج/جدول المباريات) — مُجمَّعة بالمجموعة+الجولة =====
 // المباريات تحمل groupName/roundName/roundNum/startTime مباشرةً ⇒ عنوان «المجموعة ط - الجولة 1» + تاريخ المجموعة.
@@ -414,7 +415,7 @@ const byTimeDesc = (a: z.infer<typeof ListGame>, b: z.infer<typeof ListGame>): n
 
 // التقسيم بتاريخ اليوم (عمّان، مأخوذ من startTime بإزاحة +03:00): اليوم/القادم/السابق ⇒ «كل المباريات» يبدأ
 // بمباريات اليوم ثمّ الجدول ثمّ النتائج الأخيرة (ترتيب 365). تبويبا «نتائج»/«جدول» = كلّ النتائج/الجدول.
-export async function getCompetitionMatchList(competitionId: number): Promise<CompetitionMatchList> {
+export const getCompetitionMatchList = cache(async (competitionId: number): Promise<CompetitionMatchList> => {
   if (!Number.isInteger(competitionId) || competitionId <= 0)
     return { today: [], upcoming: [], recent: [], fixtures: [], results: [] };
   const today = todayAmman();
@@ -429,7 +430,7 @@ export async function getCompetitionMatchList(competitionId: number): Promise<Co
     fixtures: groupMatches([...fx].sort(byTimeAsc)),
     results: groupMatches([...rs].sort(byTimeDesc)),
   };
-}
+});
 
 // ===== «الأكثر شيوعاً» (Trends) لكلّ مباراة — نقطة `trends/?games={id}` مفحوصة حيًّا (200) =====
 // كلّ عنصر: `text` (إحصاء واقعيّ «فاز X - 9/10 المباريات الأخيرة» ⇒ نُبقيه) + `betCTA`/`odds` (مراهنات ⇒ نُجرّدها
@@ -448,7 +449,7 @@ export interface TrendLine {
   percentage: number | null;
 }
 
-export async function getGameTrends(gameId: number): Promise<TrendLine[]> {
+export const getGameTrends = cache(async (gameId: number): Promise<TrendLine[]> => {
   if (!Number.isInteger(gameId) || gameId <= 0) return [];
   try {
     const res = await fetch(`${BASE}/trends/?${COMMON}&games=${gameId}`, {
@@ -471,7 +472,7 @@ export async function getGameTrends(gameId: number): Promise<TrendLine[]> {
   } catch {
     return [];
   }
-}
+});
 
 // ===== Featured (Block: سلايدر المباريات المميّزة) — نمط 365 `featured-games-widget`: عدّة شرائح لأبرز مباريات اليوم
 // (مباشر ← قادم فعليّ ← منتهية) مرتّبة بشعبيّة البطولة `popularityRank` المتاح (لا حقل "featured" مخترَع). شعار 82px.
@@ -503,12 +504,12 @@ async function fetchVenue(gameId: number): Promise<string | null> {
   }
 }
 
-export async function getFeaturedMatches(
+export const getFeaturedMatches = cache(async (
   sportId = 1,
   date?: string,
   limit = 8,
   priority: number[] = [],
-): Promise<FeaturedMatch[]> {
+): Promise<FeaturedMatch[]> => {
   const data = await fetchAllScores(sportId, date);
   if (!data?.games?.length) return [];
   const popById = new Map<number, number>();
@@ -562,7 +563,7 @@ export async function getFeaturedMatches(
   // إثراء الملعب لكلّ شريحة (allscores بلا venue) — متوازٍ ومُكاش.
   const venues = await Promise.all(base.map((b) => fetchVenue(b.id)));
   return base.map((b, i) => ({ ...b, venue: venues[i] }));
-}
+});
 
 // ===== Competitions / Countries / Popular Teams (Blocks) — مرتّبة بحقل popularity من المصدر =====
 export interface CompetitionItem {
@@ -585,7 +586,7 @@ export interface TeamItem {
   color: string | null;
 }
 
-export async function getCompetitions(sportId = 1, limit = 20): Promise<CompetitionItem[]> {
+export const getCompetitions = cache(async (sportId = 1, limit = 20): Promise<CompetitionItem[]> => {
   const data = await fetchAllScores(sportId);
   if (!data?.competitions) return [];
   return [...data.competitions]
@@ -598,25 +599,25 @@ export async function getCompetitions(sportId = 1, limit = 20): Promise<Competit
       totalGames: c.totalGames ?? 0,
       liveGames: c.liveGames ?? 0,
     }));
-}
+});
 
-export async function getCountries(sportId = 1, limit = 20): Promise<CountryItem[]> {
+export const getCountries = cache(async (sportId = 1, limit = 20): Promise<CountryItem[]> => {
   const data = await fetchAllScores(sportId);
   if (!data?.countries) return [];
   return [...data.countries]
     .sort((a, b) => (b.totalGames ?? 0) - (a.totalGames ?? 0))
     .slice(0, limit)
     .map((c) => ({ id: c.id, name: c.name, flag: img('Countries', c.id, c.imageVersion), totalGames: c.totalGames ?? 0 }));
-}
+});
 
-export async function getPopularTeams(sportId = 1, limit = 20): Promise<TeamItem[]> {
+export const getPopularTeams = cache(async (sportId = 1, limit = 20): Promise<TeamItem[]> => {
   const data = await fetchAllScores(sportId);
   if (!data?.competitors) return [];
   return [...data.competitors]
     .sort((a, b) => (a.popularityRank ?? Infinity) - (b.popularityRank ?? Infinity))
     .slice(0, limit)
     .map((t) => ({ id: t.id, name: t.name, logo: img('Competitors', t.id, t.imageVersion), color: t.color ?? null }));
-}
+});
 
 // صورة لاعب من 365 (قصّ الوجه) — للتشكيلة المرئيّة. بلا نسخة ⇒ null (لا تلفيق).
 function athletePhoto(athleteId: number, version: number | null): string | null {
@@ -839,7 +840,7 @@ function eventMinute(e: z.infer<typeof GameEvent>): string {
   return e.addedTime ? `${base}+${e.addedTime}` : base;
 }
 
-export async function getGameDetail(gameId: number): Promise<GameDetail | null> {
+export const getGameDetail = cache(async (gameId: number): Promise<GameDetail | null> => {
   try {
     const res = await fetch(
       `${BASE}/game/?appTypeId=5&langId=27&timezoneName=Asia/Amman&userCountryId=6&gameId=${gameId}`,
@@ -963,7 +964,7 @@ export async function getGameDetail(gameId: number): Promise<GameDetail | null> 
   } catch {
     return null;
   }
-}
+});
 
 // ===== Game Stats (تبويب الإحصائيات) — نقطة `web/game/stats/?...&games={id}` (تحتاج `games=` لا `gameId=`) =====
 const StatEntry = z
@@ -1009,7 +1010,7 @@ function statNum(v: string | null | undefined): number {
   return m ? parseFloat(m[0]) : 0;
 }
 
-export async function getGameStats(gameId: number): Promise<MatchStat[]> {
+export const getGameStats = cache(async (gameId: number): Promise<MatchStat[]> => {
   try {
     const res = await fetch(
       `${BASE}/game/stats/?appTypeId=5&langId=27&timezoneName=Asia/Amman&userCountryId=6&games=${gameId}`,
@@ -1049,7 +1050,7 @@ export async function getGameStats(gameId: number): Promise<MatchStat[]> {
   } catch {
     return [];
   }
-}
+});
 
 // ===== إحصاء ما قبل المباراة (نمط 365 pre-game-stats) — نقطة `web/stats/preGame?game={id}` (مفحوصة حيًّا) =====
 // مقارنة الفريقين عبر مبارياتهما الأخيرة: مجموعتان (كل المسابقات % + معدّل الإحصائيات)، صفّ لكلّ مقياس (مضيف/ضيف)،
@@ -1101,7 +1102,7 @@ const PreGameResponse = z
   })
   .passthrough();
 
-export async function getPreGameStats(gameId: number): Promise<PreGameStats | null> {
+export const getPreGameStats = cache(async (gameId: number): Promise<PreGameStats | null> => {
   if (!Number.isInteger(gameId) || gameId <= 0) return null;
   try {
     const res = await fetch(`${BASE}/stats/preGame?${COMMON}&game=${gameId}`, {
@@ -1144,7 +1145,7 @@ export async function getPreGameStats(gameId: number): Promise<PreGameStats | nu
   } catch {
     return null;
   }
-}
+});
 
 // ===== «شائع» لصفحة المباراة (نمط 365 trends-widget) — `web/trends/?games={id}` =====
 // مُجمَّع بالفريق + «أفضل تريند» (التريندات ذات confidenceTrendIds) + 🔥 للعالية (percentage≥0.95). نُجرّد betCTA/odds.
@@ -1178,7 +1179,7 @@ const MatchTrendsResponse = z
   })
   .passthrough();
 
-export async function getMatchTrends(gameId: number): Promise<MatchTrends | null> {
+export const getMatchTrends = cache(async (gameId: number): Promise<MatchTrends | null> => {
   if (!Number.isInteger(gameId) || gameId <= 0) return null;
   try {
     const res = await fetch(`${BASE}/trends/?${COMMON}&games=${gameId}`, {
@@ -1215,7 +1216,7 @@ export async function getMatchTrends(gameId: number): Promise<MatchTrends | null
   } catch {
     return null;
   }
-}
+});
 
 // ===== المواجهات المباشرة (نمط 365 h2h) — `web/games/h2h/?gameId={id}` (مفحوص حيًّا) =====
 // game.h2hGames = مواجهات الفريقين السابقة، و homeCompetitor/awayCompetitor.recentGames = أداء كلّ فريق (آخر مبارياته).
@@ -1293,7 +1294,7 @@ function toMeeting(g: z.infer<typeof H2HGameZ>): H2HMeeting {
   };
 }
 
-export async function getH2H(gameId: number): Promise<H2H | null> {
+export const getH2H = cache(async (gameId: number): Promise<H2H | null> => {
   if (!Number.isInteger(gameId) || gameId <= 0) return null;
   try {
     const res = await fetch(`${BASE}/games/h2h/?${COMMON}&gameId=${gameId}`, {
@@ -1344,7 +1345,7 @@ export async function getH2H(gameId: number): Promise<H2H | null> {
   } catch {
     return null;
   }
-}
+});
 
 // ===== خريطة التسديد (نمط 365 shot-chart) — `chartEvents` داخل `web/game/?gameId=` (مفحوص حيًّا) =====
 // كلّ تسديدة: side(عمق نحو المرمى)/line(عرض جانبيّ) 0..100 ⇒ موضعها على الملعب (مُشتقّ بمطابقة الأهداف ببكسلات 365)،
@@ -1421,7 +1422,7 @@ function smColor(c: string | null | undefined): string {
   return /^#[0-9a-fA-F]{6}$/.test(h) ? h : '#64748b';
 }
 
-export async function getShotMap(gameId: number): Promise<ShotMap | null> {
+export const getShotMap = cache(async (gameId: number): Promise<ShotMap | null> => {
   if (!Number.isInteger(gameId) || gameId <= 0) return null;
   try {
     // ملاحظة: `appTypeId=3` (لا 5) عمداً — رابط مميّز عن `getGameDetail` كي لا يتصادم استهلاك جسم الاستجابة
@@ -1481,7 +1482,7 @@ export async function getShotMap(gameId: number): Promise<ShotMap | null> {
   } catch {
     return null;
   }
-}
+});
 
 // ===== ملاحظات البطولة (نمط 365 insights) — نقطة `web/trends/?competition={id}` (مفرد competition؛ مفحوصة حيًّا 200) =====
 // تُعيد كلّ تريندات مباريات البطولة القادمة دفعةً واحدة + games/competitors للتجميع. كلّ تريند: `text` (إحصاء واقعيّ يُبقى)
@@ -1541,7 +1542,7 @@ function insightDates(iso: string | null | undefined): { short: string; long: st
   }
 }
 
-export async function getCompetitionInsights(competitionId: number): Promise<CompetitionInsights | null> {
+export const getCompetitionInsights = cache(async (competitionId: number): Promise<CompetitionInsights | null> => {
   if (!Number.isInteger(competitionId) || competitionId <= 0) return null;
   try {
     const res = await fetch(`${BASE}/trends/?${COMMON}&competition=${competitionId}`, {
@@ -1579,4 +1580,4 @@ export async function getCompetitionInsights(competitionId: number): Promise<Com
   } catch {
     return null;
   }
-}
+});
