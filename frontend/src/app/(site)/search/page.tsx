@@ -5,14 +5,25 @@ import { Container } from '@/components/layout/container';
 import { SearchIcon } from '@/components/icons';
 import { Pagination } from '@/components/ui/pagination';
 import { searchArticles } from '@/lib/search';
+import { buildMetadata } from '@/lib/seo';
 
 // صفحة نتائج بحث الأخبار — تقرأ `?q=` (يرسلها نموذج بحث الهيدر) وتستدعي مرشّح `filter[q]`
 // (Scout/Meilisearch بالباك إند) عبر searchArticles. تعيد استخدام ArticleCard + view-model الموحَّد.
-// noindex (صفحات نتائج البحث لا تُفهرَس). ديناميكيّة (تعتمد searchParams) — لا ISR ثابت.
-export const metadata: Metadata = {
-  title: 'بحث',
-  robots: { index: false, follow: true },
-};
+// noindex دائماً (صفحات نتائج البحث لا تُفهرَس أبداً — بغضّ النظر عن بيئة buildMetadata الافتراضيّة).
+// ديناميكيّة (تعتمد searchParams) — لا ISR ثابت.
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string | string[] }>;
+}): Promise<Metadata> {
+  const sp = await searchParams;
+  const q = (typeof sp.q === 'string' ? sp.q : '').trim();
+  const meta = await buildMetadata({
+    title: q ? `نتائج البحث عن «${q}»` : 'البحث في الأخبار',
+    path: '/search',
+  });
+  return { ...meta, robots: { index: false, follow: true } };
+}
 
 const PER_PAGE = 20;
 
