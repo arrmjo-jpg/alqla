@@ -4,8 +4,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { Container } from '@/components/layout/container';
 import { ReadingSidebar } from '@/components/reading/reading-sidebar';
 import { Pagination } from '@/components/ui/pagination';
-import { HorizontalArticleCard } from '@/components/articles/HorizontalArticleCard';
-import { FeaturedCategoryCard } from '@/components/articles/FeaturedCategoryCard';
+import { EnArticleCard } from '@/components/en/en-article-card';
 import { getCategoryById, getCategoryPage } from '@/lib/feed';
 
 export const revalidate = 21600;
@@ -96,7 +95,7 @@ export default async function EnCategoryPage({
               {/* Featured Category Hero Article */}
               {featuredItem && (
                 <div className="w-full">
-                  <FeaturedCategoryCard item={featuredItem} />
+                  <EnArticleCard item={featuredItem} variant="feature" />
                 </div>
               )}
 
@@ -105,7 +104,7 @@ export default async function EnCategoryPage({
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:gap-6">
                   {gridItems.map((item) => (
                     <div key={item.id} className="h-full">
-                      <HorizontalArticleCard item={item} />
+                      <EnArticleCard item={item} variant="list" />
                     </div>
                   ))}
                 </div>
