@@ -59,7 +59,7 @@ export async function generateMetadata({
       follow: true,
     },
     alternates: {
-      canonical: `${env.baseUrl}/writer/${id}${page > 1 ? `?page=${page}` : ''}`,
+      canonical: `${env.siteUrl}/writer/${id}${page > 1 ? `?page=${page}` : ''}`,
     },
   };
 }
@@ -88,7 +88,7 @@ export default async function WriterProfilePage({
   if (!writer) notFound();
 
   const socials = Object.entries(writer.social).filter(([, url]) => typeof url === 'string' && url.trim());
-  const jobTitle = translateRole((writer as Record<string, unknown>).role as string | undefined);
+  const jobTitle = translateRole((writer as unknown as Record<string, unknown>).role as string | undefined);
   const totalArticles = articlesPage.total;
 
 
@@ -122,7 +122,7 @@ export default async function WriterProfilePage({
       image: writer.avatar || undefined,
       description: writer.bio || undefined,
       sameAs: socials.map(([, url]) => url),
-      url: `${env.baseUrl}/writer/${writer.id}`
+      url: `${env.siteUrl}/writer/${writer.id}`
     },
     {
       '@context': 'https://schema.org',
@@ -132,19 +132,19 @@ export default async function WriterProfilePage({
           '@type': 'ListItem',
           position: 1,
           name: 'الرئيسية',
-          item: `${env.baseUrl}/`
+          item: `${env.siteUrl}/`
         },
         {
           '@type': 'ListItem',
           position: 2,
           name: 'الكُتّاب',
-          item: `${env.baseUrl}/writers`
+          item: `${env.siteUrl}/writers`
         },
         {
           '@type': 'ListItem',
           position: 3,
           name: writer.name,
-          item: `${env.baseUrl}/writer/${writer.id}`
+          item: `${env.siteUrl}/writer/${writer.id}`
         }
       ]
     }
@@ -158,7 +158,7 @@ export default async function WriterProfilePage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <Container className="py-6 sm:py-10" dir="rtl">
+      <Container className="py-6 sm:py-10">
         {/* Breadcrumb Navigation */}
         <nav aria-label="breadcrumb" className="mb-6 flex items-center text-sm text-muted whitespace-nowrap overflow-x-auto pb-2">
           <Link href="/" className="hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">الرئيسية</Link>
