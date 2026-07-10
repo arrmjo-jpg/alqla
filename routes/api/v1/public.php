@@ -62,7 +62,8 @@ Route::middleware(['public.cache', 'throttle:public.read'])
         Route::get('/categories', [CategoryController::class, 'index']);
         Route::get('/categories/{slug}', [CategoryController::class, 'show']);
 
-        // بروفيل كاتب عامّ بالـ id — بوّابة is_writer نشِط فقط (في الـ Action)؛ {id} رقميّ فلا يتقاطع.
+        // دليل الكتّاب (Writers Directory) + بروفيل كاتب عامّ بالـ id. {id} رقميّ فلا يتقاطع.
+        Route::get('/writers', [WriterProfileController::class, 'index']);
         Route::get('/writers/{id}', [WriterProfileController::class, 'show'])->whereNumber('id');
 
         // المقالات: قائمة (filter/sort/pagination) + المسار السريع للعاجل + تفاصيل بالـ slug.

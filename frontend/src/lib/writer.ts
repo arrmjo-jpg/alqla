@@ -23,9 +23,14 @@ const WriterSchema = z
 export interface WriterProfile {
   id: number;
   name: string;
+  slug?: string;
+  url?: string;
   avatar: string | null;
   bio: string | null;
   social: Record<string, string>;
+  articles_count?: number;
+  last_activity_at?: string | null;
+  verified?: boolean;
 }
 
 export const getWriterProfile = cache(async (id: number, locale = 'ar'): Promise<WriterProfile | null> => {
@@ -80,6 +85,87 @@ export const getWriterArticles = cache(
       if (!parsed.success) return empty;
       
       const items = (parsed.data.data ?? []).map(mapItem);
+      const pg = parsed.data.meta?.pagination;
+      return {
+        items,
+        total: pg?.total ?? items.length,
+        page: pg?.current_page ?? page,
+        totalPages: pg?.total_pages ?? 1,
+      };
+    } catch {
+      return empty;
+    }
+  }
+);
+
+// ─── دليل الكتّاب (Writers Directory) ───
+
+const WriterListItemSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  slug: z.string().optional(),
+  url: z.string().optional(),
+  avatar: z.string().nullish(),
+  bio: z.string().nullish(),
+  articles_count: z.number().optional(),
+  last_activity_at: z.string().nullish(),
+  verified: z.boolean().optional(),
+});
+
+const WritersEnvelope = z.object({
+  data: z.array(WriterListItemSchema).optional(),
+  meta: z
+    .object({
+      pagination: z.object({
+        total: z.number().optional(),
+        current_page: z.number().optional(),
+        total_pages: z.number().optional(),
+      }).optional(),
+    })
+    .optional(),
+});
+
+export interface WritersPageResult {
+  items: WriterProfile[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+export const getWriters = cache(
+  async (page = 1, perPage = 24, q?: string, locale = 'ar'): Promise<WritersPageResult> => {
+    const empty: WritersPageResult = { items: [], total: 0, page, totalPages: 0 };
+    if (!env.apiBaseUrl) return empty;
+    try {
+      const qs = new URLSearchParams({
+        per_page: String(perPage),
+        page: String(Math.max(1, page)),
+      });
+      if (q) {
+        qs.set('q', q);
+      }
+      
+      const res = await fetch(
+        `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/writers?${qs.toString()}`,
+        { headers: env.internalHeaders, next: { revalidate: 600, tags: ['writers'] } },
+      );
+      if (!res.ok) return empty;
+      
+      const parsed = WritersEnvelope.safeParse(await res.json());
+      if (!parsed.success) return empty;
+      
+      const items = (parsed.data.data ?? []).map(d => ({
+        id: d.id,
+        name: d.name,
+        slug: d.slug,
+        url: d.url,
+        avatar: d.avatar ?? null,
+        bio: d.bio ?? null,
+        social: {},
+        articles_count: d.articles_count,
+        last_activity_at: d.last_activity_at ?? null,
+        verified: d.verified,
+      }));
       const pg = parsed.data.meta?.pagination;
       return {
         items,

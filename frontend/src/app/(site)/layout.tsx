@@ -13,6 +13,7 @@ import { DesktopViewProvider } from '@/lib/desktop-view-context';
 import { MobileTopToggleBanner } from '@/components/layout/desktop-view-toggle';
 
 import { NetworkGrid } from '@/components/home/network-grid';
+import { TopNewsCarousel } from '@/components/home/top-news-carousel';
 
 // قشرة الموقع العامّ — تصميم «القلعة نيوز» الجديد، مُنطّق داخل .qalah-skin (إطار 1450px + هويّة).
 // الإعلانات وقوائم الموبايل ومودال الكوكيز تبقى كما كانت. لوحة /account خارج هذه المجموعة بقالبها الخاصّ.
@@ -59,8 +60,8 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
 
       {/* الإعلانات وشبكة الأخبار على الرئيسية فقط (HomeOnly) */}
       <HomeOnly>
-        {/* شبكة أخبار من الموقع كامل أسفل الشريط الإخباري مباشرة (تظهر فقط إذا كان is_squares true) */}
-        <NetworkGrid items={latest.filter((i) => i.is_squares).slice(0, 8)} />
+        {/* الكروسيل الجديد تحت الشريط الإخباري (يظهر في الرئيسية فقط) */}
+        <TopNewsCarousel items={latest.filter((i) => i.is_squares).slice(0, 10)} />
 
         {/* إعلان السلايدر الكبير (aalan_fy_qsm_slaydr_kbyr_1410) — إعلان واحد كبير فوق الهيرو والإعلانين. */}
         <AdZone zone="aalan_fy_qsm_slaydr_kbyr_1410" className="mb-2 flex justify-center px-4" />

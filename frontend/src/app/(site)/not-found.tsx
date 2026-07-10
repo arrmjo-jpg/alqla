@@ -42,66 +42,68 @@ export default async function NotFound() {
         <main className="flex flex-col gap-8 lg:col-span-8">
           {/* Main 404 block with custom geometric illustration */}
           <div
-            className="flex flex-col items-center justify-center border border-border bg-surface-2 px-6 py-12 text-center"
-            style={{ borderRadius: '16px' }}
+            className="relative flex flex-col items-center justify-center overflow-hidden border border-border/60 bg-gradient-to-br from-surface to-surface-2 px-6 py-24 text-center shadow-2xl transition-all duration-500 hover:shadow-primary/10 group"
+            style={{ borderRadius: '24px' }}
           >
-            {/* Custom SVG Illustration */}
-            <div className="relative mb-6 flex size-32 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <svg
-                className="size-20 drop-shadow-md"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
-                />
-              </svg>
-              <span className="absolute -bottom-1 -right-1 rounded-full bg-primary px-2.5 py-0.5 font-heading text-xs font-bold text-white shadow-sm">
-                404
-              </span>
+            {/* الخلفية الإبداعية - تأثير الإضاءة (Glowing Orbs) */}
+            <div className="pointer-events-none absolute -left-12 -top-12 h-64 w-64 rounded-full bg-primary/20 blur-[80px] transition-opacity duration-1000 group-hover:opacity-70 opacity-30" aria-hidden={true} />
+            <div className="pointer-events-none absolute -bottom-12 -right-12 h-64 w-64 rounded-full bg-yellow-400/10 blur-[80px] transition-opacity duration-1000 group-hover:opacity-70 opacity-30" aria-hidden={true} />
+
+            <div className="relative z-10 mb-6 flex flex-col items-center">
+              <div className="relative">
+                <h1 className="select-none text-[8rem] font-black leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-primary via-red-700 to-black drop-shadow-xl sm:text-[10rem]">
+                  404
+                </h1>
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] text-center">
+                  <span className="inline-block -rotate-6 transform rounded-full bg-primary px-4 py-1.5 text-sm font-extrabold uppercase tracking-widest text-white shadow-xl border-2 border-white/20">
+                    أين نحن؟
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <h1 className="font-heading text-2xl font-extrabold text-fg sm:text-3xl">
-              عذرًا، هذه الصفحة غير متوفرة
-            </h1>
-            <p className="mt-3 max-w-md text-base leading-relaxed text-muted">
-              ربما تم حذف هذه الصفحة، أو تعديل رابطها، أو أنها لم تكن موجودة في الأصل. يرجى التحقق من الرابط أو استخدام البحث أدناه.
+            <h2 className="relative z-10 font-heading text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
+              عذرًا، يبدو أنك ضللت الطريق!
+            </h2>
+            <p className="relative z-10 mt-4 max-w-lg text-lg font-medium leading-relaxed text-muted">
+              الصفحة التي تبحث عنها غير موجودة في هذا الكون. ربما تم نقلها، أو حذفها، أو لم تكن موجودة من الأساس.
             </p>
 
-            {/* Back buttons client actions */}
-            <NotFoundButtons />
+            <div className="relative z-10 mt-10">
+              <NotFoundButtons />
+            </div>
           </div>
 
           {/* Search form box */}
           <div
-            className="border border-border bg-surface-2 p-5"
-            style={{ borderRadius: '12px' }}
+            className="relative overflow-hidden border border-border/80 bg-surface p-6 shadow-lg sm:p-8"
+            style={{ borderRadius: '20px' }}
           >
-            <h2 className="mb-3 font-heading text-base font-extrabold text-fg">
-              البحث في الأخبار والمقالات
-            </h2>
-            <form action="/search" method="get" role="search" className="flex items-center gap-3">
-              <div className="flex flex-1 items-center gap-3 rounded-lg bg-surface-3 px-4">
-                <Search className="size-5 shrink-0 text-muted" aria-hidden />
-                <input
-                  name="q"
-                  type="search"
-                  autoComplete="off"
-                  placeholder="ابحث عن المقالات أو الكلمات المفتاحية..."
-                  className="h-11 w-full bg-transparent text-base text-fg outline-none placeholder:text-muted"
-                />
-              </div>
-              <button
-                type="submit"
-                className="h-11 shrink-0 rounded-lg bg-primary px-6 font-bold text-white transition hover:opacity-90 cursor-pointer"
-              >
-                بحث
-              </button>
-            </form>
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent" />
+            <div className="relative z-10">
+              <h2 className="mb-4 font-heading text-xl font-extrabold text-fg flex items-center gap-2">
+                <Search className="size-5 text-primary" />
+                البحث في الموقع
+              </h2>
+              <form action="/search" method="get" role="search" className="flex flex-col sm:flex-row items-center gap-3">
+                <div className="flex flex-1 w-full items-center gap-3 rounded-xl bg-surface-3 px-5 transition-all focus-within:ring-2 focus-within:ring-primary/50 focus-within:bg-surface border border-border/50">
+                  <Search className="size-5 shrink-0 text-muted" aria-hidden={true} />
+                  <input
+                    name="q"
+                    type="search"
+                    autoComplete="off"
+                    placeholder="ابحث عن المقالات، الأخبار، أو الكلمات المفتاحية..."
+                    className="h-14 w-full bg-transparent text-base font-medium text-fg outline-none placeholder:text-muted/70"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="h-14 w-full sm:w-auto shrink-0 rounded-xl bg-primary px-8 font-bold text-white shadow-md transition-all hover:bg-black hover:shadow-xl active:scale-95 cursor-pointer"
+                >
+                  بحث الآن
+                </button>
+              </form>
+            </div>
           </div>
 
           {/* Categories Grid Directory */}

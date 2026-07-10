@@ -7,6 +7,8 @@ import { Container } from '@/components/layout/container';
 import { Pagination } from '@/components/ui/pagination';
 import { HorizontalArticleCard } from '@/components/articles/HorizontalArticleCard';
 import { ReadingSidebar } from '@/components/reading/reading-sidebar';
+import { FeedSection } from '@/components/articles/blocks/feed-section';
+import { getLatestFeed, getMostReadFeed } from '@/lib/feed';
 import { getWriterProfile } from '@/lib/writer';
 import { getWriterArticles } from '@/lib/writer';
 import { env } from '@/lib/env';
@@ -78,10 +80,12 @@ export default async function WriterProfilePage({
   const sp = await searchParams;
   const page = Math.max(1, Number(typeof sp.page === 'string' ? sp.page : '1') || 1);
 
-  // Parallel fetch: author info + paginated articles
-  const [writer, articlesPage] = await Promise.all([
+  // Parallel fetch: author info + paginated articles + extra feeds to fill the page
+  const [writer, articlesPage, latestFeed, mostReadFeed] = await Promise.all([
     getWriterProfile(numericId),
-    getWriterArticles(numericId, page, PER_PAGE, 'ar', 'opinion')
+    getWriterArticles(numericId, page, PER_PAGE, 'ar', 'opinion'),
+    getLatestFeed('ar'),
+    getMostReadFeed('ar', 5)
   ]);
 
   // Handle 404 cleanly
@@ -180,9 +184,23 @@ export default async function WriterProfilePage({
               </div>
             )}
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-2">
             <span className="text-xs font-bold text-primary uppercase tracking-widest">{jobTitle}</span>
             <h1 className="font-heading text-2xl font-extrabold text-fg sm:text-3xl">{writer.name}</h1>
+            {writer.bio && (
+              <p className="text-muted leading-relaxed max-w-3xl mt-1 text-sm sm:text-base">
+                {writer.bio}
+              </p>
+            )}
+            {socials.length > 0 && (
+              <div className="flex items-center gap-4 mt-2">
+                {socials.map(([platform, url]) => (
+                  <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-muted hover:text-primary capitalize transition-colors">
+                    {platform}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -191,8 +209,8 @@ export default async function WriterProfilePage({
           
           {/* Main Content Area (Articles) */}
           <main className="lg:col-span-8 min-w-0 space-y-8">
-            <div className="flex items-center gap-2 mb-6 border-b border-border pb-3 hidden">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-fg">أحدث المقالات</h2>
+            <div className="flex items-center gap-2 mb-6 border-b border-border pb-3">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-fg">مقالات الكاتب</h2>
             </div>
 
             {totalArticles === 0 ? (
@@ -225,6 +243,20 @@ export default async function WriterProfilePage({
                 )}
               </>
             )}
+
+            {/* Extra Feeds to make page look rich like article pages */}
+            <div className="mt-16 space-y-12">
+              <FeedSection
+                id="latest-news-heading"
+                title="آخر الأخبار"
+                items={latestFeed.slice(0, 4)}
+              />
+              <FeedSection
+                id="most-read-heading"
+                title="الأكثر قراءة"
+                items={mostReadFeed.slice(0, 4)}
+              />
+            </div>
           </main>
 
           {/* Sticky Sidebar (Latest News & Ads) */}

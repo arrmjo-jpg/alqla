@@ -134,7 +134,7 @@ export default async function Home() {
       <Suspense fallback={<SectionLoader />}>
         <ReelsCarousel
           items={reels.items}
-          siteName={settings?.site_name || 'صدى الشعب الأخباري'}
+          siteName={settings?.site_name || 'القلعة نيوز'}
           logo={settings?.logo_dark ?? settings?.logo_light ?? null}
         />
       </Suspense>

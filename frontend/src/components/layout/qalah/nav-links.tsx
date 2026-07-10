@@ -63,22 +63,24 @@ export function QalahNavLinks({ categories }: { categories: NavCategory[] }) {
 
   return (
     <div className="relative w-full">
-      {/* Invisible ruler for measuring items */}
-      <ul
-        ref={measureRef}
-        className="header-nav-list absolute opacity-0 pointer-events-none whitespace-nowrap"
-        style={{ top: 0, right: 0, display: 'flex', width: 'max-content' }}
-        aria-hidden
-      >
-        {allItems.map((item) => (
-          <li key={item.slug || 'home'} className="header-nav-item">
-            <Link href={item.href}>{item.name}</Link>
-          </li>
-        ))}
-      </ul>
+      {/* Invisible ruler for measuring items (wrapped in overflow-hidden to prevent page scroll) */}
+      <div className="absolute top-0 right-0 w-full overflow-hidden h-0 opacity-0 pointer-events-none">
+        <ul
+          ref={measureRef}
+          className="header-nav-list whitespace-nowrap"
+          style={{ display: 'flex', width: 'max-content' }}
+          aria-hidden
+        >
+          {allItems.map((item) => (
+            <li key={item.slug || 'home'} className="header-nav-item">
+              <Link href={item.href}>{item.name}</Link>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {/* Actual visible items */}
-      <ul ref={containerRef} className="header-nav-list">
+      <ul ref={containerRef} className="header-nav-list !overflow-visible">
         {visibleItems.map((item) => {
           const decodedPath = decodeURIComponent(pathname);
           const isActive =
@@ -99,7 +101,8 @@ export function QalahNavLinks({ categories }: { categories: NavCategory[] }) {
             <button className="flex items-center gap-1 font-bold text-[#333] hover:text-primary transition-colors px-2 py-1 outline-none">
               المزيد <ChevronDown className="size-4" />
             </button>
-            <div className="absolute top-full right-0 mt-2 hidden group-hover:block bg-white shadow-xl border border-gray-100 rounded-md py-2 min-w-[200px] z-[60]">
+            {/* Added pt-2 and removed mt-2 to remove the dead zone between the button and the menu */}
+            <div className="absolute top-full right-0 hidden group-hover:flex flex-col bg-white shadow-xl border border-gray-100 rounded-md py-2 min-w-[200px] z-[60]">
               {hiddenItems.map((item) => {
                 const decodedPath = decodeURIComponent(pathname);
                 const isActive =
@@ -110,7 +113,7 @@ export function QalahNavLinks({ categories }: { categories: NavCategory[] }) {
                   <Link
                     key={item.slug}
                     href={item.href}
-                    className={`block px-4 py-2 text-base font-bold hover:bg-gray-50 hover:text-primary transition-colors ${
+                    className={`!block w-full text-right px-4 py-2 text-base font-bold hover:bg-gray-50 hover:text-primary transition-colors ${
                       isActive ? 'text-primary bg-red-50/50' : 'text-[#333]'
                     }`}
                   >
