@@ -132,10 +132,10 @@ return [
          * تكتب في ملف منفصل لتسهيل المراقبة في الإنتاج دون تلويث laravel.log.
          */
         'perf' => [
-            'driver'              => 'daily',
-            'path'                => storage_path('logs/perf.log'),
-            'level'               => 'debug',
-            'days'                => 7,
+            'driver' => 'daily',
+            'path' => storage_path('logs/perf.log'),
+            'level' => 'debug',
+            'days' => 7,
             'replace_placeholders' => true,
         ],
 

@@ -109,7 +109,7 @@ class ListMostReadArticlesAction
                 'id', 'author_id', 'primary_category_id', 'type', 'status', 'locale',
                 'title', 'subtitle', 'slug', 'excerpt', 'published_at',
                 'is_featured', 'is_breaking', 'is_pinned', 'is_header', 'is_editor_pick', 'is_squares',
-                'views_count', 'event_status', 'created_at', 'deleted_at'
+                'views_count', 'event_status', 'created_at', 'deleted_at',
             ])
             ->published()
             ->forLocale($locale)
@@ -117,7 +117,7 @@ class ListMostReadArticlesAction
             ->with([
                 'author:id,name,avatar,is_writer',
                 'primaryCategory:id,name,slug',
-                'mediaAssets' => fn ($q) => $q->wherePivot('collection', 'cover')
+                'mediaAssets' => fn ($q) => $q->wherePivot('collection', 'cover'),
             ])
             ->get()
             ->sortBy(fn (Article $a): int => $order[$a->id] ?? PHP_INT_MAX)

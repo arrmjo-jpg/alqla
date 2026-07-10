@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Public\Content;
 
+use App\Enums\ArticleStatus;
 use App\Enums\ArticleType;
 use App\Http\Resources\Public\Content\PublicArticleListItemResource;
 use App\Models\Article;
@@ -15,6 +16,8 @@ use App\Support\Cache\CacheTtl;
 use App\Support\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -81,7 +84,7 @@ class ListPublicArticlesAction
         if ($term !== '' && ! $cursorMode) {
             try {
                 $search = Article::search($term)
-                    ->where('status', \App\Enums\ArticleStatus::Published->value)
+                    ->where('status', ArticleStatus::Published->value)
                     ->where('locale', $locale);
 
                 // تطبيق مرشحات التصفية الخاصة بالبحث العام داخل Meilisearch (فقط إذا لم يكن محرك المجموعات المحاكي للتوافق مع الاختبارات)
@@ -115,19 +118,19 @@ class ListPublicArticlesAction
                     ->forLocale($locale)
                     ->select([
                         'id', 'author_id', 'primary_category_id', 'type', 'status', 'locale',
-                        'title', 'slug', 'excerpt', 'published_at', 'is_pinned', 'views_count'
+                        'title', 'slug', 'excerpt', 'published_at', 'is_pinned', 'views_count',
                     ])
                     ->with([
                         'author:id,name,avatar,is_writer',
                         'primaryCategory:id,name,slug',
-                        'mediaAssets' => fn ($ma) => $ma->wherePivot('collection', 'cover')
+                        'mediaAssets' => fn ($ma) => $ma->wherePivot('collection', 'cover'),
                     ])
                     ->when($categoryFilter !== '', function ($q) use ($categoryFilter, $locale) {
                         $category = Category::where('slug', $categoryFilter)->where('locale', $locale)->first();
                         if ($category) {
                             $q->where(function ($w) use ($category) {
                                 $w->where('primary_category_id', $category->id)
-                                  ->orWhereHas('categories', fn ($sub) => $sub->where('categories.id', $category->id));
+                                    ->orWhereHas('categories', fn ($sub) => $sub->where('categories.id', $category->id));
                             });
                         } else {
                             $q->whereRaw('1 = 0');
@@ -166,14 +169,14 @@ class ListPublicArticlesAction
                     'id', 'author_id', 'primary_category_id', 'type', 'status', 'locale',
                     'title', 'subtitle', 'slug', 'excerpt', 'published_at',
                     'is_featured', 'is_breaking', 'is_pinned', 'is_header', 'is_editor_pick', 'is_squares',
-                    'views_count', 'event_status', 'created_at', 'deleted_at'
+                    'views_count', 'event_status', 'created_at', 'deleted_at',
                 ])
                 ->published()
                 ->forLocale($locale)
                 ->with([
                     'author:id,name,avatar,is_writer',
                     'primaryCategory:id,name,slug',
-                    'mediaAssets' => fn ($q) => $q->wherePivot('collection', 'cover')
+                    'mediaAssets' => fn ($q) => $q->wherePivot('collection', 'cover'),
                 ])
         )
             ->allowedFilters(
@@ -185,7 +188,7 @@ class ListPublicArticlesAction
                     if ($term === '') {
                         return;
                     }
-                    if (\Illuminate\Support\Facades\DB::connection()->getDriverName() === 'mysql') {
+                    if (DB::connection()->getDriverName() === 'mysql') {
                         $q->whereFullText('title', $term);
                     } else {
                         $q->where('title', 'like', '%'.$term.'%');
@@ -198,6 +201,7 @@ class ListPublicArticlesAction
                         ->first();
                     if ($category === null) {
                         $q->whereRaw('1 = 0');
+
                         return;
                     }
                     $q->where(function ($w) use ($category): void {
@@ -261,13 +265,13 @@ class ListPublicArticlesAction
             CacheTtl::MEDIUM,
             function () use ($query, $request, $locale) {
                 // إصلاح جذري لـ DEPENDENT SUBQUERY Stampede:
-                // إذا كان الطلب مفلتراً بتصنيف فقط (بدون بحث أو وسوم إضافية)، 
+                // إذا كان الطلب مفلتراً بتصنيف فقط (بدون بحث أو وسوم إضافية)،
                 // نستخدم UNION سريع (~145ms) بدلاً من OR EXISTS البطيء (~44,000ms).
                 $filters = $request->query('filter', []);
                 $catSlug = (string) ($filters['category'] ?? '');
-                
+
                 if ($catSlug !== '' && empty($filters['q']) && empty($filters['tag']) && empty($filters['type'])) {
-                    $category = \App\Models\Category::where('slug', $catSlug)->where('locale', $locale)->first();
+                    $category = Category::where('slug', $catSlug)->where('locale', $locale)->first();
                     if ($category) {
                         $now = now()->toDateTimeString();
                         $unionSql = "
@@ -283,8 +287,8 @@ class ListPublicArticlesAction
                               AND a.published_at <= ? AND a.locale = ?
                               AND c.id = ? AND c.deleted_at IS NULL AND a.deleted_at IS NULL
                         ";
-                        
-                        return \Illuminate\Support\Facades\DB::table(\Illuminate\Support\Facades\DB::raw("({$unionSql}) as unioned"))
+
+                        return DB::table(DB::raw("({$unionSql}) as unioned"))
                             ->setBindings([$now, $locale, $category->id, $now, $locale, $category->id])
                             ->count();
                     }
@@ -295,7 +299,7 @@ class ListPublicArticlesAction
         );
 
         $page = max(1, (int) $request->integer('page', 1));
-        
+
         $results = $query
             ->orderByDesc('is_pinned')
             ->allowedSorts('published_at', 'views_count')
@@ -303,7 +307,7 @@ class ListPublicArticlesAction
             ->forPage($page, $perPage)
             ->get();
 
-        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+        $paginator = new LengthAwarePaginator(
             $results,
             $total,
             $perPage,

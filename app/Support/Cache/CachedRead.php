@@ -61,7 +61,8 @@ final class CachedRead
 
                 $again = $store->get($key);
                 if (is_array($again) && array_key_exists('v', $again)) {
-                    Log::channel(self::LOG_CHANNEL)->info("CachedRead: lock acquired, hit found", array_merge($context, ['wait_ms' => $wait_ms]));
+                    Log::channel(self::LOG_CHANNEL)->info('CachedRead: lock acquired, hit found', array_merge($context, ['wait_ms' => $wait_ms]));
+
                     return $again['v'];
                 }
 
@@ -69,7 +70,7 @@ final class CachedRead
                 $value = $callback();
                 $cb_ms = (microtime(true) - $t_cb) * 1000;
 
-                Log::channel(self::LOG_CHANNEL)->info("CachedRead: lock acquired, callback executed", array_merge($context, ['wait_ms' => $wait_ms, 'callback_ms' => $cb_ms]));
+                Log::channel(self::LOG_CHANNEL)->info('CachedRead: lock acquired, callback executed', array_merge($context, ['wait_ms' => $wait_ms, 'callback_ms' => $cb_ms]));
 
                 $store->put($key, ['v' => $value], $ttl);
 
@@ -77,14 +78,15 @@ final class CachedRead
             });
         } catch (LockTimeoutException) {
             $wait_ms = (microtime(true) - $t_before_lock) * 1000;
-            
+
             $hit = $store->get($key);
             if (is_array($hit) && array_key_exists('v', $hit)) {
-                Log::channel(self::LOG_CHANNEL)->warning("CachedRead: LockTimeoutException, resolved via late hit", array_merge($context, ['wait_ms' => $wait_ms]));
+                Log::channel(self::LOG_CHANNEL)->warning('CachedRead: LockTimeoutException, resolved via late hit', array_merge($context, ['wait_ms' => $wait_ms]));
+
                 return $hit['v'];
             }
 
-            Log::channel(self::LOG_CHANNEL)->critical("CachedRead: LockTimeoutException, stampede detected, triggering fallback", array_merge($context, [
+            Log::channel(self::LOG_CHANNEL)->critical('CachedRead: LockTimeoutException, stampede detected, triggering fallback', array_merge($context, [
                 'wait_ms' => $wait_ms,
                 'timestamp' => now()->toIso8601String(),
                 'memory_usage' => memory_get_usage(true),

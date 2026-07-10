@@ -33,7 +33,7 @@ final class PublicSeoBuilder
 
         $siteName = $settings->getLocalizedName($article->locale);
         $absoluteUrl = self::absoluteUrl($article->canonicalPath());
-        
+
         // Priority check for social sharing image:
         // 1. Custom og_image, 2. Article cover image, 3. Configured fallback, 4. Omit completely.
         $shareImage = self::shareImageObject($article, $settings);
@@ -77,8 +77,8 @@ final class PublicSeoBuilder
         // Twitter Cards
         $twitter = [
             'card' => $coverUrl ? 'summary_large_image' : 'summary',
-            'site' => $twitterHandle ? '@' . $twitterHandle : null,
-            'creator' => $twitterHandle ? '@' . $twitterHandle : null,
+            'site' => $twitterHandle ? '@'.$twitterHandle : null,
+            'creator' => $twitterHandle ? '@'.$twitterHandle : null,
             'title' => $title,
             'description' => $description,
         ];
@@ -164,7 +164,7 @@ final class PublicSeoBuilder
                 '@type' => 'ListItem',
                 'position' => $position++,
                 'name' => $article->primaryCategory->name,
-                'item' => self::absoluteUrl($locale . '/' . $article->primaryCategory->slug),
+                'item' => self::absoluteUrl($locale.'/'.$article->primaryCategory->slug),
             ];
         }
 
@@ -297,6 +297,7 @@ final class PublicSeoBuilder
     public static function getSiteName(?string $locale = null): string
     {
         $settings = app(GeneralSettings::class);
+
         return $settings->getLocalizedName($locale);
     }
 
@@ -307,6 +308,7 @@ final class PublicSeoBuilder
         if ($pubName === '' || $pubName === 'Laravel') {
             $pubName = $siteName;
         }
+
         return $pubName;
     }
 
@@ -319,6 +321,7 @@ final class PublicSeoBuilder
                 $logo = MediaUrl::forPublic($settings->logo_light) ?? '';
             }
         }
+
         return $logo;
     }
 
@@ -328,6 +331,7 @@ final class PublicSeoBuilder
         if ($baseUrl === '') {
             $baseUrl = (string) config('app.url');
         }
+
         return rtrim($baseUrl, '/').'/'.ltrim($path, '/');
     }
 }

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Models\Article;
+use App\Models\Category;
 use App\Models\User;
 use App\Settings\GeneralSettings;
 use App\Support\Content\PublicSeoBuilder;
-use App\Models\Article;
-use App\Models\Category;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -14,8 +14,8 @@ uses(RefreshDatabase::class);
 function createCategory(string $locale): Category
 {
     return Category::create([
-        'name' => 'Category ' . uniqid(),
-        'slug' => 'cat-' . uniqid(),
+        'name' => 'Category '.uniqid(),
+        'slug' => 'cat-'.uniqid(),
         'locale' => $locale,
         'scope' => 'both',
         'status' => 'active',
@@ -30,12 +30,13 @@ function getAdminToken(): string
 {
     $admin = User::factory()->create();
     $admin->assignRole('super_admin');
+
     return $admin->createToken('admin-token', ['admin'])->plainTextToken;
 }
 
 it('verifies GeneralSettings model supports multilingual properties', function (): void {
     $settings = app(GeneralSettings::class);
-    
+
     expect(property_exists($settings, 'site_name_ar'))->toBeTrue();
     expect(property_exists($settings, 'site_name_en'))->toBeTrue();
     expect(property_exists($settings, 'site_description_ar'))->toBeTrue();
@@ -44,7 +45,7 @@ it('verifies GeneralSettings model supports multilingual properties', function (
 
 it('tests fallback and localized resolver logic in GeneralSettings', function (): void {
     $settings = app(GeneralSettings::class);
-    
+
     // Set mock values
     $settings->site_name_ar = 'القلعة';
     $settings->site_name_en = 'Al Qalah';
@@ -129,21 +130,21 @@ it('verifies SEO metadata updates based on article locale', function (): void {
     // Create Arabic article
     $arArticle = Article::create([
         'title' => 'خبر عاجل',
-        'slug' => 'ar-slug-' . uniqid(),
+        'slug' => 'ar-slug-'.uniqid(),
         'locale' => 'ar',
         'type' => 'news',
         'status' => 'published',
         'primary_category_id' => createCategory('ar')->id,
     ]);
     $arSeo = PublicSeoBuilder::build($arArticle);
-    
+
     // Breadcrumbs list item 1 name should be Qalah (for English) or القلعة (for Arabic)
     expect($arSeo->breadcrumbs['itemListElement'][0]['name'])->toBe('القلعة');
 
     // Create English article
     $enArticle = Article::create([
         'title' => 'Breaking News',
-        'slug' => 'en-slug-' . uniqid(),
+        'slug' => 'en-slug-'.uniqid(),
         'locale' => 'en',
         'type' => 'news',
         'status' => 'published',

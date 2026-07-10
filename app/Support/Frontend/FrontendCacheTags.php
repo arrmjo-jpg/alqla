@@ -88,7 +88,7 @@ final class FrontendCacheTags
         $article->loadMissing('tags');
         $currentTags = $article->tags->pluck('name')->all();
         $allTags = collect($currentTags)->merge($oldTags)->filter()->unique();
-        
+
         foreach ($allTags as $tag) {
             $tags[] = "tag:{$tag}";
         }

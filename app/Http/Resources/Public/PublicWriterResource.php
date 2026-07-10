@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Public;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -11,7 +12,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * مورد بروفيل الكاتب العام — **حقول آمنة للنشر فقط** (لا بريد/حالة/أدوار/تسجيل دخول/أسرار).
  * يُعاد فقط لمستخدم is_writer نشِط (البوّابة في ShowPublicWriterAction). الصورة من Spatie media.
  *
- * @mixin \App\Models\User
+ * @mixin User
  */
 class PublicWriterResource extends JsonResource
 {

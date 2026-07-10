@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Storage;
  */
 class PerfIncidentSnapshotCommand extends Command
 {
-    protected $signature   = 'perf:incident-snapshot
+    protected $signature = 'perf:incident-snapshot
                               {--at= : timestamp الحادثة (Y-m-d H:i:s)}
                               {--slow-threshold=1 : الحد الأدنى للاستعلام البطيء بالثواني (performance_schema فقط)}';
 
@@ -35,17 +35,17 @@ class PerfIncidentSnapshotCommand extends Command
 
     public function handle(): int
     {
-        $at        = $this->option('at') ? Carbon::parse($this->option('at')) : now();
+        $at = $this->option('at') ? Carbon::parse($this->option('at')) : now();
         $threshold = (int) $this->option('slow-threshold');
-        $ts        = $at->format('Y-m-d_H-i-s');
-        $filename  = "perf/incident_{$ts}.txt";
+        $ts = $at->format('Y-m-d_H-i-s');
+        $filename = "perf/incident_{$ts}.txt";
 
         $this->info("Collecting incident snapshot -- {$at->toIso8601String()}");
 
-        $lines   = [];
+        $lines = [];
         $lines[] = str_repeat('=', 80);
         $lines[] = "ALPHACMS INCIDENT SNAPSHOT -- {$at->toIso8601String()}";
-        $lines[] = "Collected at: ".now()->toIso8601String();
+        $lines[] = 'Collected at: '.now()->toIso8601String();
         $lines[] = str_repeat('=', 80);
         $lines[] = '';
 
@@ -56,10 +56,10 @@ class PerfIncidentSnapshotCommand extends Command
             if (empty($processes)) {
                 $lines[] = '(no active processes)';
             } else {
-                $lines[] = sprintf("%-8s %-10s %-20s %-10s %-12s %-8s %s",
+                $lines[] = sprintf('%-8s %-10s %-20s %-10s %-12s %-8s %s',
                     'Id', 'User', 'Host', 'db', 'Command', 'Time', 'Info');
                 foreach ($processes as $p) {
-                    $lines[] = sprintf("%-8s %-10s %-20s %-10s %-12s %-8s %s",
+                    $lines[] = sprintf('%-8s %-10s %-20s %-10s %-12s %-8s %s',
                         $p->Id ?? $p->id ?? '-',
                         $p->User ?? $p->user ?? '-',
                         $p->Host ?? $p->host ?? '-',
@@ -77,7 +77,7 @@ class PerfIncidentSnapshotCommand extends Command
         // ── 2. SHOW ENGINE INNODB STATUS ──────────────────────────────────────
         $lines[] = str_repeat('-', 60).' SHOW ENGINE INNODB STATUS';
         try {
-            $innodb  = DB::select('SHOW ENGINE INNODB STATUS');
+            $innodb = DB::select('SHOW ENGINE INNODB STATUS');
             $lines[] = $innodb[0]->Status ?? $innodb[0]->status ?? '(empty)';
         } catch (\Throwable $e) {
             $lines[] = "ERROR: {$e->getMessage()}";
@@ -88,7 +88,7 @@ class PerfIncidentSnapshotCommand extends Command
         $lines[] = str_repeat('-', 60).' REDIS INFO (keyspace + stats)';
         try {
             $redisClient = Redis::connection()->client();
-            $info        = $redisClient->info();
+            $info = $redisClient->info();
             foreach (['Server', 'Clients', 'Memory', 'Stats', 'Keyspace'] as $section) {
                 if (! empty($info[$section])) {
                     $lines[] = "[ {$section} ]";
@@ -106,9 +106,9 @@ class PerfIncidentSnapshotCommand extends Command
         $lines[] = str_repeat('-', 60).' ACTIVE STAMPEDE LOCKS via SCAN (swr:*)';
         try {
             $redisClient = Redis::connection()->client();
-            $prefix      = config('cache.prefix', 'laravel_cache');
-            $pattern     = "{$prefix}*swr:*";
-            $found       = [];
+            $prefix = config('cache.prefix', 'laravel_cache');
+            $pattern = "{$prefix}*swr:*";
+            $found = [];
 
             $cursor = null;
             do {
@@ -123,8 +123,8 @@ class PerfIncidentSnapshotCommand extends Command
                 $lines[] = '(no active swr: locks found)';
             } else {
                 foreach ($found as $k) {
-                    $ttl     = $redisClient->ttl($k);
-                    $value   = $redisClient->get($k);
+                    $ttl = $redisClient->ttl($k);
+                    $value = $redisClient->get($k);
                     $lines[] = "  key={$k}  ttl={$ttl}s  value={$value}";
                 }
             }
@@ -136,7 +136,7 @@ class PerfIncidentSnapshotCommand extends Command
         // ── 5. PHP-FPM STATUS ──────────────────────────────────────────────────
         $lines[] = str_repeat('-', 60).' PHP-FPM STATUS';
         try {
-            $status  = @file_get_contents('http://127.0.0.1/fpm-status?json');
+            $status = @file_get_contents('http://127.0.0.1/fpm-status?json');
             $lines[] = $status ?: '(fpm-status not reachable -- add pm.status_path=/fpm-status to pool config)';
         } catch (\Throwable) {
             $lines[] = '(fpm-status not reachable)';
@@ -146,7 +146,7 @@ class PerfIncidentSnapshotCommand extends Command
         // ── 6. LAST 200 LINES -- perf.log (PRIMARY EVIDENCE SOURCE) ──────────
         // هذا هو المصدر الرئيسي: يحتوي SQL بطيء من DB::listen + CachedRead events
         $lines[] = str_repeat('-', 60).' LAST 200 LINES -- perf.log (PRIMARY)';
-        $perfLog  = storage_path('logs/perf-'.now()->format('Y-m-d').'.log');
+        $perfLog = storage_path('logs/perf-'.now()->format('Y-m-d').'.log');
         if (file_exists($perfLog)) {
             $lines = array_merge($lines, array_slice(file($perfLog), -200));
         } else {
@@ -156,7 +156,7 @@ class PerfIncidentSnapshotCommand extends Command
 
         // ── 7. LAST 100 LINES -- laravel.log ──────────────────────────────────
         $lines[] = str_repeat('-', 60).' LAST 100 LINES -- laravel.log';
-        $mainLog  = storage_path('logs/laravel.log');
+        $mainLog = storage_path('logs/laravel.log');
         if (file_exists($mainLog)) {
             $lines = array_merge($lines, array_slice(file($mainLog), -100));
         } else {
@@ -166,9 +166,9 @@ class PerfIncidentSnapshotCommand extends Command
 
         // ── 8. PERFORMANCE SCHEMA (استشاري -- قد لا يكون مفعّلاً) ────────────
         $lines[] = str_repeat('-', 60)." [SUPPLEMENTARY] performance_schema slow queries >= {$threshold}s";
-        $lines[] = "(هذا القسم استشاري فقط -- قد يكون معطلاً أو يعطي إحصاءات مجمعة وليس الاستعلامات الحية)";
+        $lines[] = '(هذا القسم استشاري فقط -- قد يكون معطلاً أو يعطي إحصاءات مجمعة وليس الاستعلامات الحية)';
         try {
-            $slow = DB::select("
+            $slow = DB::select('
                 SELECT DIGEST_TEXT, COUNT_STAR,
                        ROUND(AVG_TIMER_WAIT / 1000000000, 0) AS avg_ms,
                        ROUND(MAX_TIMER_WAIT / 1000000000, 0) AS max_ms,
@@ -177,7 +177,7 @@ class PerfIncidentSnapshotCommand extends Command
                 WHERE  AVG_TIMER_WAIT / 1000000000 >= ?
                 ORDER  BY AVG_TIMER_WAIT DESC
                 LIMIT  20
-            ", [$threshold * 1000]);
+            ', [$threshold * 1000]);
             if (empty($slow)) {
                 $lines[] = "(no queries above {$threshold}s in performance_schema)";
             } else {
@@ -199,7 +199,7 @@ class PerfIncidentSnapshotCommand extends Command
 
         $this->newLine();
         $this->info("Snapshot written to: {$path}");
-        $this->line("Share this file when reporting the incident.");
+        $this->line('Share this file when reporting the incident.');
 
         return self::SUCCESS;
     }

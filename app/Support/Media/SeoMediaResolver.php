@@ -11,7 +11,7 @@ class SeoMediaResolver
     /**
      * Resolves any media asset, path, or URL to a standardized SEO image array.
      *
-     * @param mixed $input MediaAsset model, relative path, absolute URL, or null.
+     * @param  mixed  $input  MediaAsset model, relative path, absolute URL, or null.
      * @return array{url: string, secure_url: ?string, width: ?int, height: ?int, type: ?string}|null
      */
     public static function resolve(mixed $input): ?array
@@ -43,7 +43,7 @@ class SeoMediaResolver
             }
         }
 
-        if (!$url) {
+        if (! $url) {
             return null;
         }
 
@@ -64,7 +64,7 @@ class SeoMediaResolver
     private static function guessMimeType(string $url): ?string
     {
         $path = parse_url($url, PHP_URL_PATH);
-        if (!$path) {
+        if (! $path) {
             return null;
         }
 

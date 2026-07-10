@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Public\VideoLibrary;
 
+use App\Enums\VideoStatus;
+use App\Enums\VideoVisibility;
 use App\Http\Resources\Public\VideoLibrary\PublicVideoCardResource;
 use App\Models\Video;
+use App\Models\VideoCategory;
 use App\Support\Cache\CachedRead;
 use App\Support\Cache\CacheKeys;
 use App\Support\Cache\CacheTtl;
@@ -66,14 +69,14 @@ class ListPublicVideosAction
         if ($effectiveQ !== '' && ! $cursorMode) {
             try {
                 $search = Video::search($effectiveQ)
-                    ->where('status', \App\Enums\VideoStatus::Published->value)
-                    ->where('visibility', \App\Enums\VideoVisibility::Public->value)
+                    ->where('status', VideoStatus::Published->value)
+                    ->where('visibility', VideoVisibility::Public->value)
                     ->where('locale', $locale);
 
                 // تطبيق مرشحات التصفية الخاصة بمكتبة الفيديوهات داخل Meilisearch
                 $categoryId = null;
                 if ($categoryFilter !== '') {
-                    $category = \App\Models\VideoCategory::where('slug', $categoryFilter)->first();
+                    $category = VideoCategory::where('slug', $categoryFilter)->first();
                     if ($category) {
                         $categoryId = $category->id;
                         if (! $isCollection) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\MediaVisibility;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\MediaAsset;
@@ -51,7 +52,7 @@ class PublicArticleSeoTest extends TestCase
             'extension' => 'jpg',
             'size' => 1024,
             'checksum' => md5(uniqid()),
-            'visibility' => \App\Enums\MediaVisibility::Public,
+            'visibility' => MediaVisibility::Public,
             'width' => 1200,
             'height' => 630,
         ], $attributes));
@@ -78,7 +79,7 @@ class PublicArticleSeoTest extends TestCase
             'status' => 'published',
             'locale' => 'ar',
             'title' => 'سؤال نيابي عن زيادة الرواتب',
-            'slug' => 'parliament-slug-' . uniqid(),
+            'slug' => 'parliament-slug-'.uniqid(),
             'excerpt' => 'موجز تفصيلي عن السؤال النيابي الموجه للحكومة.',
             'content' => 'محتوى المقال التفصيلي هنا.',
             'published_at' => now()->subDay(),
@@ -185,7 +186,7 @@ class PublicArticleSeoTest extends TestCase
         $article = $this->createPublishedArticle();
         $seo = PublicSeoBuilder::build($article)->toArray();
 
-        $expectedCanonical = 'http://localhost:3000/ar/articles/' . $article->id . '-' . $article->slug;
+        $expectedCanonical = 'http://localhost:3000/ar/articles/'.$article->id.'-'.$article->slug;
 
         $this->assertEquals($expectedCanonical, $seo['canonical_url']);
         $this->assertEquals($expectedCanonical, $seo['og']['url']);

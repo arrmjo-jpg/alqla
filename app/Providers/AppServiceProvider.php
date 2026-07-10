@@ -48,6 +48,7 @@ use App\Support\Epaper\Ocr\EpaperOcrProvider;
 use App\Support\Media\RemoteStorage;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Config;
@@ -148,19 +149,19 @@ class AppServiceProvider extends ServiceProvider
             return;
         }
 
-        DB::listen(function (\Illuminate\Database\Events\QueryExecuted $query) use ($threshold): void {
+        DB::listen(function (QueryExecuted $query) use ($threshold): void {
             if ($query->time < $threshold) {
                 return;
             }
 
             Log::channel('perf')->warning('SlowQuery detected', [
-                'sql'        => $query->sql,
-                'time_ms'    => $query->time,
-                'bindings'   => array_map(fn ($b) => is_string($b) ? mb_strimwidth($b, 0, 80) : $b, $query->bindings),
+                'sql' => $query->sql,
+                'time_ms' => $query->time,
+                'bindings' => array_map(fn ($b) => is_string($b) ? mb_strimwidth($b, 0, 80) : $b, $query->bindings),
                 'connection' => $query->connectionName,
                 'request_id' => request()->header('X-Request-ID', 'n/a'),
-                'url'        => request()->fullUrl(),
-                'pid'        => getmypid(),
+                'url' => request()->fullUrl(),
+                'pid' => getmypid(),
             ]);
         });
     }

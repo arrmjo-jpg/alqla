@@ -42,7 +42,7 @@ class ShowPublicArticleAction
                         ->with([
                             'author' => function ($query) {
                                 $query->select('id', 'name', 'bio', 'avatar', 'is_writer')
-                                      ->withCount(['articles as articles_count' => fn($q) => $q->published()]);
+                                    ->withCount(['articles as articles_count' => fn ($q) => $q->published()]);
                             },
                             'primaryCategory:id,name,slug',
                             'categories:id,name,slug',
@@ -50,7 +50,7 @@ class ShowPublicArticleAction
                             'mediaAssets',
                         ])
                         ->first();
-                } else if (is_numeric($slug)) {
+                } elseif (is_numeric($slug)) {
                     $article = Article::query()
                         ->published()
                         ->forLocale($locale)
@@ -58,7 +58,7 @@ class ShowPublicArticleAction
                         ->with([
                             'author' => function ($query) {
                                 $query->select('id', 'name', 'bio', 'avatar', 'is_writer')
-                                      ->withCount(['articles as articles_count' => fn($q) => $q->published()]);
+                                    ->withCount(['articles as articles_count' => fn ($q) => $q->published()]);
                             },
                             'primaryCategory:id,name,slug',
                             'categories:id,name,slug',
@@ -74,7 +74,7 @@ class ShowPublicArticleAction
                         ->with([
                             'author' => function ($query) {
                                 $query->select('id', 'name', 'bio', 'avatar', 'is_writer')
-                                      ->withCount(['articles as articles_count' => fn($q) => $q->published()]);
+                                    ->withCount(['articles as articles_count' => fn ($q) => $q->published()]);
                             },
                             'primaryCategory:id,name,slug',
                             'categories:id,name,slug',

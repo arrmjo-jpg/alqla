@@ -87,4 +87,3 @@ return [
         'health_failure_drift_percent' => (float) env('SEARCH_HEALTH_FAILURE_DRIFT_PERCENT', 30.0),
     ],
 ];
-

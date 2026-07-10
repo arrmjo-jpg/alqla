@@ -7,6 +7,7 @@ use App\Models\Article;
 use App\Models\Category;
 use App\Models\Entity;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Activitylog\Models\Activity;
 
@@ -86,7 +87,7 @@ it('prevents tagging the same entity twice on the same article', function (): vo
     $article->entities()->attach($entity->id);
 
     expect(fn () => $article->entities()->attach($entity->id))
-        ->toThrow(\Illuminate\Database\QueryException::class);
+        ->toThrow(QueryException::class);
 });
 
 it('does not affect existing free-text Spatie tags when entities are attached', function (): void {
