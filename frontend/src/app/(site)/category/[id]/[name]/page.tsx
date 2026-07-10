@@ -6,7 +6,9 @@ import { ReadingSidebar } from '@/components/reading/reading-sidebar';
 import { Pagination } from '@/components/ui/pagination';
 import { HorizontalArticleCard } from '@/components/articles/HorizontalArticleCard';
 import { FeaturedCategoryCard } from '@/components/articles/FeaturedCategoryCard';
+import { env } from '@/lib/env';
 import { getCategoryById, getCategoryPage } from '@/lib/feed';
+import { buildMetadata } from '@/lib/seo';
 
 export const revalidate = 21600;
 const PER_PAGE = 18;
@@ -20,7 +22,14 @@ export async function generateMetadata({
   const numericId = Number(id);
   if (isNaN(numericId)) return { title: 'القسم غير موجود' };
   const category = await getCategoryById(numericId, 'ar');
-  return { title: category?.name ?? 'القسم غير موجود' };
+  if (!category) return { title: 'القسم غير موجود' };
+
+  return buildMetadata({
+    title: category.name,
+    description: `أحدث الأخبار والمقالات في قسم ${category.name}`,
+    path: `/category-${category.id}/${category.slug}`,
+    type: 'website',
+  });
 }
 
 export default async function CategoryPage({
@@ -74,8 +83,19 @@ export default async function CategoryPage({
 
   const hrefFor = (p: number) => `/category-${category.id}/${category.slug}${buildQuery(p)}`;
 
+  const breadcrumb = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: `${env.siteUrl}/` },
+      { '@type': 'ListItem', position: 2, name: category.name, item: `${env.siteUrl}/category-${category.id}/${category.slug}` },
+    ],
+  };
+  const jsonLd = JSON.stringify(breadcrumb).replace(/</g, '\\u003c');
+
   return (
     <Container className="py-8 sm:py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
       {/* Category Header Section */}
       <div className="mb-8 flex items-center gap-3 border-b border-border pb-4">
         <span className="h-8 w-1 shrink-0 bg-primary rounded-full animate-pulse" aria-hidden />

@@ -5,7 +5,9 @@ import { Container } from '@/components/layout/container';
 import { ReadingSidebar } from '@/components/reading/reading-sidebar';
 import { Pagination } from '@/components/ui/pagination';
 import { EnArticleCard } from '@/components/en/en-article-card';
+import { env } from '@/lib/env';
 import { getCategoryById, getCategoryPage } from '@/lib/feed';
+import { buildMetadata } from '@/lib/seo';
 
 export const revalidate = 21600;
 const PER_PAGE = 18;
@@ -19,7 +21,14 @@ export async function generateMetadata({
   const numericId = Number(id);
   if (isNaN(numericId)) return { title: 'Category' };
   const category = await getCategoryById(numericId, 'en');
-  return { title: category?.name ?? 'Category' };
+  if (!category) return { title: 'Category' };
+
+  return buildMetadata({
+    title: category.name,
+    description: `Latest news and articles in ${category.name}`,
+    path: `/en/category-${category.id}/${category.slug}`,
+    type: 'website',
+  });
 }
 
 export default async function EnCategoryPage({
@@ -72,8 +81,19 @@ export default async function EnCategoryPage({
 
   const hrefFor = (p: number) => `/en/category-${category.id}/${category.slug}${buildQuery(p)}`;
 
+  const breadcrumb = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${env.siteUrl}/en` },
+      { '@type': 'ListItem', position: 2, name: category.name, item: `${env.siteUrl}/en/category-${category.id}/${category.slug}` },
+    ],
+  };
+  const jsonLd = JSON.stringify(breadcrumb).replace(/</g, '\\u003c');
+
   return (
     <Container className="py-8 sm:py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
       {/* Category Header Section */}
       <div className="mb-8 flex items-center gap-3 border-b border-border pb-4">
         <span className="h-8 w-1 shrink-0 bg-primary rounded-full animate-pulse" aria-hidden />
