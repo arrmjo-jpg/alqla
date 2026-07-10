@@ -6,7 +6,8 @@ import type { FeedItem } from '@/lib/feed';
 import { formatRelativeTime } from '@/lib/format';
 
 // كرت تغذية (نمط /latest): صورة 16:9 أعلى + شارة + قسم رابط حمراء + عنوان + تاريخ نسبيّ.
-// **مصدر واحد** يُعاد استخدامه في /latest و /category — لا تكرار منطق. نمط الرابط المتراكب:
+// المستخدَم الوحيد حاليّاً: app/(site)/latest/page.tsx — صفحة القسم تستخدم
+// FeaturedCategoryCard/HorizontalArticleCard بدلاً منه. نمط الرابط المتراكب:
 // رابط الخبر يغطّي الكرت؛ اسم القسم رابط مستقلّ فوقه (يفتح القسم لا الخبر).
 export function FeedCard({ item }: { item: FeedItem }) {
   return (

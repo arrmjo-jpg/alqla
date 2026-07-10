@@ -275,10 +275,12 @@ class Article extends Model
     // ─── Canonical URL foundation (ADR A3.6) ────────────────────────
 
     /**
-     * المسار القانوني الهجين المستقرّ: /{locale}/articles/{id}-{slug}
+     * المسار القانوني: /{locale}/article/{id} — بالـ id فقط، بلا slug.
      *
-     * يُفتَّت بالـ id لا بالـ slug (المعرّف لا يتغيّر، الـ slug تجميلي) — يتفادى
-     * هشاشة المسارات عند تغيّر القسم أو الـ slug؛ الـ slug يبقى للقراءة وللـ 301.
+     * المعرّف لا يتغيّر أبداً (خلاف الـ slug)، فيتفادى هشاشة المسارات عند تغيّر
+     * القسم أو إعادة تسمية الـ slug. الشكل القديم بالسلَغ (/articles/{id}-{slug})
+     * مُتقاعَد؛ الواجهة الأمامية تُعيد توجيهه (301) لهذا الشكل عبر
+     * OldArticlesRedirectPage.
      */
     public function canonicalPath(): string
     {

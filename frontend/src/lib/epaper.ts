@@ -9,9 +9,10 @@ import { env } from './env';
 // server-only + React cache() (دمج طلبات الصفحة) + ISR + وسم كاش؛ أي فشل/فراغ ⇒ [] أو null (لا تلفيق).
 // المظروف القياسيّ: { success, message, data }.
 //
-// ملاحظة صدق: المورد العامّ يكشف فقط { id, issue_number, title, subtitle, summary, slug,
-// publication_date, page_count, canonical_path, pdf_url }. لا غلاف، ولا «نشرة/أبرز مختارات»
-// منتقاة — تلك مصدرها تحريريّ غير موجود بعد، فتُعرَض بحالة فارغة صادقة (لا محتوى مُلفَّق).
+// تحديث: المورد العامّ يكشف الآن أيضاً { cover_url, brief_points, highlights, inside_this_issue, seo }
+// إضافةً لِـ { id, issue_number, title, subtitle, summary, slug, publication_date, page_count,
+// canonical_path, pdf_url } — الشيمَة والمطابِق أدناه يستهلكانها بالفعل (تصميم متوافق مستقبليّاً
+// أثبت نفسه: صفر تعديل واجهة لزم عند إضافة هذه الحقول خلفيّاً). أي حقل غائب فعليّاً ⇒ null/[] (لا تلفيق).
 
 const REVALIDATE = 300; // ISR — سقف أمان؛ التحديث الحدثيّ عبر الوسم عند توفّره.
 const epaperFeedTag = (locale: string) => `epaper-feed:${locale}`;
