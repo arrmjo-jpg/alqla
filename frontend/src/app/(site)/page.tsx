@@ -20,6 +20,8 @@ import { getHomepageFeed } from '@/lib/feed';
 import { getReelsFeed } from '@/lib/reels';
 import { getSiteSettings } from '@/lib/site-settings';
 
+import { CategoryThreeCol } from '@/components/home/category-three-col';
+
 // الصفحة الرئيسية — كتل: الهيرو (is_featured) + أقسام مختلطة (بعضها بتصميمه الأصليّ، وبعضها كروسل).
 // ISR = سقف أمان (ساعة)؛ التحديث حدثيّ عبر الوسوم. تاج «تغطية خاصة» يظهر على البطاقات عند توفّر العلم.
 export const revalidate = 3600;
@@ -83,9 +85,9 @@ export default async function Home() {
       {/* شريط الاشتراك في واتساب. */}
       <SubscribeBox variant="bar" />
 
-      {/* عربي دولي — 8 أخبار (كبير + 7 صغار، بلا سكرول جوّال) (#43). */}
+      {/* عربي دولي — 8 أخبار بتصميم الـ 3 أعمدة (#43). */}
       <Suspense fallback={<SectionLoader />}>
-        <CategoryFeatureQuad categoryId={43} fallbackTitle="عربي دولي" count={8} />
+        <CategoryThreeCol categoryId={43} fallbackTitle="عربي دولي" count={8} />
       </Suspense>
 
       {/* أخبار ثقافية — تحت عربي دولي مباشرةً: 10 أخبار (كبير + 9 صغار، بلا سكرول) (#56) بخلفية صورة شفافة. */}

@@ -36,9 +36,9 @@ export const usersService = {
     return data.data;
   },
 
-  async create(payload: UserUpsertPayload): Promise<string> {
+  async create(payload: UserUpsertPayload): Promise<{ message: string; data: UserData }> {
     const { data } = await http.post<ApiSuccess<UserData>>('/admin/users', payload);
-    return data.message;
+    return { message: data.message, data: data.data };
   },
 
   async update(id: number, payload: UserUpsertPayload): Promise<string> {

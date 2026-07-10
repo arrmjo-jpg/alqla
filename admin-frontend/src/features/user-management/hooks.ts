@@ -61,8 +61,8 @@ export function useCreateUser() {
   const { success, error } = useToast();
   return useMutation({
     mutationFn: (payload: UserUpsertPayload) => usersService.create(payload),
-    onSuccess: (m) => {
-      success(m);
+    onSuccess: (res) => {
+      success(res.message);
       invalidate();
     },
     onError: (e: NormalizedError) => error(e.message),

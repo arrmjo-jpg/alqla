@@ -49,10 +49,17 @@ export function ArticleHeader({
         </div>
       )}
 
-      {/* Main H1 Title — show subtitle as H1 if available, otherwise main title */}
-      <h1 className={`${editorialTypography.h1} editorial-h1`}>
-        {subtitle || title}
+      {/* العنوان الرئيسي: 18 بكسل حسب طلب العميل */}
+      <h1 className="text-[18px] font-extrabold leading-relaxed text-fg">
+        {title}
       </h1>
+
+      {/* العنوان الفرعي (إن وُجد) أسفله باللون الأحمر */}
+      {subtitle && (
+        <h2 className="text-[16px] sm:text-[18px] font-bold leading-relaxed text-primary mt-2">
+          {subtitle}
+        </h2>
+      )}
     </header>
   );
 }

@@ -28,10 +28,15 @@ class CreateUserAction
         }
 
         $user = DB::transaction(function () use ($validated): User {
+            $email = $validated['email'] ?? null;
+            if (empty($email)) {
+                $email = app(\App\Services\Auth\EmailIdentityGenerator::class)->generate($validated['name']);
+            }
+
             $user = User::create([
                 'name' => $validated['name'],
-                'email' => $validated['email'],
-                'password' => $validated['password'], // يُجزَّأ تلقائياً عبر cast
+                'email' => $email,
+                'password' => $validated['password'] ?? null, // يُجزَّأ تلقائياً عبر cast
                 'status' => $validated['status'] ?? UserStatus::Active->value,
                 'avatar' => $validated['avatar'] ?? null,
                 'bio' => $validated['bio'] ?? null,

@@ -53,6 +53,7 @@ export function Pagination({ currentPage, totalPages, hrefFor }: PaginationProps
           href={hrefFor(1)} 
           title="الصفحة الأولى" 
           className={normalBtn}
+          scroll={true}
         >
           <ChevronsRight className="size-4" />
         </Link>
@@ -69,6 +70,7 @@ export function Pagination({ currentPage, totalPages, hrefFor }: PaginationProps
           rel="prev" 
           className={`${normalBtn} px-3 gap-1`}
           aria-label="الصفحة السابقة"
+          scroll={true}
         >
           <ChevronRight className="size-4" />
           <span className="hidden sm:inline">السابق</span>
@@ -104,6 +106,7 @@ export function Pagination({ currentPage, totalPages, hrefFor }: PaginationProps
               key={item} 
               href={hrefFor(item)} 
               className={normalBtn}
+              scroll={true}
             >
               {item}
             </Link>
@@ -118,6 +121,7 @@ export function Pagination({ currentPage, totalPages, hrefFor }: PaginationProps
           rel="next" 
           className={`${normalBtn} px-3 gap-1`}
           aria-label="الصفحة التالية"
+          scroll={true}
         >
           <span className="hidden sm:inline">التالي</span>
           <ChevronLeft className="size-4" />
@@ -135,6 +139,7 @@ export function Pagination({ currentPage, totalPages, hrefFor }: PaginationProps
           href={hrefFor(totalPages)} 
           title="الصفحة الأخيرة" 
           className={normalBtn}
+          scroll={true}
         >
           <ChevronsLeft className="size-4" />
         </Link>

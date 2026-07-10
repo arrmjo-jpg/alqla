@@ -431,7 +431,7 @@ export function useQuickCreateWriter() {
       password: string;
       avatar?: string | null;
     }) => {
-      await usersService.create({
+      const res = await usersService.create({
         name: input.name,
         email: input.email,
         password: input.password,
@@ -441,26 +441,8 @@ export function useQuickCreateWriter() {
         email_verified: false,
         avatar: input.avatar ?? null,
       });
-      // Re-fetch the search list scoped to the new email so we get the id back.
-      const result = await usersService.list({
-        page: 1,
-        per_page: 20,
-        search: input.email,
-        status: 'active',
-        role: '',
-        trashed: 'none',
-        is_writer: 1,
-      });
-      const created = result.data.find((u) => u.email === input.email);
-      if (!created) {
-        throw {
-          status: 0,
-          message: 'Created writer not found in search results.',
-          errors: {},
-        };
-      }
       void qc.invalidateQueries({ queryKey: WRITERS });
-      return created;
+      return res.data;
     },
     onError: (e: NormalizedError) => error(e.message),
   });

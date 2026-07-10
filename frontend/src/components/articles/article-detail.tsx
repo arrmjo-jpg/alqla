@@ -66,6 +66,7 @@ export function ArticleDetailView({
 
   const bodyHtml = stripTitleFromHtml(contentHtml ?? article.contentHtml, article.title, article.subtitle);
   const writerHref = article.author?.isWriter && article.author.id ? `/writer/${article.author.id}` : null;
+  const photo = article.cover?.url || article.author?.avatar || null;
 
   const cleanExcerpt = (() => {
     if (!article.excerpt) return null;
@@ -110,42 +111,8 @@ export function ArticleDetailView({
             author={article.author}
           />
 
-          {/* Cover image vs Author avatar top banner */}
-          {article.cover && article.cover.url ? (
-            <div className="my-6">
-              <ArticleHero cover={article.cover} defaultTitle={article.title} layout="full" hasVideo={article.hasVideo} videoUrl={article.video[0]?.url} />
-            </div>
-          ) : (
-            <div className="bg-surface-2 border border-border/80 p-6 my-6 flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-6 font-sans">
-              <div className="size-20 sm:size-24 rounded-full overflow-hidden bg-surface-3 ring-4 ring-background shrink-0 select-none">
-                {article.author?.avatar ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- author avatar
-                  <img src={article.author.avatar} alt={article.author.name} className="size-full object-cover" />
-                ) : (
-                  <div className="size-full flex items-center justify-center text-muted" aria-hidden>
-                    <PenLine className="size-10" />
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 text-center sm:text-right">
-                <span className={`${editorialTypography.aside} text-primary px-2.5 py-0.5 bg-primary/10 rounded-full inline-block`}>
-                  {translateRole(article.author?.role)}
-                </span>
-                <h2 className="text-xl font-extrabold text-fg mt-2">{article.author?.name}</h2>
-                {article.author?.bio && (
-                  <p className="text-sm text-muted mt-2 leading-relaxed">{article.author.bio}</p>
-                )}
-                {writerHref && (
-                  <Link href={writerHref} className="text-xs font-bold text-primary mt-3 inline-flex items-center gap-1 hover:underline min-h-[44px]">
-                    <span>بروفيل الكاتب ومقالاته</span>
-                  </Link>
-                )}
-              </div>
-            </div>
-          )}
-
           {/* Reading tools & Content Area */}
-          <div className="w-full space-y-6">
+          <div className="w-full space-y-6 pt-4">
             <ReadingToolsBar
               articleId={article.id}
               url={shareUrl}
@@ -154,7 +121,51 @@ export function ArticleDetailView({
               ttsEnabled={ttsEnabled}
             />
 
-            <div className={editorialSpacing.readingColumn}>
+            <div className={`${editorialSpacing.readingColumn} block overflow-hidden`}>
+              {/* الحاوية العائمة على اليسار (الصورة + شريط الكاتب) */}
+              <div className="float-none mx-auto w-full max-w-[320px] mb-8 sm:float-left sm:ml-0 sm:mr-8 sm:mb-6 flex flex-col">
+                
+                {/* الصورة لحالها وبدون صناديق ضخمة */}
+                <div className="relative w-full rounded-[16px] overflow-hidden shadow-lg ring-1 ring-black/5 dark:ring-white/10 mb-4 bg-surface-2 transition-transform duration-500 hover:scale-[1.02]">
+                  {photo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={photo} alt={article.author?.name || 'صورة الكاتب'} className="w-full h-auto object-cover" />
+                  ) : (
+                    <div className="w-full aspect-square flex items-center justify-center text-muted" aria-hidden>
+                      <PenLine className="size-16 opacity-30" />
+                    </div>
+                  )}
+                </div>
+
+                {/* أيقونة الكاتب مع اسمه تحته باللون الأحمر الخاص بالموقع */}
+                <div className="flex items-center gap-3 w-full rounded-xl bg-gradient-to-br from-primary to-[#a30b13] p-3 shadow-lg ring-1 ring-primary/50">
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-white/20 text-white shadow-inner">
+                    <PenLine className="size-5" />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[10px] font-bold text-white/80 uppercase tracking-wider mb-0.5">
+                      {translateRole(article.author?.role)}
+                    </span>
+                    {writerHref ? (
+                      <Link href={writerHref} className="text-[15px] font-extrabold text-white hover:text-white/80 transition-colors leading-tight truncate">
+                        {article.author?.name}
+                      </Link>
+                    ) : (
+                      <span className="text-[15px] font-extrabold text-white leading-tight truncate">
+                        {article.author?.name}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                {/* نبذة عن الكاتب (إن وجدت) */}
+                {article.author?.bio && (
+                  <p className="mt-3 text-[13px] text-muted leading-relaxed text-center px-1">
+                    {article.author.bio}
+                  </p>
+                )}
+              </div>
+
               <ArticleBody contentHtml={bodyHtml} excerpt={cleanExcerpt} />
             </div>
           </div>
@@ -185,10 +196,17 @@ export function ArticleDetailView({
             />
           </div>
 
-          {/* 2. Title with 22px font size */}
-          <h1 className="text-[22px] font-extrabold leading-snug text-primary !mt-2 !mb-2 py-0">
-            {article.subtitle || article.title}
+          {/* 2. Title with 18px font size (as requested) */}
+          <h1 className="text-[18px] font-extrabold leading-snug text-fg !mt-2 py-0">
+            {article.title}
           </h1>
+
+          {/* 3. Subtitle in red if it exists */}
+          {article.subtitle && (
+            <h2 className="text-[16px] sm:text-[18px] font-bold leading-snug text-primary mt-2 mb-2 py-0">
+              {article.subtitle}
+            </h2>
+          )}
 
           {/* 4. Reading tools, Cover Image, and Body */}
           <div className="w-full space-y-2 pt-0">

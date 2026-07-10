@@ -243,6 +243,7 @@ class ListPublicArticlesAction
             'filter.category' => $categoryFilter,
             'filter.tag' => (string) ($request->query('filter')['tag'] ?? ''),
             'filter.q' => $term,
+            'filter.author_id' => (string) ($request->query('filter')['author_id'] ?? ''),
         ];
         ksort($relevantFilters);
         $filterHash = substr(hash('xxh128', json_encode($relevantFilters)), 0, 16);
@@ -325,7 +326,6 @@ class ListPublicArticlesAction
         ];
     }
 
-    /** هاش مستقرّ لعبور الكاش — يستثني المفاتيح غير المؤثرة. */
     private function hashQuery(Request $request, int $perPage, int $page): string
     {
         $relevant = [
@@ -338,6 +338,7 @@ class ListPublicArticlesAction
             'filter.category' => (string) ($request->query('filter')['category'] ?? ''),
             'filter.tag' => (string) ($request->query('filter')['tag'] ?? ''),
             'filter.q' => (string) ($request->query('filter')['q'] ?? ''),
+            'filter.author_id' => (string) ($request->query('filter')['author_id'] ?? ''),
         ];
         ksort($relevant);
 

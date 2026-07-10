@@ -32,7 +32,9 @@ async function getCached<T>(key: string, ttlMs: number, fetcher: () => Promise<T
 // عنصر تغذية جاهز للعرض (view-model) — لا يتسرّب شكل الـAPI الخام إلى العارض.
 export interface FeedItem {
   id: number;
+  type: string;
   title: string;
+  subtitle: string | null;
   excerpt: string | null;
   href: string;
   image: string | null;
@@ -67,6 +69,7 @@ const CoverSchema = z
 export const ItemSchema = z
   .object({
     id: z.number(),
+    type: z.string().nullish(),
     title: z.string(),
     subtitle: z.string().nullish(),
     excerpt: z.string().nullish(),
@@ -110,7 +113,9 @@ export function mapItem(it: Item): FeedItem {
   const cat = it.primary_category;
   return {
     id: it.id,
+    type: it.type || 'news',
     title: it.title,
+    subtitle: it.subtitle || null,
     excerpt: (it.excerpt ?? it.subtitle ?? '').trim() || null,
     href: localeless(it.canonical_path),
     image: it.cover?.medium ?? it.cover?.url ?? null,
@@ -346,7 +351,7 @@ export const getTagFeed = cache(
 );
 
 export const getAuthorArticles = cache(
-  async (authorId: number, limit = 2, locale = 'ar'): Promise<FeedItem[]> => {
+  async (authorId: number, limit = 2, locale = 'ar', type?: string): Promise<FeedItem[]> => {
     if (!env.apiBaseUrl || !authorId) return [];
     try {
       // feed (عدد ثابت، بلا ترقيم) ⇒ cursor يتجنّب COUNT(*).
@@ -356,6 +361,9 @@ export const getAuthorArticles = cache(
         paginate: 'cursor',
         'filter[author_id]': String(authorId),
       });
+      if (type) {
+        qs.set('filter[type]', type);
+      }
       const res = await fetch(
         `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles?${qs.toString()}`,
         { headers: env.internalHeaders, next: { revalidate: 300, tags: ['articles', `author_articles:${authorId}`] } },
@@ -379,7 +387,7 @@ export interface CategoryPageResult {
   totalPages: number;
 }
 
-const PaginatedEnvelope = z
+export const PaginatedEnvelope = z
   .object({
     data: z.array(ItemSchema).nullish(),
     meta: z

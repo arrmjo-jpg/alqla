@@ -5,7 +5,7 @@ import { FeedBadge } from '@/components/home/featured-hero';
 import { SectionHeader, SectionMore } from '@/components/home/section-header';
 import { getCategoryById, getCategoryFeed, type FeedItem } from '@/lib/feed';
 
-// قسم مقالات الرأي (بورتريه، أسفل نبض الشارع) — صفّ بطاقات: صورة + عنوان المقال + اسم الكاتب.
+// قسم مقالات الرأي (أفقي، أسفل نبض الشارع) — شبكة بطاقات: صورة جانبية + عنوان المقال + اسم الكاتب.
 // **الـslug ديناميّ عبر prop** (لا ثابت داخل المكوّن). المصدر `getCategoryFeed(slug,6)` + العنوان من التصنيف.
 // **ملاحظة بيانات:** هذا الباك إند ينسب كلّ مقالات الرأي لكاتب عامّ واحد («كتاب الموقع») بلا كُتّاب أفراد ⇒
 // الصورة = **غلاف المقال** (متمايز) لا صورة كاتب واحدة مكرّرة؛ حين تتوفّر صور كُتّاب يُبدَّل لـauthor.avatar.
@@ -32,13 +32,13 @@ export async function OpinionWritersSection({
   const moreHref = items[0]?.categoryHref ?? `/category/${encodeURIComponent(category.slug)}`;
 
   return (
-    <section className="mt-6 bg-white sm:mt-8" dir="rtl" aria-labelledby={headingId}>
+    <section className="mt-6 bg-white dark:bg-transparent sm:mt-8" dir="rtl" aria-labelledby={headingId}>
       <Container className="py-8 sm:py-10">
         {/* الترويسة الموحّدة: اسم القسم بخلفيّة حمراء + خطّ أبيض. */}
         <SectionHeader title={title} headingId={headingId} href={moreHref} />
 
-        {/* صفّ الكُتّاب — 3 على الجوّال، 6 على سطح المكتب (صفّ واحد كالمرجع) */}
-        <div className="grid grid-cols-3 gap-x-4 gap-y-6 lg:grid-cols-6">
+        {/* شبكة أفقية — 1 على الجوال، 2 تابلت، 3 ديسكتوب لتناسب البطاقات الأفقية */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
           {items.map((item) => (
             <WriterCard key={item.id} item={item} />
           ))}
@@ -59,39 +59,47 @@ function WriterCard({ item }: { item: FeedItem }) {
   const writerHref = author?.isWriter && author.id ? `/writer/${author.id}` : null;
 
   return (
-    <div className="flex flex-col items-center text-center">
-      {/* رابط المقال — يغطّي الصورة والعنوان فقط (ليس اسم الكاتب) */}
-      <Link href={item.href} className="group block w-full">
-        <div className="relative aspect-[4/5] w-full overflow-hidden bg-surface-2" style={{ borderRadius: '12px' }}>
-          {photo ? (
-            // eslint-disable-next-line @next/next/no-img-element -- <img> مقصود: حارس أداء الهوم
-            <img
-              src={photo}
-              alt={item.imageAlt}
-              loading="lazy"
-              decoding="async"
-              className="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 motion-reduce:group-hover:scale-100"
-            />
-          ) : (
-            <div className="size-full bg-surface-3" aria-hidden />
-          )}
-          {/* تاج «تغطية خاصة»/«عاجل» عند توفّر العلم. */}
-          <FeedBadge badge={item.badge} />
-        </div>
-        <h3 className="mt-3 line-clamp-2 text-sm font-bold leading-snug text-fg transition-colors group-hover:text-primary">
+    <div className="group relative flex h-[100px] items-center gap-3 overflow-hidden rounded-xl border border-border/50 bg-surface p-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md">
+      {/* الرابط الرئيسي يغطي البطاقة كلها */}
+      <Link href={item.href} className="absolute inset-0 z-10" aria-label={item.title} />
+
+      {/* الصورة الجانبية */}
+      <div className="relative size-[84px] shrink-0 overflow-hidden rounded-lg bg-surface-2 shadow-sm">
+        {photo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={photo}
+            alt={item.imageAlt}
+            loading="lazy"
+            decoding="async"
+            className="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          />
+        ) : (
+          <div className="size-full bg-surface-3" aria-hidden />
+        )}
+        {/* تاج «تغطية خاصة»/«عاجل» عند توفّر العلم. */}
+        <FeedBadge badge={item.badge} />
+      </div>
+
+      {/* النص */}
+      <div className="flex min-w-0 flex-1 flex-col justify-center text-start">
+        <h3 className="line-clamp-2 text-[14px] font-bold leading-snug text-fg transition-colors group-hover:text-primary sm:text-[15px]">
           {item.title}
         </h3>
-      </Link>
-
-      {/* اسم الكاتب — رابط بروفيل مستقلّ (كاتب مفعّل) أو نصّ (غيره) */}
-      {author?.name &&
-        (writerHref ? (
-          <Link href={writerHref} className="mt-1 text-xs font-bold text-primary hover:underline">
-            {author.name}
-          </Link>
-        ) : (
-          <span className="mt-1 text-xs text-muted">{author.name}</span>
-        ))}
+        
+        {/* اسم الكاتب — رابط بروفيل مستقلّ (كاتب مفعّل) أو نصّ (غيره) */}
+        {author?.name && (
+          <div className="mt-1.5 relative z-20 w-fit">
+            {writerHref ? (
+              <Link href={writerHref} className="text-[12px] font-bold text-primary hover:underline">
+                {author.name}
+              </Link>
+            ) : (
+              <span className="text-[12px] text-muted">{author.name}</span>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

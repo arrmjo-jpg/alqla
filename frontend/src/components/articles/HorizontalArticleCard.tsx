@@ -42,6 +42,13 @@ export function HorizontalArticleCard({ item }: { item: FeedItem }) {
               {item.title}
             </Link>
           </h3>
+
+          {/* Subtitle (only for opinions) */}
+          {item.type === 'opinion' && item.subtitle && (
+            <h4 className="text-[13px] sm:text-[14px] font-bold text-primary mt-1 line-clamp-2 leading-relaxed">
+              {item.subtitle}
+            </h4>
+          )}
         </div>
 
         {/* Left side: Image (Second in RTL flow) */}

@@ -16,6 +16,8 @@ class GeneralSettings extends Settings
     // ─── Tab 1: معلومات الموقع ──────────────────────────────────────
     public string $site_name;
 
+    public ?string $institutional_email_domain;
+
     public string $site_name_ar;
 
     public string $site_name_en;

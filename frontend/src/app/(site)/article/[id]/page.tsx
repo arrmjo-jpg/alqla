@@ -69,7 +69,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ id: st
     article.tags.length > 0 ? getTagFeed(article.tags[0], 5) : Promise.resolve<FeedItem[]>([]),
     getEditorsPickFeed('ar', 5),
     getLatestFeed('ar'),
-    authorId ? getAuthorArticles(authorId, 2) : Promise.resolve<FeedItem[]>([]),
+    authorId ? getAuthorArticles(authorId, 2, 'ar', 'opinion') : Promise.resolve<FeedItem[]>([]),
     getTtsConfig(),
   ]);
 
@@ -154,9 +154,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ id: st
           <AdZone zone="aalan_asfl_alkhbr_rym_1" className="mt-8" />
           <AdZone zone="aalan_asfl_alkhbr_rym_2" className="mt-6" />
 
-          {/* WhatsApp Box */}
-          <SubscribeBoxSection />
-
           {/* Comment section */}
           <CommentSection slug={slug} enabled={article.commentsEnabled} />
 
@@ -180,6 +177,11 @@ export default async function ArticlePage({ params }: { params: Promise<{ id: st
             title="الأكثر قراءة"
             items={cleanMostRead}
           />
+
+          {/* WhatsApp Box (Moved to the very end) */}
+          <div className="mt-12 mb-8">
+            <SubscribeBoxSection />
+          </div>
         </main>
 
         {/* 3. Left Sidebar Column (Third in RTL DOM -> Far Left) */}

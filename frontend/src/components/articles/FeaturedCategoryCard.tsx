@@ -58,6 +58,13 @@ export function FeaturedCategoryCard({ item }: { item: FeedItem }) {
             </Link>
           </h2>
 
+          {/* Subtitle (only for opinions) */}
+          {item.type === 'opinion' && item.subtitle && (
+            <h3 className="text-[15px] sm:text-[17px] font-bold text-primary mt-1 line-clamp-2 leading-relaxed">
+              {item.subtitle}
+            </h3>
+          )}
+
           {/* Excerpt */}
           {item.excerpt && (
             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed line-clamp-3 pt-1">

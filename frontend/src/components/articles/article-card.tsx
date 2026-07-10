@@ -26,12 +26,21 @@ export function ArticleCard({ item }: { item: FeedItem }) {
 
       {/* 2. Text Details */}
       <div className="flex flex-col flex-1 min-w-0 justify-between">
-        <h4 className="line-clamp-2 text-sm sm:text-base font-extrabold leading-snug text-fg group-hover:text-primary transition-colors">
-          {/* Link covers the title area with min height to satisfy mobile touch target ergonomics */}
-          <Link href={item.href} className="focus:outline-none min-h-[44px] flex items-start pt-1">
-            {item.title}
-          </Link>
-        </h4>
+        <div>
+          <h4 className="line-clamp-2 text-sm sm:text-base font-extrabold leading-snug text-fg group-hover:text-primary transition-colors">
+            {/* Link covers the title area with min height to satisfy mobile touch target ergonomics */}
+            <Link href={item.href} className="focus:outline-none min-h-[44px] flex items-start pt-1">
+              {item.title}
+            </Link>
+          </h4>
+          
+          {/* Subtitle (only for opinions) */}
+          {item.type === 'opinion' && item.subtitle && (
+            <h5 className="text-[13px] font-bold text-primary mt-1 line-clamp-2 leading-relaxed">
+              {item.subtitle}
+            </h5>
+          )}
+        </div>
         
         {item.publishedAt && (
           <time dateTime={item.publishedAt} className="block text-[10px] sm:text-xs font-bold text-muted mt-2">
