@@ -7,7 +7,7 @@ import { NewsTicker } from '@/components/layout/news-ticker';
 import { QalahFooter } from '@/components/layout/qalah/footer';
 import { QalahHeader } from '@/components/layout/qalah/header';
 import { QalahNavbar } from '@/components/layout/qalah/navbar';
-import { getHomepageFeed } from '@/lib/feed';
+import { getBreakingFeed, getLatestFeed } from '@/lib/feed';
 import { getSiteSettings } from '@/lib/site-settings';
 import { DesktopViewProvider } from '@/lib/desktop-view-context';
 import { MobileTopToggleBanner } from '@/components/layout/desktop-view-toggle';
@@ -20,11 +20,13 @@ import { TopNewsCarousel } from '@/components/home/top-news-carousel';
 // التراجع للقشرة القديمة: استبدل QalahNavbar/QalahHeader/QalahFooter بـ SiteHeader/SectionsBar/SiteFooter
 // واحذف صنفَي qalah-skin/site-frame من الغلاف (المكوّنات القديمة ما زالت بمكانها).
 export default async function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const [settings, homepageData] = await Promise.all([
+  // كانت تجلب getHomepageFeed('ar') كاملة (5 مناطق، ~70 كيلوبايت) لاستخدام latest+breaking فقط —
+  // استبدال بنداءين خفيفين مخصَّصين (المُستخدَمان فعليّاً في هذا الملفّ) يوفِّر ~43 كيلوبايت لكل صفحة.
+  const [settings, latest, breaking] = await Promise.all([
     getSiteSettings(),
-    getHomepageFeed('ar'),
+    getLatestFeed('ar'),
+    getBreakingFeed('ar'),
   ]);
-  const { latest, breaking } = homepageData;
 
 
   return (
