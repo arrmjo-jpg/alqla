@@ -17,6 +17,7 @@ export const getTtsConfig = cache(async (): Promise<TtsConfig | null> => {
   if (!env.apiBaseUrl) return null;
   try {
     const res = await fetch(`${env.apiBaseUrl}/api/v1/tts/config`, {
+      headers: env.internalHeaders,
       next: { revalidate: 300, tags: ['tts-config'] },
     });
     if (!res.ok) return null;

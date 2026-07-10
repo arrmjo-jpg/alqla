@@ -37,6 +37,7 @@ export const getWriterProfile = cache(async (id: number, locale = 'ar'): Promise
   if (!env.apiBaseUrl || !Number.isFinite(id)) return null;
   try {
     const res = await fetch(`${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/writers/${id}`, {
+      headers: env.internalHeaders,
       next: { revalidate: 300, tags: ['writers', `writer:${id}`] },
     });
     if (!res.ok) return null;

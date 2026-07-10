@@ -40,7 +40,7 @@ export const getStaticPages = cache(
       const res = await fetch(
         `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/pages?placement=${placement}`,
         // وسم القاموس الموحَّد (يطابق FrontendCacheTags::page حرفيًّا) — إبطال حدثيّ من الباك إند.
-        { next: { revalidate: 300, tags: [`page-feed:${locale}`] } },
+        { headers: env.internalHeaders, next: { revalidate: 300, tags: [`page-feed:${locale}`] } },
       );
       if (!res.ok) return [];
       const parsed = EnvelopeSchema.safeParse(await res.json());
@@ -104,7 +104,7 @@ export const getStaticPage = cache(
       const res = await fetch(
         `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/pages/${encodeURIComponent(slug)}`,
         // وسم تفاصيل الصفحة (قاموس موحَّد) — تعديل الصفحة يبطل صفحتها فقط.
-        { next: { revalidate: 300, tags: [`page:${locale}:${slug}`] } },
+        { headers: env.internalHeaders, next: { revalidate: 300, tags: [`page:${locale}:${slug}`] } },
       );
       if (!res.ok) return null;
       const parsed = DetailEnvelope.safeParse(await res.json());

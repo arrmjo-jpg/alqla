@@ -19,6 +19,7 @@ export const getSocialAuthConfig = cache(async (): Promise<SocialProvider[]> => 
   if (!env.apiBaseUrl) return [];
   try {
     const res = await fetch(`${env.apiBaseUrl}/api/v1/auth/social/config`, {
+      headers: env.internalHeaders,
       next: { revalidate: 300, tags: ['social-config'] },
     });
     if (!res.ok) return [];

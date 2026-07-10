@@ -21,6 +21,7 @@ export const getRecaptchaConfig = cache(async (): Promise<RecaptchaConfig | null
   if (!env.apiBaseUrl) return null;
   try {
     const res = await fetch(`${env.apiBaseUrl}/api/v1/recaptcha/config`, {
+      headers: env.internalHeaders,
       next: { revalidate: 300, tags: ['recaptcha-config'] },
     });
     if (!res.ok) return null;

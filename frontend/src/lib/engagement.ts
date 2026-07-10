@@ -38,6 +38,7 @@ export const getArticleMetrics = cache(async (id: number): Promise<EngagementMet
   if (!env.apiBaseUrl) return ZERO;
   try {
     const res = await fetch(`${env.apiBaseUrl}/api/v1/engagement/article/${id}/`, {
+      headers: env.internalHeaders,
       next: { revalidate: 300, tags: ['engagement', `engagement:article:${id}`] },
     });
     if (!res.ok) return ZERO;
