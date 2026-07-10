@@ -66,7 +66,7 @@ function MoversView({ movers, color }: { movers: AseMover[] | null; color: strin
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <div className="h-64" dir="ltr">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 400, height: 256 }}>
           <BarChart data={data} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
             <XAxis dataKey="symbol" tick={{ fontSize: 11 }} />
             <YAxis orientation="right" tick={{ fontSize: 11 }} width={40} tickFormatter={(v) => `${v}%`} />
@@ -100,7 +100,7 @@ function ActiveView({ items }: { items: AseActiveStock[] }) {
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <div className="h-64" dir="ltr">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 400, height: 256 }}>
           <BarChart data={data} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
             <XAxis dataKey="symbol" tick={{ fontSize: 11 }} />
             <YAxis orientation="right" tick={{ fontSize: 11 }} width={52} tickFormatter={(v) => fmtCompact(Number(v))} />

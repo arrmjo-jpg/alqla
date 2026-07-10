@@ -73,7 +73,7 @@ function BreadthDonut({ breadth }: { breadth: AseBreadth }) {
   return (
     <div className="flex items-center gap-4">
       <div className="h-40 w-40 shrink-0" dir="ltr">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 160, height: 160 }}>
           <PieChart>
             <Pie data={data} dataKey="value" innerRadius={42} outerRadius={70} paddingAngle={2} isAnimationActive={false}>
               {data.map((d) => (

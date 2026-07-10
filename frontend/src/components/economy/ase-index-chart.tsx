@@ -33,7 +33,7 @@ export function AseIndexChart({ index }: { index: AseIndexData }) {
 
   return (
     <div className="h-64 w-full" dir="ltr">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 600, height: 256 }}>
         <AreaChart data={data} margin={{ top: 10, right: 4, left: 4, bottom: 0 }}>
           <defs>
             <linearGradient id="aseIdxFill" x1="0" y1="0" x2="0" y2="1">
