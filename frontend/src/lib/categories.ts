@@ -3,7 +3,7 @@ import { cache } from 'react';
 import { z } from 'zod';
 
 import { apiFetch } from './auth';
-import { env } from './env';
+import { fetchCategoriesRaw } from './feed';
 
 // Public categories tree (GET /api/v1/{locale}/categories). Flattened to a dropdown list.
 interface CategoryNode {
@@ -30,8 +30,6 @@ const NodeSchema: z.ZodType<CategoryNode> = z.lazy(() =>
     .passthrough(),
 );
 
-const EnvelopeSchema = z.object({ data: z.array(NodeSchema).nullish() }).passthrough();
-
 function flatten(nodes: CategoryNode[], depth = 0, out: CategoryOption[] = []): CategoryOption[] {
   for (const node of nodes) {
     out.push({ id: node.id, name: node.name, depth });
@@ -40,18 +38,12 @@ function flatten(nodes: CategoryNode[], depth = 0, out: CategoryOption[] = []): 
   return out;
 }
 
+// يعيد استخدام fetchCategoriesRaw من feed.ts (نداء HTTP واحد مشترك — انظر IMPLEMENTATION-ROADMAP.md
+// 2.6) ثمّ يطبِّق تحقّق Zod الدفاعيّ الخاصّ بهذا المستهلك (نموذج منسدل بعمق)، مطابقاً للسلوك السابق.
 export const getCategories = cache(async (locale = 'ar'): Promise<CategoryOption[]> => {
-  if (!env.apiBaseUrl) return [];
-  try {
-    const res = await fetch(`${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/categories`, {
-      next: { revalidate: 600, tags: ['categories'] },
-    });
-    if (!res.ok) return [];
-    const parsed = EnvelopeSchema.safeParse(await res.json());
-    return parsed.success ? flatten(parsed.data.data ?? []) : [];
-  } catch {
-    return [];
-  }
+  const root = await fetchCategoriesRaw(locale);
+  const parsed = z.array(NodeSchema).safeParse(root);
+  return parsed.success ? flatten(parsed.data) : [];
 });
 
 // تصنيفات نموذج الكاتب مفلترةً حسب النوع (GET /api/v1/article-categories?type=).

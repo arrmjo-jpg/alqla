@@ -258,34 +258,42 @@ export interface CategoryRef {
   slug: string;
 }
 
-const fetchCategoryIndex = cache(async (locale: string): Promise<Map<number, CategoryRef>> => {
-  const index = new Map<number, CategoryRef>();
-  return getCached(`categories:${locale}`, 300000, async () => {
-    if (!env.apiBaseUrl) return index;
+// جلب شجرة الأقسام الخامّة (GET /categories) — نداء مشترك واحد يعيد استخدامه أيضاً lib/categories.ts
+// (كان كلّ ملفّ يطلب نفس الرابط بسياسة كاش مختلفة قليلاً: 600s هناك مقابل 300s هنا؛ وُحِّدت على 300s
+// الأقصر هنا لصالح دقّة مرجعة id→slug). كلّ مستهلك يُطبِّق تحليله الخاصّ على النتيجة الخامّة (منطق
+// مختلف عمداً: فهرسة id→ref هنا مقابل تسطيح بعمق هناك) — انظر IMPLEMENTATION-ROADMAP.md 2.6.
+export const fetchCategoriesRaw = cache(async (locale = 'ar'): Promise<unknown[]> => {
+  return getCached(`categories-raw:${locale}`, 300000, async () => {
+    if (!env.apiBaseUrl) return [];
     try {
       const res = await fetch(`${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/categories`, {
         headers: env.internalHeaders,
         next: { revalidate: 300, tags: ['categories'] },
       });
-      if (!res.ok) return index;
+      if (!res.ok) return [];
       const json: unknown = await res.json();
       const root = (json as { data?: unknown }).data;
-      if (!Array.isArray(root)) return index;
-      const walk = (nodes: unknown[]): void => {
-        for (const raw of nodes) {
-          const n = raw as { id?: unknown; name?: unknown; slug?: unknown; children?: unknown };
-          if (typeof n.id === 'number' && typeof n.slug === 'string' && n.slug) {
-            index.set(n.id, { id: n.id, name: typeof n.name === 'string' ? n.name : '', slug: n.slug });
-          }
-          if (Array.isArray(n.children)) walk(n.children);
-        }
-      };
-      walk(root);
-      return index;
+      return Array.isArray(root) ? root : [];
     } catch {
-      return index;
+      return [];
     }
   });
+});
+
+const fetchCategoryIndex = cache(async (locale: string): Promise<Map<number, CategoryRef>> => {
+  const index = new Map<number, CategoryRef>();
+  const root = await fetchCategoriesRaw(locale);
+  const walk = (nodes: unknown[]): void => {
+    for (const raw of nodes) {
+      const n = raw as { id?: unknown; name?: unknown; slug?: unknown; children?: unknown };
+      if (typeof n.id === 'number' && typeof n.slug === 'string' && n.slug) {
+        index.set(n.id, { id: n.id, name: typeof n.name === 'string' ? n.name : '', slug: n.slug });
+      }
+      if (Array.isArray(n.children)) walk(n.children);
+    }
+  };
+  walk(root);
+  return index;
 });
 
 // تصنيف بالـID (مقاوم لإعادة التسمية). غير موجود/محذوف ⇒ null.
