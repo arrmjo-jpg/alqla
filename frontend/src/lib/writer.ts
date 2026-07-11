@@ -15,6 +15,9 @@ const WriterSchema = z
         avatar: z.string().nullish(),
         bio: z.string().nullish(),
         social_links: z.record(z.string(), z.string()).nullish(),
+        articles_count: z.number().nullish(),
+        last_activity_at: z.string().nullish(),
+        verified: z.boolean().nullish(),
       })
       .nullish(),
   })
@@ -50,6 +53,9 @@ export const getWriterProfile = cache(async (id: number, locale = 'ar'): Promise
       avatar: d.avatar ?? null,
       bio: d.bio?.trim() || null,
       social: d.social_links ?? {},
+      articles_count: d.articles_count ?? undefined,
+      last_activity_at: d.last_activity_at ?? null,
+      verified: d.verified ?? undefined,
     };
   } catch {
     return null;
