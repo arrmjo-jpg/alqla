@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Cairo, Noto_Sans_Arabic } from 'next/font/google';
+import { Cairo, Inter, Noto_Sans_Arabic, Source_Serif_4 } from 'next/font/google';
 import localFont from 'next/font/local';
 
 import './globals.css';
@@ -35,6 +35,24 @@ const notoArabic = Noto_Sans_Arabic({
   display: 'swap',
 });
 
+// English edition typefaces (LTR editorial identity — /en only, consumed via .en-skin).
+// Source Serif 4 for headlines (editorial gravitas, Reuters/NYTimes-adjacent) + Inter for
+// body/UI (clean humanist sans, BBC/CNN-adjacent). Additive only — no effect outside .en-skin.
+const sourceSerif = Source_Serif_4({
+  subsets: ['latin'],
+  weight: ['400', '600', '700', '900'],
+  style: ['normal', 'italic'],
+  variable: '--font-source-serif',
+  display: 'swap',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
 // All metadata derived from Site Settings (no hardcoded SEO content).
 export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata();
@@ -46,7 +64,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   // suppressHydrationWarning على <html>: إضافات المتصفّح (مثل crxlauncher) تحقن سمات قبل ترطيب React ⇒ عدم تطابق
   // زائف؛ يُسكِت سمات <html> نفسه فقط، لا الأبناء (فلا يُخفي عدم تطابق حقيقيّ في التطبيق).
   return (
-    <html lang="ar" dir="rtl" className={`${aljazeera.variable} ${cairo.variable} ${notoArabic.variable} antialiased`} suppressHydrationWarning>
+    <html
+      lang="ar"
+      dir="rtl"
+      className={`${aljazeera.variable} ${cairo.variable} ${notoArabic.variable} ${sourceSerif.variable} ${inter.variable} antialiased`}
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: `
           try {

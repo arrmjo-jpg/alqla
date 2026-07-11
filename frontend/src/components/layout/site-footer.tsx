@@ -22,7 +22,7 @@ const isLegal = (p: StaticPage) => LEGAL_RE.test(p.title);
 export async function SiteFooter() {
   const [settings, pages] = await Promise.all([getSiteSettings(), getStaticPages('footer')]);
 
-  const siteName = settings?.site_name?.trim() || 'الشعب';
+  const siteName = settings?.site_name?.trim() || 'القلعة نيوز';
   const year = new Date().getFullYear();
   const copyright = settings?.copyright?.trim() || `© ${year} ${siteName} — جميع الحقوق محفوظة.`;
   // نصّ سياسة الكوكيز من إعدادات الموقع — فارغ ⇒ المودال/الزرّ لا يظهران إطلاقًا.

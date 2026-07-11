@@ -17,7 +17,7 @@ export interface SiteLogoProps {
 
 export async function SiteLogo({ variant, className, priority = false }: SiteLogoProps) {
   const s = await getSiteSettings();
-  const siteName = s?.site_name?.trim() || 'الشعب';
+  const siteName = s?.site_name?.trim() || 'القلعة نيوز';
   const src = (variant === 'light' ? s?.logo_light : s?.logo_dark)?.trim() || null;
 
   if (!src) {

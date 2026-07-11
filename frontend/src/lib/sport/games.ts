@@ -531,7 +531,7 @@ export const getFeaturedMatches = cache(async (
     if ((g.homeCompetitor?.score ?? -1) >= 0 && (g.awayCompetitor?.score ?? -1) >= 0) return 2;
     return 3;
   };
-  // أولويّة بطولات مطلوبة (مثل كأس العالم) في صدارة الهيرو، ثمّ الطبقة (مباشر/قادم/منتهٍ) فالشعبيّة.
+  // أولويّة بطولات مطلوبة (مثل كأس العالم) في صدارة الهيرو، ثمّ الطبقة (مباشر/قادم/منتهٍ)  القلعة نيوز.
   const prioritySet = new Set(priority);
   const prio = (g: z.infer<typeof Game>) => (prioritySet.has(g.competitionId ?? -1) ? 0 : 1);
   const ranked = [...data.games]

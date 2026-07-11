@@ -37,7 +37,7 @@ export function ArticleInteractionBar({ articleId }: { articleId: number }) {
 
   const handleShare = async () => {
     const shareData = {
-      title: 'صدى الشعب الإخباري',
+      title: 'القلعة نيوز',
       text: 'اقرأ هذا الخبر المثير للاهتمام',
       url: getFullShareUrl(),
     };

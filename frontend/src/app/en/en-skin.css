@@ -1,11 +1,14 @@
 /* ============================================================================
-   AlphaCMS — English skin (LTR), matched to the Arabic «القلعة نيوز» look:
-   Cairo type, primary red #850000, 1450px red-bordered frame, red-box section
-   headers, black "View all" buttons, dark footer. Scoped under `.en-skin`.
+   AlphaCMS — English edition skin (LTR). A distinct international-newsroom
+   identity — NOT a mirror of the Arabic layout, NOT a copy of any single
+   outlet — built on the Qalah brand: primary red #850000 stays the
+   through-line accent (kickers, rules, hover states) but is used sparingly
+   as an accent rather than as large solid fills, matching how BBC/CNN/
+   Reuters use their own brand colour. Scoped under `.en-skin`.
    ========================================================================== */
 
 .en-skin {
-  /* ── Palette (mirrors qalah-skin) ──────────────────────────────────────── */
+  /* ── Palette (Qalah red preserved — same brand, different expression) ───── */
   --en-primary: #850000;
   --en-primary-hover: #a60000;
   --en-primary-light: #c20000;
@@ -20,8 +23,12 @@
   --en-surface-3: #e0e3e6;
   --en-line: rgba(0, 0, 0, 0.10);
 
-  /* Cairo is loaded globally by the root layout (--font-cairo) — same as Arabic. */
-  --en-font: var(--font-cairo), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Editorial type pairing (English edition only — loaded in app/layout.tsx,
+     additive, no effect on the Arabic site): Source Serif 4 for headlines and
+     long-form reading (editorial gravitas), Inter for UI chrome/meta/nav
+     (clean modern legibility at small sizes). */
+  --en-font-display: var(--font-source-serif), Georgia, 'Times New Roman', serif;
+  --en-font: var(--font-inter), system-ui, -apple-system, 'Segoe UI', sans-serif;
   --en-container: 1410px;
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -54,22 +61,22 @@
 @media (max-width: 640px) { .en-container { padding-inline: 16px; } }
 
 /* ============================================================================
-   TYPOGRAPHY TOKENS — all Cairo (bold headings), matching Arabic
+   TYPOGRAPHY TOKENS — serif for headlines/long-form reading, sans for chrome
    Display · H1 · H2 · H3 · Lead · Body · Caption · Metadata · Quote
    ========================================================================== */
-.en-display { font-family: var(--en-font); font-weight: 800; font-size: clamp(1.9rem, 3.6vw, 2.9rem); line-height: 1.15; letter-spacing: -0.01em; color: var(--en-ink); }
-.en-h1 { font-family: var(--en-font); font-weight: 800; font-size: clamp(1.5rem, 2.6vw, 2.15rem); line-height: 1.2; color: var(--en-ink); }
-.en-h2 { font-family: var(--en-font); font-weight: 800; font-size: clamp(1.2rem, 1.8vw, 1.5rem); line-height: 1.25; color: var(--en-ink); }
-.en-h3 { font-family: var(--en-font); font-weight: 700; font-size: 1.05rem; line-height: 1.4; color: var(--en-ink); }
-.en-lead { font-family: var(--en-font); font-weight: 400; font-size: clamp(1.05rem, 1.4vw, 1.2rem); line-height: 1.7; color: var(--en-ink-soft); }
-.en-body { font-family: var(--en-font); font-size: 1.05rem; line-height: 1.9; color: var(--en-ink-soft); }
+.en-display { font-family: var(--en-font-display); font-weight: 800; font-size: clamp(1.9rem, 3.6vw, 2.9rem); line-height: 1.12; letter-spacing: -0.01em; color: var(--en-ink); }
+.en-h1 { font-family: var(--en-font-display); font-weight: 700; font-size: clamp(1.5rem, 2.6vw, 2.15rem); line-height: 1.18; color: var(--en-ink); }
+.en-h2 { font-family: var(--en-font-display); font-weight: 700; font-size: clamp(1.2rem, 1.8vw, 1.5rem); line-height: 1.22; color: var(--en-ink); }
+.en-h3 { font-family: var(--en-font-display); font-weight: 600; font-size: 1.08rem; line-height: 1.35; color: var(--en-ink); }
+.en-lead { font-family: var(--en-font-display); font-weight: 400; font-style: italic; font-size: clamp(1.05rem, 1.4vw, 1.2rem); line-height: 1.65; color: var(--en-ink-soft); }
+.en-body { font-family: var(--en-font); font-size: 1.05rem; line-height: 1.7; color: var(--en-ink-soft); }
 .en-caption { font-family: var(--en-font); font-size: 0.8rem; line-height: 1.5; color: var(--en-muted); }
-.en-meta { font-family: var(--en-font); font-size: 0.8rem; font-weight: 600; color: var(--en-muted); }
-.en-quote { font-family: var(--en-font); font-weight: 700; font-size: clamp(1.25rem, 2vw, 1.5rem); line-height: 1.5; color: var(--en-ink); }
+.en-meta { font-family: var(--en-font); font-size: 0.78rem; font-weight: 600; color: var(--en-muted); }
+.en-quote { font-family: var(--en-font-display); font-weight: 700; font-style: italic; font-size: clamp(1.25rem, 2vw, 1.5rem); line-height: 1.5; color: var(--en-ink); }
 
-/* Category label — red bold text (like Arabic CategoryLabel) */
-.en-kicker { display: inline-block; font-family: var(--en-font); font-size: 0.75rem; font-weight: 800; color: var(--en-primary); }
-.en-kicker--tag { color: #fff; background: var(--en-primary); padding: 3px 8px; }
+/* Category kicker — small, uppercase, wire-service label (sans, not headline serif) */
+.en-kicker { display: inline-block; font-family: var(--en-font); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--en-primary); }
+.en-kicker--tag { color: #fff; background: var(--en-primary); padding: 3px 8px; letter-spacing: 0.04em; }
 
 .en-link { color: var(--en-primary); }
 .en-link:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -102,7 +109,7 @@
 .en-header-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .en-brand { display: inline-flex; align-items: center; gap: 12px; }
 .en-brand img { height: 66px; width: auto; object-fit: contain; }
-.en-brand-name { font-family: var(--en-font); font-weight: 800; font-size: 1.9rem; letter-spacing: -0.01em; color: var(--en-ink); }
+.en-brand-name { font-family: var(--en-font-display); font-weight: 800; font-size: 2rem; letter-spacing: -0.01em; color: var(--en-ink); }
 .en-header-date { font-family: var(--en-font); font-size: 0.85rem; font-weight: 600; color: var(--en-muted); }
 .en-search { display: flex; align-items: center; gap: 8px; background: #f1f1f1; border: 1px solid rgba(0,0,0,.06); border-radius: 9999px; padding: 0.35rem 1rem; min-width: 200px; }
 .en-search input { border: none; background: transparent; outline: none; font-family: inherit; font-size: 0.85rem; color: #111; width: 100%; }
@@ -110,17 +117,26 @@
 @media (max-width: 640px) { .en-search { display: none; } .en-brand img { height: 52px; } .en-brand-name { font-size: 1.5rem; } }
 
 /* ============================================================================
-   SECTION HEADER — red box title + black "View all" (matches Arabic)
+   SECTION HEADER — black headline + red rule accent, understated "View all"
+   link (deliberately not the Arabic site's solid red box + black pill motif)
    ========================================================================== */
 .en-section { padding-block: 30px; }
-.en-section-head { display: flex; align-items: stretch; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--en-line); margin-bottom: 22px; }
-.en-section-title { display: inline-block; background: var(--en-primary); color: #fff; font-family: var(--en-font); font-weight: 800; font-size: 1.25rem; line-height: 1.15; padding: 0.5rem 1rem; align-self: flex-end; }
-.en-section-viewall {
-  align-self: flex-end; display: inline-flex; align-items: center; gap: 6px;
-  background: #000; color: #fff; font-family: var(--en-font); font-size: 0.82rem; font-weight: 700;
-  padding: 0.45rem 1.1rem; border-radius: 6px; transition: var(--transition-smooth); white-space: nowrap;
+.en-section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; border-bottom: 3px solid var(--en-ink); margin-bottom: 22px; padding-bottom: 10px; }
+.en-section-title {
+  display: inline-block; position: relative; color: var(--en-ink);
+  font-family: var(--en-font-display); font-weight: 700; font-size: 1.35rem; line-height: 1.15;
+  padding-bottom: 12px; margin-bottom: -13px;
 }
-.en-section-viewall:hover { background: var(--en-primary); }
+.en-section-title::after {
+  content: ''; position: absolute; left: 0; bottom: 0; width: 42px; height: 3px; background: var(--en-primary);
+}
+.en-section-viewall {
+  display: inline-flex; align-items: center; gap: 5px;
+  color: var(--en-primary); font-family: var(--en-font); font-size: 0.85rem; font-weight: 700;
+  padding-bottom: 12px; transition: var(--transition-smooth); white-space: nowrap;
+}
+.en-section-viewall:hover { color: var(--en-primary-hover); gap: 8px; }
+.en-section-viewall::after { content: '→'; font-weight: 400; }
 
 /* ============================================================================
    CARDS
@@ -134,7 +150,7 @@
 
 .en-card { display: flex; flex-direction: column; }
 .en-card__body { padding-top: 12px; }
-.en-card__title { font-family: var(--en-font); font-weight: 700; color: var(--en-ink); }
+.en-card__title { font-family: var(--en-font-display); font-weight: 700; color: var(--en-ink); }
 .en-card__excerpt { margin-top: 8px; font-family: var(--en-font); color: var(--en-muted); font-size: 0.9rem; line-height: 1.6; }
 .en-card__meta { margin-top: 8px; }
 
@@ -157,7 +173,7 @@
 
 /* Sidebar widget */
 .en-widget + .en-widget { margin-top: 30px; }
-.en-widget__head { font-family: var(--en-font); font-size: 1.05rem; font-weight: 800; color: var(--en-ink); border-bottom: 2px solid var(--en-primary); padding-bottom: 8px; margin-bottom: 16px; width: fit-content; }
+.en-widget__head { font-family: var(--en-font-display); font-size: 1.1rem; font-weight: 700; color: var(--en-ink); border-bottom: 2px solid var(--en-primary); padding-bottom: 8px; margin-bottom: 16px; width: fit-content; }
 
 /* ============================================================================
    ARTICLE PAGE
@@ -173,14 +189,14 @@
 .en-figcaption { font-family: var(--en-font); font-size: 0.8rem; color: var(--en-muted); padding-top: 8px; line-height: 1.5; }
 .en-figcaption b { color: var(--en-ink-soft); font-weight: 700; }
 
-/* Long-form body — Cairo, comfortable (no drop cap; matches Arabic reading) */
-.en-prose { font-family: var(--en-font); font-size: 1.15rem; line-height: 2; color: #222; max-width: 780px; margin-inline: auto; }
-.en-prose[data-size='s'] { font-size: 1.02rem; }
-.en-prose[data-size='l'] { font-size: 1.3rem; }
+/* Long-form body — serif, premium newspaper reading rhythm */
+.en-prose { font-family: var(--en-font-display); font-size: 1.18rem; line-height: 1.85; color: #222; max-width: 780px; margin-inline: auto; }
+.en-prose[data-size='s'] { font-size: 1.04rem; }
+.en-prose[data-size='l'] { font-size: 1.32rem; }
 .en-prose > * + * { margin-top: 1.3em; }
 .en-prose p { margin: 0; }
-.en-prose h2 { font-family: var(--en-font); font-weight: 800; font-size: 1.5rem; line-height: 1.3; margin-top: 1.6em; color: var(--en-ink); }
-.en-prose h3 { font-family: var(--en-font); font-weight: 800; font-size: 1.25rem; line-height: 1.35; margin-top: 1.4em; color: var(--en-ink); }
+.en-prose h2 { font-family: var(--en-font-display); font-weight: 700; font-size: 1.5rem; line-height: 1.3; margin-top: 1.6em; color: var(--en-ink); }
+.en-prose h3 { font-family: var(--en-font-display); font-weight: 700; font-size: 1.25rem; line-height: 1.35; margin-top: 1.4em; color: var(--en-ink); }
 .en-prose a { color: var(--en-primary); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 .en-prose ul, .en-prose ol { padding-left: 1.5em; }
 .en-prose li + li { margin-top: 0.5em; }
@@ -218,7 +234,7 @@
 .en-footer a { color: #adadad; transition: var(--transition-smooth); }
 .en-footer a:hover { color: #fff; }
 .en-footer-grid { display: grid; grid-template-columns: 2fr 1fr 1.4fr; gap: 2.5rem 2rem; margin-bottom: 2.25rem; }
-.en-footer-brandname { font-family: var(--en-font); font-weight: 800; font-size: 1.8rem; color: #fff; }
+.en-footer-brandname { font-family: var(--en-font-display); font-weight: 800; font-size: 1.9rem; color: #fff; }
 .en-footer-col-title { color: #fff; font-family: var(--en-font); font-size: 1.05rem; font-weight: 700; border-bottom: 2px solid var(--en-primary); padding-bottom: 0.5rem; width: fit-content; margin-bottom: 1rem; }
 .en-footer-links { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.7rem; font-size: 0.92rem; }
 .en-footer-bottom { border-top: 1px solid rgba(255,255,255,.06); padding-top: 1.4rem; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 0.8rem; color: #6e6e6e; }
@@ -248,8 +264,9 @@
 
 /* Pagination */
 .en-pagination { display: flex; align-items: center; justify-content: center; gap: 24px; margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--en-line); }
-.en-page-link { font-family: var(--en-font); font-size: 0.85rem; font-weight: 700; color: #fff; background: #000; padding: 8px 18px; border-radius: 6px; transition: var(--transition-smooth); }
-.en-page-link:hover { background: var(--en-primary); }
+.en-page-link { font-family: var(--en-font); font-size: 0.85rem; font-weight: 700; color: var(--en-ink); background: var(--en-paper); border: 1px solid var(--en-surface-3); padding: 8px 18px; border-radius: 6px; transition: var(--transition-smooth); }
+.en-page-link:hover { border-color: var(--en-primary); color: var(--en-primary); }
+.en-page-link[aria-current='page'] { background: var(--en-primary); border-color: var(--en-primary); color: #fff; }
 
 /* Author header */
 .en-author-head { display: flex; gap: 18px; align-items: center; padding: 30px 0; border-bottom: 3px solid var(--en-primary); }
