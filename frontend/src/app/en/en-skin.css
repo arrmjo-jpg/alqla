@@ -64,7 +64,7 @@
 .en-skin .en-lead, .en-skin .en-quote, .en-skin .en-brand-name, .en-skin .en-footer-brandname,
 .en-skin .en-section-title, .en-skin .en-card__title, .en-skin .en-widget__head,
 .en-skin .en-prose, .en-skin .en-prose p, .en-skin .en-prose li, .en-skin .en-prose blockquote,
-.en-skin .en-prose h2, .en-skin .en-prose h3 {
+.en-skin .en-prose h2, .en-skin .en-prose h3, .en-skin .en-opinion-byline-name {
   font-family: var(--en-font-display) !important;
 }
 
@@ -177,6 +177,14 @@
 .en-badge--live { background: #b00; }
 .en-badge--live::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: en-pulse 1.4s infinite; }
 @keyframes en-pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+/* Opinion — a genuinely different personality (authored voice), not a badge: ink accent
+   rule instead of red (red stays reserved for breaking/live urgency), byline-forward. */
+.en-card--opinion { border-top: 2px solid var(--en-ink); padding-top: 14px; }
+.en-kicker--opinion { color: var(--en-ink); }
+.en-opinion-byline { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.en-opinion-byline img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; background: var(--en-surface-2); flex-shrink: 0; }
+.en-opinion-byline-name { font-family: var(--en-font-display); font-weight: 700; font-style: italic; font-size: 0.92rem; color: var(--en-ink); }
 
 .en-divlist > * + * { border-top: 1px solid var(--en-line); margin-top: 14px; padding-top: 14px; }
 

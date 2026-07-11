@@ -45,7 +45,9 @@ export function readingLabel(min: number): string {
   return `${Math.max(1, min)} min read`;
 }
 
-/** English label for a feed badge kind (the shared feed mapper emits Arabic labels). */
+/** English label for a feed badge kind (the shared feed mapper emits Arabic labels).
+ *  "Special Coverage" matches the AR label (تغطية خاصة, driven by the is_live flag) and is
+ *  deliberately distinct from the "Live Now" wording used for type === 'live' articles. */
 export function enBadgeLabel(kind: 'live' | 'breaking'): string {
-  return kind === 'live' ? 'Live' : 'Breaking';
+  return kind === 'live' ? 'Special Coverage' : 'Breaking';
 }
