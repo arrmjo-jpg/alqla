@@ -14,6 +14,7 @@ import { articleSeoToMetadata, getArticle } from '@/lib/articles';
 import { enAuthorUrl, enCategoryUrl, enDate, readingLabel } from '@/lib/en';
 import { env } from '@/lib/env';
 import {
+  getAuthorArticles,
   getCategoryFeed,
   getEditorsPickFeed,
   getLatestFeed,
@@ -47,7 +48,8 @@ export default async function EnArticlePage({ params }: { params: Promise<{ id: 
   }
 
   const authorId = article.author?.id ?? null;
-  const [categoryFeed, tagFeed, editors, latest, mostRead] = await Promise.all([
+  const isOpinion = article.type === 'opinion';
+  const [categoryFeed, tagFeed, editors, latest, mostRead, columnistArticles] = await Promise.all([
     article.primaryCategory
       ? getCategoryFeed(article.primaryCategory.slug, 5, 'en')
       : Promise.resolve<FeedItem[]>([]),
@@ -55,6 +57,7 @@ export default async function EnArticlePage({ params }: { params: Promise<{ id: 
     getEditorsPickFeed(5, 'en'),
     getLatestFeed('en'),
     getMostReadFeed(5, 'en'),
+    isOpinion && authorId ? getAuthorArticles(authorId, 4, 'en', 'opinion') : Promise.resolve<FeedItem[]>([]),
   ]);
 
   const notCurrent = (items: FeedItem[]) => items.filter((it) => it.href !== article.href);
@@ -65,6 +68,7 @@ export default async function EnArticlePage({ params }: { params: Promise<{ id: 
   if (related.length < 3) related = notCurrent(latest);
   related = related.slice(0, 4);
   const mostReadClean = notCurrent(mostRead).slice(0, 4);
+  const columnistClean = notCurrent(columnistArticles).slice(0, 4);
 
   const jsonLd = [article.seo?.structured_data, article.seo?.breadcrumbs]
     .filter((x): x is object => Boolean(x) && typeof x === 'object')
@@ -149,7 +153,7 @@ export default async function EnArticlePage({ params }: { params: Promise<{ id: 
           </div>
         </header>
 
-        {cover && (
+        {cover && !isOpinion && (
           <figure style={{ margin: '28px auto 0', maxWidth: 960 }}>
             <div className="en-figure en-ratio-16-9">
               <OptimizedImage
@@ -174,11 +178,20 @@ export default async function EnArticlePage({ params }: { params: Promise<{ id: 
           </figure>
         )}
 
-        <div
-          className="en-prose"
-          style={{ marginTop: 32 }}
-          dangerouslySetInnerHTML={{ __html: article.contentHtml }}
-        />
+        {isOpinion && article.author?.name ? (
+          <div className="en-opinion-body" style={{ marginTop: 32 }}>
+            <div className="en-authorcard-float">
+              <EnAuthorCard author={article.author} layout="stacked" />
+            </div>
+            <div className="en-prose" style={{ maxWidth: 'none', marginInline: 0 }} dangerouslySetInnerHTML={{ __html: article.contentHtml }} />
+          </div>
+        ) : (
+          <div
+            className="en-prose"
+            style={{ marginTop: 32 }}
+            dangerouslySetInnerHTML={{ __html: article.contentHtml }}
+          />
+        )}
 
         {article.tags.length > 0 && (
           <div
@@ -196,12 +209,23 @@ export default async function EnArticlePage({ params }: { params: Promise<{ id: 
           </div>
         )}
 
-        {article.author?.name && (
+        {article.author?.name && !isOpinion && (
           <div style={{ maxWidth: 720, margin: '36px auto 0' }}>
             <EnAuthorCard author={article.author} />
           </div>
         )}
       </article>
+
+      {isOpinion && columnistClean.length > 0 && (
+        <section className="en-section" aria-label="More from this columnist">
+          <EnSectionHeading title={`More from ${article.author?.name ?? 'this columnist'}`} />
+          <div className="en-grid en-grid--4">
+            {columnistClean.map((it) => (
+              <EnArticleCard key={it.id} item={it} variant="standard" />
+            ))}
+          </div>
+        </section>
+      )}
 
       {related.length > 0 && (
         <section className="en-article-related" aria-label="Related articles">

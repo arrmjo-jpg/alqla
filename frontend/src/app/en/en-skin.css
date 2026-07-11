@@ -241,6 +241,13 @@
 .en-authorcard { display: flex; gap: 18px; align-items: flex-start; background: var(--en-paper); border: 1px solid var(--en-line); border-top: 3px solid var(--en-primary); padding: 22px; }
 .en-authorcard img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: var(--en-surface-2); flex-shrink: 0; }
 
+/* Stacked columnist card — floats beside an opinion piece's body (mirrors AR's opinion template) */
+.en-authorcard--stacked { flex-direction: column; align-items: center; text-align: center; }
+.en-authorcard-float { float: left; width: 220px; margin: 4px 28px 18px 0; }
+@media (max-width: 640px) { .en-authorcard-float { float: none; width: 100%; margin: 0 0 24px; } }
+/* Wraps the floated card + body together; overflow:hidden makes it contain the float's height. */
+.en-opinion-body { max-width: 900px; margin-inline: auto; overflow: hidden; }
+
 /* Empty state */
 .en-empty { text-align: center; padding: 60px 24px; border: 1px dashed var(--en-surface-3); background: var(--en-paper); }
 .en-empty h3 { font-family: var(--en-font); font-weight: 800; font-size: 1.4rem; color: var(--en-ink); }
