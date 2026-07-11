@@ -45,6 +45,18 @@ export function readingLabel(min: number): string {
   return `${Math.max(1, min)} min read`;
 }
 
+const dateOnly = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+const timeOnly = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+/** "MM/DD/YYYY | H:MM AM" — the absolute-datetime pairing AR's metadata row shows
+ *  alongside the relative time (formatFullDateTime in metadata-row.tsx), en-US equivalent. */
+export function enDateTime(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return `${dateOnly.format(d)} | ${timeOnly.format(d)}`;
+}
+
 /** English label for a feed badge kind (the shared feed mapper emits Arabic labels).
  *  "Special Coverage" matches the AR label (تغطية خاصة, driven by the is_live flag) and is
  *  deliberately distinct from the "Live Now" wording used for type === 'live' articles. */
