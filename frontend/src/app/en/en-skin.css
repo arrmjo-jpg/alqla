@@ -68,7 +68,7 @@
 .en-skin .en-writer-card__name, .en-skin .en-writers-empty h3, .en-skin .en-feed-section__title,
 .en-skin .en-feed-card__subtitle, .en-skin .en-opinion-photo__name,
 .en-skin .en-hero-slide__title, .en-skin .en-herocard__title, .en-skin .en-sechead__title,
-.en-skin .en-localnews-lead__title {
+.en-skin .en-localnews-lead__title, .en-skin .en-trending__title {
   font-family: var(--en-font-display) !important;
 }
 
@@ -479,6 +479,53 @@ a.en-hero-chip:hover { background: var(--en-primary-hover); }
 .en-localnews-item:hover .en-localnews-item__title { color: var(--en-primary); }
 .en-localnews-item__cat { position: relative; z-index: 20; width: fit-content; font-family: var(--en-font); font-size: 0.7rem; font-weight: 800; color: var(--en-primary); }
 a.en-localnews-item__cat:hover { text-decoration: underline; }
+
+/* Trending — fork of TrendingLatestMostRead's TrendingBox portion. AR embeds this in a 1/3-width
+   grid column (alongside writer-carousel columns that have no EN category equivalent); kept at
+   the same ~400px width standalone rather than stretching it full-width, which would break the
+   proportions the fixed-size thumbnails/rows were designed for. */
+.en-trending { max-width: 420px; margin-block: 24px; overflow: hidden; color: #fff; border-radius: 16px; background: linear-gradient(160deg, #a30b13 0%, #850000 58%, #6b0000 100%); box-shadow: 0 8px 20px rgba(0,0,0,.12); }
+.en-trending__head { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,.15); padding: 12px 16px; }
+.en-trending__icon { display: flex; flex-shrink: 0; width: 28px; height: 28px; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,.15); }
+.en-trending__title { font-family: var(--en-font-display); font-weight: 800; font-size: 1.1rem; }
+@media (min-width: 640px) { .en-trending__title { font-size: 1.25rem; } }
+.en-trending__list { display: flex; flex-direction: column; }
+.en-trending__row { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,.1); padding: 12px 16px; transition: background .15s ease; }
+.en-trending__row:last-child { border-bottom: none; }
+.en-trending__row:hover { background: rgba(255,255,255,.05); }
+.en-trending__text { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 6px; }
+.en-trending__tag { display: inline-flex; width: fit-content; align-items: center; gap: 6px; padding: 4px 8px; font-family: var(--en-font); font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: #fff; background: #ff1e1e; border-radius: 0; }
+.en-trending__row-title { font-family: var(--en-font); font-size: 0.85rem; font-weight: 700; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.en-trending__thumb-wrap { position: relative; flex-shrink: 0; }
+.en-trending__thumb { width: 112px; height: 64px; overflow: hidden; background: rgba(255,255,255,.1); border-radius: 8px; }
+.en-trending__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.en-trending__thumb-empty { width: 100%; height: 100%; background: rgba(255,255,255,.1); }
+.en-trending__rank { position: absolute; bottom: -6px; left: -6px; display: flex; width: 24px; height: 24px; align-items: center; justify-content: center; border-radius: 50%; background: var(--en-yellow); font-family: var(--en-font); font-size: 0.72rem; font-weight: 800; color: #3a2c08; box-shadow: 0 2px 4px rgba(0,0,0,.2); }
+
+/* Breaking news bar — fork of AR's BreakingNewsBar (layout, site-wide). Skew notch mirrored to
+   the badge's right edge (LTR: badge-then-stage reads left-to-right, so the transition notch cuts
+   into the badge's trailing/right side, the mirror image of AR's right()-anchored notch on the
+   badge's leading/right side in RTL). */
+.en-breaking { position: relative; width: 100%; height: 60px; align-items: center; overflow: hidden; background: #b90000; color: #fff; border-bottom: 2px solid rgba(255,255,255,.2); }
+.en-breaking-badge { position: relative; z-index: 20; flex-shrink: 0; height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 2.5rem; background: #fff; box-shadow: -10px 0 20px rgba(0,0,0,.1); }
+.en-breaking-badge-text { color: #b90000; font-weight: 900; font-size: 1.4rem; letter-spacing: -0.02em; animation: en-breaking-pulse 1.6s ease-in-out infinite; }
+.en-breaking-badge-skew { position: absolute; top: 0; bottom: 0; left: 100%; margin-left: -0.9rem; width: 1.8rem; background: #fff; transform: skewX(15deg); }
+@keyframes en-breaking-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+.en-breaking-stage { position: relative; flex: 1; min-width: 0; height: 100%; }
+.en-breaking-slide { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0 2.5rem; opacity: 0; transform: translateX(-40px); transition: opacity .6s ease, transform .6s ease; pointer-events: none; }
+.en-breaking-slide[data-active='true'] { opacity: 1; transform: translateX(0); pointer-events: auto; }
+.en-breaking-headline { flex: 1; min-width: 0; font-family: var(--en-font); font-weight: 900; font-size: 1.25rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color .2s ease; }
+.en-breaking-headline:hover { color: rgba(255,255,255,.82); }
+.en-breaking-share { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+.en-breaking-share-label { font-family: var(--en-font); font-size: 0.65rem; font-weight: 900; color: rgba(255,255,255,.6); }
+@media (max-width: 1200px) { .en-breaking-share-label { display: none; } }
+.en-breaking-share-btn { height: 2.4rem; width: 2.4rem; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); color: #fff; transition: background .2s ease, color .2s ease; }
+.en-breaking-share-btn:hover { background: #fff; color: #b90000; }
+.en-breaking-close { flex-shrink: 0; height: 100%; padding: 0 1.25rem; display: flex; align-items: center; justify-content: center; color: #fff; border-inline-start: 1px solid rgba(255,255,255,.2); transition: background .2s ease; }
+.en-breaking-close:hover { background: rgba(255,255,255,.1); }
+@media (prefers-reduced-motion: reduce) {
+  .en-breaking, .en-breaking-badge-text, .en-breaking-slide { animation: none !important; transition: none !important; }
+}
 
 /* Reading tools */
 .en-tools { display: flex; align-items: center; gap: 8px; }

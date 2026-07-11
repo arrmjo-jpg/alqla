@@ -7,10 +7,12 @@ import { getCategoryById, getCategoryFeed, type FeedItem } from '@/lib/feed';
 import { EnFeedBadge } from './en-feed-badge';
 import { EnSectionHeader, EnSectionMore } from './en-section-header';
 
-// Fork of components/home/latest-updates.tsx ("Local News" on AR's homepage, categoryId=2) —
-// identical category-by-id lookup + lead/grid split, English strings. Hides when the category
-// doesn't exist for this locale or has no articles (same defensive behavior as AR — confirmed
-// via curl that EN has no category id=2 yet; renders automatically once one exists, no code change).
+// Fork of components/home/latest-updates.tsx (categoryId-driven lead+grid section, e.g. AR's
+// "Local News" at categoryId=2) — identical category-by-id lookup + lead/grid split, English
+// strings. Used on the EN homepage for EN's own real categories (Public News=60, Articles=61),
+// not AR's categoryId — EN has its own category mapping. Hides when the category doesn't exist
+// for this locale or has no articles (same defensive behavior as AR, same 'en' locale on both
+// calls below).
 export async function EnLatestUpdates({ categoryId, fallbackTitle }: { categoryId: number; fallbackTitle?: string }) {
   const category = await getCategoryById(categoryId, 'en');
   if (!category) return null;
@@ -21,11 +23,14 @@ export async function EnLatestUpdates({ categoryId, fallbackTitle }: { categoryI
   const moreHref = enUrl(`/category-${category.id}/${encodeURIComponent(category.slug)}`);
   const [lead, ...rest] = items;
   const grid = rest.slice(0, 8);
+  // Per-category id — this component now renders more than once per page (Public News + Articles),
+  // so a fixed id would produce duplicate DOM ids/aria-labelledby targets.
+  const headingId = `en-category-${category.id}-heading`;
 
   return (
-    <section className="en-localnews" aria-labelledby="en-local-news-heading">
+    <section className="en-localnews" aria-labelledby={headingId}>
       <div className="en-container">
-        <EnSectionHeader title={title} headingId="en-local-news-heading" href={moreHref} />
+        <EnSectionHeader title={title} headingId={headingId} href={moreHref} />
 
         <div className="en-localnews__layout">
           <div className="en-localnews__lead">

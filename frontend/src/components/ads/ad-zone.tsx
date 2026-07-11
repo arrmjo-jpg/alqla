@@ -37,8 +37,12 @@ function detectDevice(): string {
   return 'desktop';
 }
 
-/** لغة الصفحة من <html lang> (ar افتراضاً). */
+/**
+ * لغة الصفحة. الجذر <html lang> ثابت على "ar" دومًا (اختيار معماريّ متعمَّد — القسم الإنجليزيّ
+ * غلاف .en-skin داخليّ فقط)، فلا يكفي وحده؛ بادئة المسار /en هي المصدر الفعليّ لصفحات الإنجليزيّة.
+ */
 function pageLocale(): string {
+  if (window.location.pathname.startsWith('/en')) return 'en';
   const lang = (document.documentElement.lang || '').slice(0, 2).toLowerCase();
   return lang === 'en' ? 'en' : 'ar';
 }
