@@ -10,7 +10,7 @@ import { getEditorsPickFeed } from '@/lib/feed';
 // WritersRow columns (categoryId 20/57, VIP writer carousels) are AR-only categories with no
 // EN equivalent (confirmed via the categories API) — out of scope, "Trending" alone was asked for.
 export async function EnTrendingBox() {
-  const items = (await getEditorsPickFeed(5, 'en')).slice(0, 5);
+  const items = (await getEditorsPickFeed(8, 'en')).slice(0, 8);
   if (items.length === 0) return null;
 
   return (
