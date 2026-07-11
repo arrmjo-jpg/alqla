@@ -68,7 +68,7 @@
 .en-skin .en-writer-card__name, .en-skin .en-writers-empty h3, .en-skin .en-feed-section__title,
 .en-skin .en-feed-card__subtitle, .en-skin .en-opinion-photo__name,
 .en-skin .en-hero-slide__title, .en-skin .en-herocard__title, .en-skin .en-sechead__title,
-.en-skin .en-localnews-lead__title, .en-skin .en-trending__title {
+.en-skin .en-localnews-lead__title, .en-skin .en-trending__title, .en-skin .en-feedgrid-card__title {
   font-family: var(--en-font-display) !important;
 }
 
@@ -526,6 +526,44 @@ a.en-localnews-item__cat:hover { text-decoration: underline; }
 @media (prefers-reduced-motion: reduce) {
   .en-breaking, .en-breaking-badge-text, .en-breaking-slide { animation: none !important; transition: none !important; }
 }
+
+/* News ticker — fork of AR's NewsTicker (site-wide, sits directly above the breaking bar).
+   Typewriter effect onto a truncated headline; prev/pause/next controls. The AR original's
+   border-r divider (visually on the buttons' leading edge, RTL) mirrors to border-left here. */
+.en-newsticker { display: flex; min-height: 50px; align-items: stretch; justify-content: space-between; border-block: 1px solid var(--en-line); background: #fff; user-select: none; }
+.en-newsticker__text-wrap { display: flex; min-width: 0; flex: 1; align-items: stretch; gap: 12px; }
+.en-newsticker__badge { display: flex; flex-shrink: 0; align-items: center; justify-content: center; gap: 8px; background: var(--en-primary); padding-inline: 16px; font-family: var(--en-font); font-size: 0.8rem; font-weight: 800; color: #fff; align-self: stretch; }
+@media (min-width: 640px) { .en-newsticker__badge { padding-inline: 24px; } }
+.en-newsticker__dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.8); animation: en-ticker-ping 1.4s cubic-bezier(0,0,0.2,1) infinite; }
+@keyframes en-ticker-ping { 75%, 100% { transform: scale(1.6); opacity: 0; } }
+.en-newsticker__headline-wrap { display: flex; min-width: 0; flex: 1; align-items: center; }
+.en-newsticker__headline { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--en-font); font-size: 0.9rem; font-weight: 700; color: var(--en-ink); transition: color .2s ease; }
+.en-newsticker__headline:hover { color: var(--en-primary); }
+.en-newsticker__cursor { display: inline-block; margin-left: 2px; font-weight: 400; color: var(--en-primary); }
+.en-newsticker__controls { display: flex; flex-shrink: 0; align-items: center; gap: 6px; border-left: 1px solid var(--en-line); padding-inline: 16px; }
+@media (min-width: 640px) { .en-newsticker__controls { padding-inline-end: 24px; } }
+@media (min-width: 768px) { .en-newsticker__controls { padding-inline-end: 32px; } }
+.en-newsticker__btn { display: flex; height: 28px; width: 28px; align-items: center; justify-content: center; border: 0; background: var(--en-primary); color: #fff; cursor: pointer; transition: background .2s ease; }
+.en-newsticker__btn:hover { background: #000; }
+@media (prefers-reduced-motion: reduce) {
+  .en-newsticker__dot { animation: none !important; }
+}
+
+/* Feed grid card — fork merging FeedCard (AR's /latest page) + TrendingCard (AR's /trending
+   page) into one card with an optional rank badge, used by the Most Popular / Latest News
+   homepage sections. Rank badge mirrors TrendingCard's insetInlineStart (RTL-safe logical
+   property) to a plain left offset, since .en-skin is always LTR. */
+.en-feedgrid-card { position: relative; }
+.en-feedgrid-card__link { position: absolute; inset: 0; z-index: 10; }
+.en-feedgrid-card__media { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 12px; background: var(--en-surface-2); }
+.en-feedgrid-card__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+.en-feedgrid-card:hover .en-feedgrid-card__img { transform: scale(1.05); }
+.en-feedgrid-card__rank { position: absolute; top: 8px; left: 8px; z-index: 20; display: flex; min-width: 28px; align-items: center; justify-content: center; padding: 2px 8px; font-family: var(--en-font); font-size: 0.85rem; font-weight: 900; color: #fff; background: var(--en-primary); border-radius: 8px; }
+.en-feedgrid-card__body { margin-top: 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.en-feedgrid-card__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.en-feedgrid-card__date { font-family: var(--en-font); font-size: 0.78rem; font-weight: 600; color: var(--en-muted); }
+.en-feedgrid-card__title { font-size: 1rem; font-weight: 800; line-height: 1.35; color: var(--en-ink); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; transition: color .2s ease; }
+.en-feedgrid-card:hover .en-feedgrid-card__title { color: var(--en-primary); }
 
 /* Reading tools */
 .en-tools { display: flex; align-items: center; gap: 8px; }
