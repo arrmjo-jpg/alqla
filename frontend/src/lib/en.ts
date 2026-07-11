@@ -81,3 +81,15 @@ const SOCIAL_LABELS: Record<string, string> = {
 export function enSocialLabel(key: string): string {
   return SOCIAL_LABELS[key] ?? key;
 }
+
+const ARABIC_SCRIPT = /[؀-ۿ]/;
+
+/** True if the string contains Arabic-script characters. Some Site Settings free-text fields
+ *  (e.g. copyright) aren't actually locale-scoped in the CMS yet — /api/v1/en/site and
+ *  /api/v1/ar/site can return the exact same Arabic string for them. "CMS value always wins"
+ *  only holds when that value is genuinely localized; a shared Arabic fallback is exactly the
+ *  Arabic-content leak the English edition must never show, so callers should check this and use
+ *  their own English default instead when it's true. */
+export function looksArabic(text: string | null | undefined): boolean {
+  return !!text && ARABIC_SCRIPT.test(text);
+}

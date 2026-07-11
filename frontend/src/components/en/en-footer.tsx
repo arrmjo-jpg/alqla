@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 import { socialEntries } from '@/components/layout/social-map';
-import { enCategoryUrl, enSocialLabel, enUrl } from '@/lib/en';
+import { enCategoryUrl, enSocialLabel, enUrl, looksArabic } from '@/lib/en';
 import { getEnCategories } from '@/lib/en-data';
 import type { SiteSettings } from '@/lib/site-settings';
 import { getStaticPages } from '@/lib/static-pages';
@@ -38,8 +38,15 @@ export async function EnFooter({ settings }: { settings: SiteSettings | null }) 
   const name = settings?.site_name?.trim() || 'Alqalah News';
   const logo = settings?.logo_dark?.trim() || null;
   const year = new Date().getFullYear();
-  const copyright = settings?.copyright?.trim() || `© ${year} ${name}. All rights reserved.`;
-  const description = settings?.description?.trim() || null;
+  // copyright/description aren't locale-scoped in the CMS yet for every field — /api/v1/en/site
+  // and /api/v1/ar/site can return the exact same Arabic string. A shared-Arabic value isn't a
+  // real English localization, so treat it the same as "not set" and use the English default
+  // instead of ever rendering it — "no Arabic content on the English edition" wins over "show
+  // whatever the CMS returns" when the two conflict.
+  const rawCopyright = settings?.copyright?.trim() || '';
+  const copyright = rawCopyright && !looksArabic(rawCopyright) ? rawCopyright : `© ${year} ${name}. All rights reserved.`;
+  const rawDescription = settings?.description?.trim() || '';
+  const description = rawDescription && !looksArabic(rawDescription) ? rawDescription : null;
 
   const phones = (settings?.phones ?? [])
     .map((c) => ({ name: (c.name ?? '').trim(), title: (c.title ?? '').trim(), phone: (c.phone ?? '').trim() }))
