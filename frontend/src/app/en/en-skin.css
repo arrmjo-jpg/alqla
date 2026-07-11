@@ -136,6 +136,10 @@
    link (deliberately not the Arabic site's solid red box + black pill motif)
    ========================================================================== */
 .en-section { padding-block: 30px; }
+/* Special Coverage zone — subtle urgency treatment distinguishing it from ordinary sections */
+.en-section--live { background: #fff7f7; border-top: 1px solid rgba(255, 30, 30, 0.15); border-bottom: 1px solid rgba(255, 30, 30, 0.15); margin-inline: -24px; padding-inline: 24px; }
+.en-section--live .en-section-head { border-bottom-color: #ff1e1e; }
+.en-section--live .en-section-title::after { background: #ff1e1e; }
 .en-section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; border-bottom: 3px solid var(--en-ink); margin-bottom: 22px; padding-bottom: 10px; }
 .en-section-title {
   display: inline-block; position: relative; color: var(--en-ink);
