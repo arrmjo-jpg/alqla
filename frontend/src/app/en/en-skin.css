@@ -248,6 +248,24 @@
 /* Wraps the floated card + body together; overflow:hidden makes it contain the float's height. */
 .en-opinion-body { max-width: 900px; margin-inline: auto; overflow: hidden; }
 
+/* Live Coverage timeline (type === 'live') — chronological updates, mirrors AR's ArticleLiveUpdates */
+.en-live-updates { max-width: 780px; margin: 40px auto 0; }
+.en-live-updates__head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 20px; }
+.en-live-updates__list { position: relative; list-style: none; margin: 0; padding: 0; }
+.en-live-updates__list::before { content: ''; position: absolute; left: 7px; top: 6px; bottom: 6px; width: 2px; background: var(--en-surface-3); }
+.en-live-updates__item { position: relative; padding-left: 28px; }
+.en-live-updates__item + .en-live-updates__item { margin-top: 16px; }
+.en-live-updates__dot { position: absolute; left: 0; top: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--en-primary); border: 3px solid var(--en-paper-2); }
+.en-live-updates__dot--latest { background: #ff1e1e; box-shadow: 0 0 0 4px rgba(255, 30, 30, 0.15); }
+.en-live-updates__card { border: 1px solid var(--en-line); background: var(--en-paper); border-radius: 10px; padding: 16px; }
+.en-live-updates__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-family: var(--en-font); font-size: 0.78rem; color: var(--en-muted); font-weight: 600; }
+.en-live-updates__tag { border-radius: 4px; padding: 2px 7px; font-weight: 800; background: var(--en-surface-2); color: var(--en-ink); }
+.en-live-updates__tag--latest { background: rgba(255, 30, 30, 0.12); color: #ff1e1e; }
+.en-live-updates__tag--breaking { background: #ff1e1e; color: #fff; }
+.en-live-updates__gallery { margin-top: 10px; display: grid; grid-template-columns: 1fr; gap: 8px; }
+.en-live-updates__gallery--2col { grid-template-columns: repeat(2, 1fr); }
+.en-live-updates__gallery img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; display: block; }
+
 /* Empty state */
 .en-empty { text-align: center; padding: 60px 24px; border: 1px dashed var(--en-surface-3); background: var(--en-paper); }
 .en-empty h3 { font-family: var(--en-font); font-weight: 800; font-size: 1.4rem; color: var(--en-ink); }

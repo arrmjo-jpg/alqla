@@ -3,14 +3,16 @@ import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 
 import { EnArticleCard } from '@/components/en/en-article-card';
+import { EnArticleLiveUpdates } from '@/components/en/en-article-live-updates';
 import { EnAuthorCard } from '@/components/en/en-author-card';
 import { EnAvatar } from '@/components/en/en-avatar';
 import { EnBreadcrumb } from '@/components/en/en-breadcrumb';
 import { EnReadingTools } from '@/components/en/en-reading-tools';
 import { EnSectionHeading } from '@/components/en/en-section-heading';
 import { ViewBeacon } from '@/components/engagement/view-beacon';
+import { LivePulse } from '@/components/ui/live-pulse';
 import { OptimizedImage } from '@/components/ui/optimized-image';
-import { articleSeoToMetadata, getArticle } from '@/lib/articles';
+import { articleSeoToMetadata, getArticle, getLiveUpdates, type LiveUpdateItem } from '@/lib/articles';
 import { enAuthorUrl, enCategoryUrl, enDate, readingLabel } from '@/lib/en';
 import { env } from '@/lib/env';
 import {
@@ -49,7 +51,8 @@ export default async function EnArticlePage({ params }: { params: Promise<{ id: 
 
   const authorId = article.author?.id ?? null;
   const isOpinion = article.type === 'opinion';
-  const [categoryFeed, tagFeed, editors, latest, mostRead, columnistArticles] = await Promise.all([
+  const isLive = article.type === 'live';
+  const [categoryFeed, tagFeed, editors, latest, mostRead, columnistArticles, liveUpdates] = await Promise.all([
     article.primaryCategory
       ? getCategoryFeed(article.primaryCategory.slug, 5, 'en')
       : Promise.resolve<FeedItem[]>([]),
@@ -58,6 +61,7 @@ export default async function EnArticlePage({ params }: { params: Promise<{ id: 
     getLatestFeed('en'),
     getMostReadFeed(5, 'en'),
     isOpinion && authorId ? getAuthorArticles(authorId, 4, 'en', 'opinion') : Promise.resolve<FeedItem[]>([]),
+    isLive ? getLiveUpdates(canonicalId, 'en') : Promise.resolve<LiveUpdateItem[]>([]),
   ]);
 
   const notCurrent = (items: FeedItem[]) => items.filter((it) => it.href !== article.href);
@@ -153,9 +157,24 @@ export default async function EnArticlePage({ params }: { params: Promise<{ id: 
           </div>
         </header>
 
+        {isLive && !cover && (
+          <div style={{ margin: '20px 0 0' }}>
+            <span className="en-badge en-badge--live" style={{ position: 'static' }}>
+              <LivePulse />
+              Live Now
+            </span>
+          </div>
+        )}
+
         {cover && !isOpinion && (
           <figure style={{ margin: '28px auto 0', maxWidth: 960 }}>
             <div className="en-figure en-ratio-16-9">
+              {isLive && (
+                <span className="en-badge en-badge--live">
+                  <LivePulse />
+                  Live Now
+                </span>
+              )}
               <OptimizedImage
                 cover={{ url: cover.url, thumb: cover.thumb, medium: cover.medium, alt: cover.alt }}
                 src={cover.url}
@@ -191,6 +210,10 @@ export default async function EnArticlePage({ params }: { params: Promise<{ id: 
             style={{ marginTop: 32 }}
             dangerouslySetInnerHTML={{ __html: article.contentHtml }}
           />
+        )}
+
+        {isLive && liveUpdates.length > 0 && (
+          <EnArticleLiveUpdates slug={canonicalId} initial={liveUpdates} />
         )}
 
         {article.tags.length > 0 && (
