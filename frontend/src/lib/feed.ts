@@ -2,31 +2,8 @@ import 'server-only';
 import { cache } from 'react';
 import { z } from 'zod';
 
+import { getCached } from './dev-cache';
 import { env } from './env';
-
-interface CacheEntry {
-  value: unknown;
-  expiresAt: number;
-}
-
-const apiCache = (((globalThis as unknown) as Record<string, unknown>)._apiCache as Map<string, CacheEntry>) || new Map<string, CacheEntry>();
-((globalThis as unknown) as Record<string, unknown>)._apiCache = apiCache;
-
-async function getCached<T>(key: string, ttlMs: number, fetcher: () => Promise<T>): Promise<T> {
-  if (process.env.NODE_ENV === 'production') {
-    return fetcher();
-  }
-  const cached = apiCache.get(key);
-  const now = Date.now();
-  if (cached && cached.expiresAt > now) {
-    return cached.value as T;
-  }
-  const value = await fetcher();
-  if (value && (!Array.isArray(value) || value.length > 0)) {
-    apiCache.set(key, { value, expiresAt: now + ttlMs });
-  }
-  return value;
-}
 
 
 // عنصر تغذية جاهز للعرض (view-model) — لا يتسرّب شكل الـAPI الخام إلى العارض.
