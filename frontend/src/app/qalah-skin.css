@@ -475,7 +475,7 @@
 }
 .qalah-skin .footer-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.4fr; /* العلامة (أوّل عمود) = اليمين في RTL */
+  grid-template-columns: 2fr 1fr 1fr; /* العلامة (أوّل عمود) = اليمين في RTL */
   gap: 2.5rem 2rem;
   margin-bottom: 2.5rem;
 }
@@ -555,41 +555,6 @@
 .qalah-skin .footer-links a:hover {
   color: var(--text-primary);
   transform: translateX(-5px);
-}
-.qalah-skin .app-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.qalah-skin .app-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0.5rem 1rem;
-  border-radius: 9999px;
-  color: var(--text-primary);
-  text-decoration: none;
-  transition: var(--transition-smooth);
-}
-.qalah-skin .app-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-}
-.qalah-skin .app-btn-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-.qalah-skin .app-btn-subtitle {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-}
-.qalah-skin .app-btn-title {
-  font-size: 0.85rem;
-  font-weight: 700;
 }
 .qalah-skin .tv-buttons {
   display: grid;

@@ -27,7 +27,8 @@ function MailIcon({ className }: { className?: string }) {
 }
 
 // فوتر premium (غامق). الديسكتوب: خطّ هويّة علويّ متدرّج + عمود العلامة **على اليمين** (لوجو من
-// الإعدادات + وصف الموقع + واتساب + سوشال) ثمّ روابط سريعة + تواصل + تطبيقات. الجوّال: فوتر مُبسَّط.
+// الإعدادات + وصف الموقع + واتساب + سوشال) ثمّ روابط سريعة + تواصل. الجوّال: فوتر مُبسَّط.
+// عمود «تطبيقاتنا» أُزيل (لا تطبيق منشور بعد على المتاجر — أزرار href="#" غير فعّالة، IMPLEMENTATION-ROADMAP.md 3.4).
 export async function QalahFooter() {
   const [settings, pages] = await Promise.all([getSiteSettings(), getStaticPages('footer')]);
 
@@ -117,21 +118,6 @@ export async function QalahFooter() {
           ) : (
             <p className="footer-muted">غير متوفّر حاليًّا</p>
           )}
-        </div>
-
-        {/* تطبيقاتنا (يسار) */}
-        <div className="footer-col">
-          <h3 className="footer-col-title">تطبيقاتنا</h3>
-          <div className="app-buttons">
-            {[{ sys: 'Android' }, { sys: 'iPhone' }].map((a) => (
-              <a key={a.sys} href="#" className="app-btn">
-                <div className="app-btn-text">
-                  <span className="app-btn-subtitle">تحميل لنظام</span>
-                  <span className="app-btn-title">{a.sys}</span>
-                </div>
-              </a>
-            ))}
-          </div>
         </div>
       </div>
 
