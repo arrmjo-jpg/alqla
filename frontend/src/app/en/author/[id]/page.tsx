@@ -10,13 +10,18 @@ import { getAuthorArticles } from '@/lib/feed';
 // locale-aware author-articles layer (author identity derived from the feed).
 export const revalidate = 300;
 
+// نفس الحدّ في الاستدعاءين عمداً — getAuthorArticles مُغلَّف بـ React.cache() الذي يُذاكِر بحسب
+// تطابق كامل الوسائط؛ حدّ مختلف (1 هنا سابقاً) يُبطل المذاكرة فيسبِّب نداءين خادميّين حقيقيّين
+// بدل واحد لكل تحميل صفحة. انظر IMPLEMENTATION-ROADMAP.md 3.7.
+const AUTHOR_ARTICLES_LIMIT = 24;
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const articles = await getAuthorArticles(Number(id), 1, 'en');
+  const articles = await getAuthorArticles(Number(id), AUTHOR_ARTICLES_LIMIT, 'en');
   return { title: articles[0]?.author?.name ?? 'Author' };
 }
 
@@ -25,7 +30,7 @@ export default async function EnAuthorPage({ params }: { params: Promise<{ id: s
   const authorId = Number(id);
   if (!authorId) notFound();
 
-  const articles = await getAuthorArticles(authorId, 24, 'en');
+  const articles = await getAuthorArticles(authorId, AUTHOR_ARTICLES_LIMIT, 'en');
   const author = articles[0]?.author ?? null;
 
   return (
