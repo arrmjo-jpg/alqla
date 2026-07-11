@@ -1,13 +1,14 @@
 import { EnArticleCard } from '@/components/en/en-article-card';
 import { EnEmpty } from '@/components/en/en-empty';
+import { EnFeaturedHero } from '@/components/en/en-featured-hero';
+import { EnLatestUpdates } from '@/components/en/en-latest-updates';
 import { EnSectionHeading } from '@/components/en/en-section-heading';
 import { EnSidebar } from '@/components/en/en-sidebar';
+import { AdZone } from '@/components/ads/ad-zone';
 import { enCategoryUrl } from '@/lib/en';
 import {
   getCategoryFeed,
-  getEditorsPickFeed,
-  getHeroFeed,
-  getLatestFeed,
+  getHomepageFeed,
   getMostReadFeed,
   type FeedItem,
 } from '@/lib/feed';
@@ -17,21 +18,20 @@ import {
 export const revalidate = 300;
 
 export default async function EnHome() {
-  const [hero, latest, publicNews, articles, mostRead, editorsPick] = await Promise.all([
-    getHeroFeed('en'),
-    getLatestFeed('en'),
+  const [homepageData, publicNews, articles, mostRead] = await Promise.all([
+    // Single aggregate call (hero/editors_pick/latest together) — AR's actual homepage data
+    // source (getHomepageFeed), and avoids fetching the same articles via 3 separate requests.
+    getHomepageFeed('en'),
     getCategoryFeed('public-news', 7, 'en'),
     getCategoryFeed('articles', 6, 'en'),
     getMostReadFeed(6, 'en'),
-    getEditorsPickFeed(6, 'en'),
   ]);
 
-  // Lede: prefer featured (hero); fall back to the latest feed.
-  const lede = hero.length ? hero : latest;
-  const lead = lede[0] ?? null;
-  const secondary = lede.slice(1, 4);
-  const used = new Set([lead?.id, ...secondary.map((s) => s.id)].filter(Boolean));
-  const latestGrid = latest.filter((it) => !used.has(it.id)).slice(0, 6);
+  const heroItems = homepageData.hero;
+  const latest = homepageData.latest;
+  const editorsPick = homepageData.editors_pick;
+
+  const latestGrid = latest.slice(0, 6);
 
   // Special Coverage — surfaces whatever's flagged is_live across the pools already being
   // fetched (no extra request). Hidden entirely when nothing is flagged, same as every other
@@ -41,86 +41,93 @@ export default async function EnHome() {
   const specialCoverage = [...pool.values()].filter((it) => it.badge?.kind === 'live').slice(0, 4);
 
   const nothing =
-    !lead && latestGrid.length === 0 && publicNews.length === 0 && articles.length === 0;
+    heroItems.length === 0 && latestGrid.length === 0 && publicNews.length === 0 && articles.length === 0;
 
   return (
-    <div className="en-container">
-      {lead && (
-        <section className="en-lede" aria-label="Top stories">
-          <EnArticleCard item={lead} variant="hero" />
-          <div className="en-lede__side">
-            {secondary.map((it) => (
-              <EnArticleCard key={it.id} item={it} variant="list" />
-            ))}
+    <div>
+      <EnFeaturedHero items={heroItems} />
+
+      {/* Ad zones — same placement as AR's homepage: one large below hero, two pairs framing
+          Local News. Reused as-is (AdZone is locale-agnostic infrastructure). */}
+      <AdZone zone="aalan_kbyr_asfl_alhyrw_1410" className="en-adzone" />
+      <div className="en-container en-adzone-row">
+        <AdZone zone="aalan_asfl_alslaydr_mbarshraymyn" className="en-adzone-row__item" />
+        <AdZone zone="aalan_asfl_alslaydr_mbarshra_shmal" className="en-adzone-row__item" />
+      </div>
+      <div className="en-container en-adzone-row">
+        <AdZone zone="aalan_fwq_akhr_almstjdat_ymyn" className="en-adzone-row__item" />
+        <AdZone zone="aalan_fwq_akhr_almstjdat_shmal" className="en-adzone-row__item" />
+      </div>
+
+      <EnLatestUpdates categoryId={2} fallbackTitle="Local News" />
+
+      <div className="en-container">
+        {nothing && (
+          <div style={{ paddingBlock: 48 }}>
+            <EnEmpty />
           </div>
-        </section>
-      )}
+        )}
 
-      {nothing && (
-        <div style={{ paddingBlock: 48 }}>
-          <EnEmpty />
-        </div>
-      )}
+        {specialCoverage.length > 0 && (
+          <section className="en-section en-section--live" aria-label="Special Coverage">
+            <EnSectionHeading title="Special Coverage" />
+            <div className="en-grid en-grid--2">
+              {specialCoverage.map((it) => (
+                <EnArticleCard key={it.id} item={it} variant="standard" />
+              ))}
+            </div>
+          </section>
+        )}
 
-      {specialCoverage.length > 0 && (
-        <section className="en-section en-section--live" aria-label="Special Coverage">
-          <EnSectionHeading title="Special Coverage" />
-          <div className="en-grid en-grid--2">
-            {specialCoverage.map((it) => (
-              <EnArticleCard key={it.id} item={it} variant="standard" />
-            ))}
+        <div className="en-main">
+          <div>
+            {editorsPick.length > 0 && (
+              <section className="en-section" aria-label="Featured News">
+                <EnSectionHeading title="Featured News" />
+                <div className="en-grid">
+                  {editorsPick.map((it) => (
+                    <EnArticleCard key={it.id} item={it} variant="feature" />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {latestGrid.length > 0 && (
+              <section className="en-section" aria-label="Latest News">
+                <EnSectionHeading title="Latest News" />
+                <div className="en-grid">
+                  {latestGrid.map((it) => (
+                    <EnArticleCard key={it.id} item={it} variant="standard" />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {publicNews.length > 0 && (
+              <section className="en-section" aria-label="Public News">
+                <EnSectionHeading title="Public News" viewAllHref={enCategoryUrl(60, 'public-news')} />
+                <div className="en-divlist">
+                  {publicNews.slice(0, 5).map((it) => (
+                    <EnArticleCard key={it.id} item={it} variant="list" />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {articles.length > 0 && (
+              <section className="en-section" aria-label="Articles">
+                <EnSectionHeading title="Articles" viewAllHref={enCategoryUrl(61, 'articles')} />
+                <div className="en-grid en-grid--2">
+                  {articles.slice(0, 4).map((it) => (
+                    <EnArticleCard key={it.id} item={it} variant="feature" />
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
-        </section>
-      )}
 
-      <div className="en-main">
-        <div>
-          {editorsPick.length > 0 && (
-            <section className="en-section" aria-label="Featured News">
-              <EnSectionHeading title="Featured News" />
-              <div className="en-grid">
-                {editorsPick.map((it) => (
-                  <EnArticleCard key={it.id} item={it} variant="feature" />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {latestGrid.length > 0 && (
-            <section className="en-section" aria-label="Latest News">
-              <EnSectionHeading title="Latest News" />
-              <div className="en-grid">
-                {latestGrid.map((it) => (
-                  <EnArticleCard key={it.id} item={it} variant="standard" />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {publicNews.length > 0 && (
-            <section className="en-section" aria-label="Public News">
-              <EnSectionHeading title="Public News" viewAllHref={enCategoryUrl(60, 'public-news')} />
-              <div className="en-divlist">
-                {publicNews.slice(0, 5).map((it) => (
-                  <EnArticleCard key={it.id} item={it} variant="list" />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {articles.length > 0 && (
-            <section className="en-section" aria-label="Articles">
-              <EnSectionHeading title="Articles" viewAllHref={enCategoryUrl(61, 'articles')} />
-              <div className="en-grid en-grid--2">
-                {articles.slice(0, 4).map((it) => (
-                  <EnArticleCard key={it.id} item={it} variant="feature" />
-                ))}
-              </div>
-            </section>
-          )}
+          <EnSidebar mostRead={mostRead} />
         </div>
-
-        <EnSidebar mostRead={mostRead} />
       </div>
     </div>
   );
