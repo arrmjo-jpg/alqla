@@ -54,6 +54,20 @@
 }
 @media (max-width: 1460px) { .en-skin { border-left: none; border-right: none; } }
 
+/* globals.css forces `*, ::before, ::after { font-family: Alilato-Medium... !important }`
+   site-wide. These two rules out-specificity that (`.en-skin *` > bare `*`) to actually apply
+   the Inter/Source-Serif pairing above — without touching the global rule (Arabic-site-wide,
+   out of scope here). Rule 2 must list `.en-prose` text descendants explicitly: the global rule
+   matches them directly too, so they don't just inherit serif from a fixed `.en-prose` parent. */
+.en-skin, .en-skin *, .en-skin *::before, .en-skin *::after { font-family: var(--en-font) !important; }
+.en-skin .en-display, .en-skin .en-h1, .en-skin .en-h2, .en-skin .en-h3,
+.en-skin .en-lead, .en-skin .en-quote, .en-skin .en-brand-name, .en-skin .en-footer-brandname,
+.en-skin .en-section-title, .en-skin .en-card__title, .en-skin .en-widget__head,
+.en-skin .en-prose, .en-skin .en-prose p, .en-skin .en-prose li, .en-skin .en-prose blockquote,
+.en-skin .en-prose h2, .en-skin .en-prose h3 {
+  font-family: var(--en-font-display) !important;
+}
+
 .en-skin *, .en-skin *::before, .en-skin *::after { box-sizing: border-box; }
 .en-skin a { color: inherit; text-decoration: none; }
 
