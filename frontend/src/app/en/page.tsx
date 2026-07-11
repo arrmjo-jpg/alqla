@@ -1,21 +1,21 @@
 import { EnArticleCard } from '@/components/en/en-article-card';
+import { EnEditorialColumn } from '@/components/en/en-editorial-column';
 import { EnEmpty } from '@/components/en/en-empty';
 import { EnFeaturedHero } from '@/components/en/en-featured-hero';
-import { EnLatestNews } from '@/components/en/en-latest-news';
 import { EnLatestUpdates } from '@/components/en/en-latest-updates';
-import { EnMostPopular } from '@/components/en/en-most-popular';
 import { EnSectionHeading } from '@/components/en/en-section-heading';
 import { EnSidebar } from '@/components/en/en-sidebar';
 import { EnTrendingBox } from '@/components/en/en-trending-box';
 import { AdZone } from '@/components/ads/ad-zone';
-import { getHomepageFeed, getLatestFeed, getMostReadFeed } from '@/lib/feed';
+import { enCategoryUrl } from '@/lib/en';
+import { getCategoryById, getCategoryFeed, getHomepageFeed, getLatestFeed, getMostReadFeed } from '@/lib/feed';
 
 // English News homepage. Reuses the locale-aware feed layer (locale='en') — no
 // backend changes. ISR = 300s safety ceiling; event-driven refresh via tags.
 export const revalidate = 300;
 
 export default async function EnHome() {
-  const [homepageData, mostRead, latestNews] = await Promise.all([
+  const [homepageData, mostRead, latestNews, articlesCategory] = await Promise.all([
     // Single aggregate call (hero/editors_pick/latest together) — AR's actual homepage data
     // source (getHomepageFeed), and avoids fetching the same articles via 3 separate requests.
     getHomepageFeed('en'),
@@ -23,12 +23,16 @@ export default async function EnHome() {
     // True chronological order — the same feed AR's sitewide ticker and dedicated /latest page
     // use. Distinct from homepageData.latest below (an is_header-flag pool, unrelated to recency).
     getLatestFeed('en'),
+    getCategoryById(61, 'en'),
   ]);
 
   const heroItems = homepageData.hero;
   const latest = homepageData.latest;
   const editorsPick = homepageData.editors_pick;
   const latestNewsGrid = latestNews.slice(0, 6);
+  // getCategoryFeed needs the slug getCategoryById just resolved, so this can't join the Promise.all
+  // above — same two-step category->slug->feed dependency EnLatestUpdates uses internally.
+  const articles = articlesCategory ? await getCategoryFeed(articlesCategory.slug, 6, 'en') : [];
 
   // Special Coverage — surfaces whatever's flagged is_live across the pools already being
   // fetched (no extra request). Hidden entirely when nothing is flagged, same as every other
@@ -67,17 +71,23 @@ export default async function EnHome() {
         )}
 
         <EnTrendingBox />
-      </div>
 
-      {/* Articles (categoryId=61) sits after Trending, as its own full-width section — Public
-          News stays in its earlier position above. Own internal container (like Public News),
-          so it renders outside en-container rather than nested inside it. */}
-      <EnLatestUpdates categoryId={61} fallbackTitle="Articles" />
-
-      <div className="en-container">
-        <EnMostPopular items={mostRead} />
-
-        <EnLatestNews items={latestNewsGrid} />
+        {/* Single shared 3-column editorial block (BBC/CNN-style) — Articles/Most Popular/Latest
+            News side by side on desktop, one column each, stacking to 1-col below lg (matching
+            TrendingLatestMostRead's own breakpoint). Not three separate full-width sections. */}
+        {(articles.length > 0 || mostRead.length > 0 || latestNewsGrid.length > 0) && (
+          <section className="en-section" aria-label="More News">
+            <div className="en-editorial-row">
+              <EnEditorialColumn
+                title="Articles"
+                items={articles}
+                viewAllHref={articlesCategory ? enCategoryUrl(articlesCategory.id, articlesCategory.slug) : null}
+              />
+              <EnEditorialColumn title="Most Popular" items={mostRead} showRank />
+              <EnEditorialColumn title="Latest News" items={latestNewsGrid} />
+            </div>
+          </section>
+        )}
 
         {specialCoverage.length > 0 && (
           <section className="en-section en-section--live" aria-label="Special Coverage">
