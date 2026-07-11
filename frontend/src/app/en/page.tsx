@@ -5,7 +5,6 @@ import { EnFeaturedHero } from '@/components/en/en-featured-hero';
 import { EnLatestUpdates } from '@/components/en/en-latest-updates';
 import { EnSectionHeading } from '@/components/en/en-section-heading';
 import { EnSidebar } from '@/components/en/en-sidebar';
-import { EnTrendingBox } from '@/components/en/en-trending-box';
 import { AdZone } from '@/components/ads/ad-zone';
 import { enCategoryUrl } from '@/lib/en';
 import { getCategoryById, getCategoryFeed, getHomepageFeed, getLatestFeed, getMostReadFeed } from '@/lib/feed';
@@ -70,11 +69,11 @@ export default async function EnHome() {
           </div>
         )}
 
-        <EnTrendingBox />
-
         {/* Single shared 3-column editorial block (BBC/CNN-style) — Articles/Most Popular/Latest
             News side by side on desktop, one column each, stacking to 1-col below lg (matching
-            TrendingLatestMostRead's own breakpoint). Not three separate full-width sections. */}
+            TrendingLatestMostRead's own breakpoint). Not three separate full-width sections.
+            Trending itself now lives in the sidebar (EnSidebar) instead of its own section here —
+            showing it in both places would be the same data twice. */}
         {(articles.length > 0 || mostRead.length > 0 || latestNewsGrid.length > 0) && (
           <section className="en-section" aria-label="More News">
             <div className="en-editorial-row">
@@ -114,7 +113,7 @@ export default async function EnHome() {
             )}
           </div>
 
-          <EnSidebar mostRead={mostRead} />
+          <EnSidebar />
         </div>
       </div>
     </div>

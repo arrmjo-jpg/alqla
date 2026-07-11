@@ -73,7 +73,10 @@
 }
 
 .en-skin *, .en-skin *::before, .en-skin *::after { box-sizing: border-box; }
-.en-skin a { color: inherit; text-decoration: none; }
+/* :where() keeps this reset's specificity at zero, so it never fights a component's own single-
+   class color rule (e.g. .en-secmore__btn's white-on-black) the way a plain ".en-skin a" selector
+   would — any link with its own color class wins automatically, no per-component override needed. */
+:where(.en-skin a) { color: inherit; text-decoration: none; }
 
 .en-container { width: 100%; max-width: var(--en-container); margin-inline: auto; padding-inline: 24px; }
 @media (max-width: 640px) { .en-container { padding-inline: 16px; } }
