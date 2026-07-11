@@ -56,7 +56,40 @@ disagrees.
 
 ---
 
-## 2. Practical implications
+## 2. Always measure Cold AND Warm — never just one
+
+**The trap**: measuring a page once and reporting that number as "the"
+response time. Every timing number has an implicit cache state attached to
+it, and reporting only the warm number overstates real-world performance.
+
+**Concrete example from this project**: an early performance pass reported
+the homepage at **8–14ms**. That number is real, but it's the response
+time *after ISR/Data Cache is already warm* — the case for most visitors
+most of the time, but not the case right after a deploy, right after a
+revalidate window expires, or for a page that isn't requested often enough
+to stay warm. Reporting only the warm number without saying so reads as
+more impressive than it is, and hides regressions that only show up on a
+cache miss.
+
+**The other direction matters too**: `/sport/team/1` measured **405ms on
+the first request, 51ms on the second** (`docs/roadmap/FRONTEND-RUNTIME-
+AUDIT.md`, section 1). Only measuring the second request would have missed
+an 8x gap entirely — in that specific case the gap was itself the evidence
+of a real bug (a duplicate fetch, fixed in IMPLEMENTATION-ROADMAP.md item
+3.7), not just cache physics.
+
+**Standing practice going forward**: when reporting a page's response
+time or including it in a performance comparison,
+1. State which cache state the number reflects (cold: first request after
+   a deploy/restart or after the revalidate window has expired; warm:
+   cache already populated).
+2. Where practical, measure both and report both — a single number without
+   its cache state is not a complete answer to "how fast is this page."
+3. A large cold/warm gap is itself a signal worth investigating (could be
+   a genuine N+1/duplicate-fetch bug, not just expected cache physics) -
+   don't dismiss it as "expected" without checking.
+
+## 3. Practical implications
 
 - **Don't infer freshness from the page file.** If you're debugging "why
   did this content update sooner than I expected," check the build's own
