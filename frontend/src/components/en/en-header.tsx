@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { socialEntries } from '@/components/layout/social-map';
+import { enSocialLabel } from '@/lib/en';
 import { getEnCategories } from '@/lib/en-data';
 import type { SiteSettings } from '@/lib/site-settings';
 
@@ -37,8 +38,8 @@ export async function EnHeader({ settings }: { settings: SiteSettings | null }) 
       <nav className="en-navbar" aria-label="Media & services">
         {socials.length > 0 && (
           <div className="en-navbar-socials">
-            {socials.map(({ key, url, Icon, label }) => (
-              <a key={key} href={url} target="_blank" rel="noopener noreferrer" aria-label={label} title={label}>
+            {socials.map(({ key, url, Icon }) => (
+              <a key={key} href={url} target="_blank" rel="noopener noreferrer" aria-label={enSocialLabel(key)} title={enSocialLabel(key)}>
                 <Icon className="size-3.5" aria-hidden />
               </a>
             ))}

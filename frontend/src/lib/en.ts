@@ -63,3 +63,21 @@ export function enDateTime(iso: string | null | undefined): string {
 export function enBadgeLabel(kind: 'live' | 'breaking'): string {
   return kind === 'live' ? 'Special Coverage' : 'Breaking';
 }
+
+const SOCIAL_LABELS: Record<string, string> = {
+  facebook: 'Facebook',
+  x: 'X',
+  twitter: 'X',
+  instagram: 'Instagram',
+  youtube: 'YouTube',
+  whatsapp: 'WhatsApp',
+  nabd: 'Nabd',
+};
+
+/** English label for a social-map key (socialEntries() in social-map.ts always returns Arabic
+ *  labels — فيسبوك/إكس/etc — regardless of locale). Falls back to the key itself (still English
+ *  characters, just less polished) rather than the Arabic label if a new platform is ever added
+ *  to SOCIAL there before this map is updated. */
+export function enSocialLabel(key: string): string {
+  return SOCIAL_LABELS[key] ?? key;
+}
