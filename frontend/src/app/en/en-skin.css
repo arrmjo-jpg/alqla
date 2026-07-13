@@ -527,8 +527,12 @@ a.en-localnews-item__cat:hover { text-decoration: underline; }
    headline), which the fixed-width share buttons squeeze to zero width on small screens. */
 .en-breaking-marquee { display: none; flex: 1; min-width: 0; height: 100%; align-items: center; overflow: hidden; }
 @media (max-width: 768px) {
-  .en-breaking-stage, .en-breaking-share { display: none; }
+  .en-breaking-stage, .en-breaking-share, .en-breaking-close { display: none; }
   .en-breaking-marquee { display: flex; }
+  /* The white "Breaking" badge's 2.5rem side padding is desktop-sized — it eats too much of a
+     narrow mobile bar, leaving less room than it should for the marquee. */
+  .en-breaking-badge { padding: 0 1rem; }
+  .en-breaking-badge-text { font-size: 1.1rem; }
 }
 .en-breaking-marquee-track { display: inline-flex; align-items: center; white-space: nowrap; will-change: transform; backface-visibility: hidden; animation: en-ticker-move 45s linear infinite; }
 .en-breaking-marquee:hover .en-breaking-marquee-track,

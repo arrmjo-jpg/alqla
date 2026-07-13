@@ -1069,11 +1069,20 @@
 }
 @media (max-width: 768px) {
   .qalah-skin .breaking-stage,
-  .qalah-skin .breaking-share {
+  .qalah-skin .breaking-share,
+  .qalah-skin .breaking-close {
     display: none;
   }
   .qalah-skin .breaking-marquee {
     display: flex;
+  }
+  /* الشارة البيضاء «عاجل»: الحشوة الجانبيّة 2.5rem (٤٠بكسل) مناسبة لسطح المكتب لكنها تلتهم مساحة
+     كبيرة من شريط ضيّق على الجوّال، فتترك للتكير المتحرّك مساحة أقلّ ممّا ينبغي. */
+  .qalah-skin .breaking-badge {
+    padding: 0 1rem;
+  }
+  .qalah-skin .breaking-badge-text {
+    font-size: 1.1rem;
   }
 }
 .qalah-skin .breaking-marquee-track {
