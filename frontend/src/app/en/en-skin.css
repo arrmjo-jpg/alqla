@@ -625,7 +625,7 @@ a.en-localnews-item__cat:hover { text-decoration: underline; }
 .en-newsticker__controls { display: flex; flex-shrink: 0; align-items: center; gap: 6px; border-left: 1px solid var(--en-line); padding-inline: 16px; }
 @media (min-width: 640px) { .en-newsticker__controls { padding-inline-end: 24px; } }
 @media (min-width: 768px) { .en-newsticker__controls { padding-inline-end: 32px; } }
-.en-newsticker__btn { display: flex; height: 28px; width: 28px; align-items: center; justify-content: center; border: 0; background: var(--en-primary); color: #fff; cursor: pointer; transition: background .2s ease; }
+.en-newsticker__btn { display: flex; height: 28px; width: 28px; align-items: center; justify-content: center; border: 0; background: #C9A227; color: #fff; cursor: pointer; transition: background .2s ease; }
 .en-newsticker__btn:hover { background: #000; }
 
 /* Continuous marquee of every headline — mobile only. The typewriter headline + controls get

@@ -145,7 +145,7 @@ export function NewsTicker({ items }: { items: TickerItem[] }) {
         {/* زر السابق */}
         <button
           onClick={handlePrev}
-          className="flex size-7 items-center justify-center bg-primary text-white transition-colors hover:bg-black cursor-pointer border-0"
+          className="flex size-7 items-center justify-center bg-[#C9A227] text-white transition-colors hover:bg-black cursor-pointer border-0"
           title="السابق"
           aria-label="السابق"
         >
@@ -155,7 +155,7 @@ export function NewsTicker({ items }: { items: TickerItem[] }) {
         {/* زر التشغيل / الإيقاف المؤقت */}
         <button
           onClick={togglePlay}
-          className="flex size-7 items-center justify-center bg-primary text-white transition-colors hover:bg-black cursor-pointer border-0"
+          className="flex size-7 items-center justify-center bg-[#C9A227] text-white transition-colors hover:bg-black cursor-pointer border-0"
           title={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
           aria-label={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
         >
@@ -165,7 +165,7 @@ export function NewsTicker({ items }: { items: TickerItem[] }) {
         {/* زر التالي */}
         <button
           onClick={handleNext}
-          className="flex size-7 items-center justify-center bg-primary text-white transition-colors hover:bg-black cursor-pointer border-0"
+          className="flex size-7 items-center justify-center bg-[#C9A227] text-white transition-colors hover:bg-black cursor-pointer border-0"
           title="التالي"
           aria-label="التالي"
         >
