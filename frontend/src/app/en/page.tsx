@@ -42,8 +42,9 @@ export default async function EnHome() {
   const specialCoverage = [...latest, ...editorsPick].filter((it) => it.badge?.kind === 'live').slice(0, 4);
 
   const nothing = heroItems.length === 0 && latest.length === 0;
-  // Same is_squares flag + slice(0,10) AR's TopNewsCarousel uses, off data already fetched above.
-  const topNews = latest.filter((it) => it.is_squares).slice(0, 10);
+  // Same is_squares flag AR's TopNewsCarousel uses, off data already fetched above — every
+  // matching item, paginated by the carousel itself rather than truncated to a fixed count.
+  const topNews = latest.filter((it) => it.is_squares);
 
   return (
     <div>
