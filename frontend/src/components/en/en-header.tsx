@@ -4,7 +4,9 @@ import { socialEntries } from '@/components/layout/social-map';
 import { EN_MEDIA_NAV, enSocialLabel } from '@/lib/en';
 import { getEnCategories } from '@/lib/en-data';
 import type { SiteSettings } from '@/lib/site-settings';
+import { EnHeaderAuth } from './en-header-auth';
 import { EnMenu } from './en-menu';
+import { EnSearchModal } from './en-search-modal';
 
 // English masthead (LTR), structured like the Arabic one:
 //  • red top navbar: social (start) + media/service links (center) + Arabic switch (end)
@@ -48,6 +50,25 @@ export async function EnHeader({ settings }: { settings: SiteSettings | null }) 
 
       <header className="en-header">
         <div className="en-container">
+          {/* Mobile-only row (hidden ≥1024px, matching AR's .header-top-row): the red .en-navbar
+              above — which normally carries socials — is itself hidden on mobile, so this row is
+              the only place socials + search + account/notifications appear there. */}
+          <div className="en-header-top-row">
+            <div className="en-qn-mobile-actions">
+              <EnSearchModal />
+              <EnHeaderAuth />
+            </div>
+            {socials.length > 0 && (
+              <div className="en-header-socials">
+                {socials.map(({ key, url, Icon }) => (
+                  <a key={key} href={url} target="_blank" rel="noopener noreferrer" aria-label={enSocialLabel(key)} title={enSocialLabel(key)}>
+                    <Icon className="size-4" aria-hidden />
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="en-header-row">
             <div className="en-header-logo-group">
               <EnMenu categories={cats} social={settings?.social} />

@@ -133,6 +133,31 @@
   .en-navbar { display: none; }
 }
 
+/* Mobile-only compensation row (fork of AR's .header-top-row) — hidden ≥1024px, since .en-navbar
+   above (which carries socials on desktop) is itself hidden below that same breakpoint. */
+.en-header-top-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,.05); padding-bottom: 0.5rem; margin-bottom: 0.5rem; }
+@media (min-width: 1024px) { .en-header-top-row { display: none; } }
+.en-qn-mobile-actions { display: flex; align-items: center; gap: 0.75rem; }
+.en-header-socials { display: flex; gap: 0.5rem; }
+.en-header-socials a { width: 30px; height: 30px; border-radius: 50%; background: transparent; border: 1.5px solid var(--en-primary); display: flex; align-items: center; justify-content: center; transition: var(--transition-smooth); color: var(--en-primary); }
+.en-header-socials a:hover { background: var(--en-primary); color: #fff; transform: scale(1.1); }
+
+.en-header-icon-btn { background: none; border: none; cursor: pointer; color: #333; position: relative; display: flex; align-items: center; justify-content: center; transition: var(--transition-smooth); }
+.en-header-icon-btn:hover { color: var(--en-primary); }
+.en-red-badge { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: var(--en-primary); border-radius: 50%; }
+.en-header-user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid rgba(0,0,0,.1); }
+
+/* Mobile search modal (fork of AR's .qn-search-*) — a plain conditional render, not a Radix
+   portal, so var(--en-*) resolves normally here. */
+.en-qn-search-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 200; display: flex; align-items: flex-start; justify-content: center; padding: 5.5rem 1rem 1rem; }
+.en-qn-search-panel { position: relative; background: #fff; width: 100%; max-width: 560px; border-radius: 16px; padding: 1.25rem; box-shadow: 0 24px 60px rgba(0,0,0,.35); }
+.en-qn-search-form { display: flex; gap: 0.5rem; align-items: center; }
+.en-qn-search-field { flex: 1; border: 1px solid rgba(0,0,0,.12); border-radius: 9999px; padding: 0.8rem 1.25rem; font-size: 1rem; outline: none; color: #111; font-family: var(--en-font); }
+.en-qn-search-field:focus { border-color: var(--en-primary); box-shadow: 0 0 0 3px rgba(185,0,0,.12); }
+.en-qn-search-submit { background: var(--en-primary); color: #fff; border: none; border-radius: 9999px; padding: 0.8rem 1.6rem; font-weight: 700; cursor: pointer; font-family: var(--en-font); white-space: nowrap; }
+.en-qn-search-submit:hover { background: var(--en-primary-hover); }
+.en-qn-search-close { position: absolute; top: -2.75rem; inset-inline-end: 0; background: rgba(255,255,255,.15); color: #fff; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1rem; }
+
 .en-header { background: #fff; border-bottom: 1px solid rgba(0, 0, 0, 0.08); padding: 0.5rem 0 0.9rem; }
 .en-header-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .en-header-logo-group { display: flex; align-items: center; gap: 12px; }
