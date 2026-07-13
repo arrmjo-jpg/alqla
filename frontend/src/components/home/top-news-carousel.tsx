@@ -79,13 +79,6 @@ export function TopNewsCarousel({ items }: { items: FeedItem[] }) {
   return (
     <section className="my-[5px] border-y border-black/5 py-6" dir="rtl" aria-label="سلايدر أبرز الأخبار">
       <Container>
-        <div className="mb-6 flex items-center justify-between gap-3 border-b border-black/5 pb-4">
-          <div className="flex items-center gap-3">
-            <span className="block h-7 w-1 rounded-full bg-primary" aria-hidden />
-            <h2 className="text-xl font-black tracking-tight text-fg md:text-2xl">أبرز الأخبار</h2>
-          </div>
-        </div>
-
         <div
           className="relative"
           onMouseEnter={() => setPaused(true)}

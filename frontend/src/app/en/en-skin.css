@@ -855,9 +855,6 @@ a.en-opinion-photo__name:hover { color: rgba(255,255,255,.8); }
    too. LTR here, so scrollLeft uses the plain positive-going range (AR's version needs to negate
    it — Chromium's RTL scrollLeft convention is 0..-(scrollWidth-clientWidth)). */
 .en-topnews-section { margin-block: 5px; padding-block: 1.5rem; border-block: 1px solid var(--en-line); }
-.en-topnews-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--en-line); }
-.en-topnews-header__bar { display: block; width: 4px; height: 28px; border-radius: 9999px; background: var(--en-primary); }
-.en-topnews-header__title { font-family: var(--en-font-display); font-size: 1.3rem; font-weight: 800; color: var(--en-ink); }
 
 .en-topnews-viewport { position: relative; }
 .en-topnews-arrow { position: absolute; top: 50%; z-index: 20; display: flex; height: 40px; width: 40px; -webkit-transform: translateY(-50%); transform: translateY(-50%); align-items: center; justify-content: center; border-radius: 9999px; background: #fff; color: var(--en-primary); box-shadow: 0 4px 12px rgba(0,0,0,.12); border: 1px solid var(--en-line); cursor: pointer; transition: var(--transition-smooth); }

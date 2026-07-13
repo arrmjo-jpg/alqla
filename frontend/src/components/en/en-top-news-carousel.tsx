@@ -73,11 +73,6 @@ export function EnTopNewsCarousel({ items }: { items: FeedItem[] }) {
   return (
     <section className="en-topnews-section" aria-label="Top news carousel">
       <div className="en-container">
-        <div className="en-topnews-header">
-          <span className="en-topnews-header__bar" aria-hidden />
-          <h2 className="en-topnews-header__title">Top News</h2>
-        </div>
-
         <div className="en-topnews-viewport" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onTouchStart={() => setPaused(true)}>
           {pageCount > 1 && (
             <>
