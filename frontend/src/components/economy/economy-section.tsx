@@ -34,7 +34,7 @@ export async function EconomySection() {
       className="mt-6 text-white sm:mt-8"
       dir="rtl"
       aria-labelledby="economy-heading"
-      style={{ backgroundColor: '#850000' }}
+      style={{ backgroundColor: '#b90000' }}
     >
       <Container className="py-8 sm:py-10">
         {/* شريط بورصة عمّان (ضمن حاوية الاقتصاد، أعلى القسم) — المصدر الرسميّ ticker_feeds */}

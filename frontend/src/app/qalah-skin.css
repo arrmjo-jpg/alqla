@@ -7,7 +7,7 @@
 
 .qalah-skin {
   /* متغيّرات التصميم الأصليّة */
-  --primary-color: #850000;
+  --primary-color: #b90000;
   --primary-hover: #a60000;
   --primary-light: #c20000;
   --bg-darker: #080808;
@@ -22,7 +22,7 @@
 
   /* إعادة وسم هويّة الموقع العامّ داخل الكسوة فقط (يلتقطها كل utilities الموجودة:
      text-primary / bg-primary …) — أحمر التصميم الجديد + خط Cairo. */
-  --color-primary: #850000;
+  --color-primary: #b90000;
   --color-primary-foreground: #ffffff;
   --font-display: var(--font-cairo), system-ui, sans-serif;
   --font-heading: var(--font-cairo), system-ui, sans-serif;

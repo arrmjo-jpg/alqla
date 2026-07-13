@@ -1,7 +1,7 @@
 /* ============================================================================
    AlphaCMS — English edition skin (LTR). A distinct international-newsroom
    identity — NOT a mirror of the Arabic layout, NOT a copy of any single
-   outlet — built on the Qalah brand: primary red #850000 stays the
+   outlet — built on the Qalah brand: primary red #b90000 stays the
    through-line accent (kickers, rules, hover states) but is used sparingly
    as an accent rather than as large solid fills, matching how BBC/CNN/
    Reuters use their own brand colour. Scoped under `.en-skin`.
@@ -476,7 +476,7 @@ a.en-localnews-item__cat:hover { text-decoration: underline; }
    grid column (alongside writer-carousel columns that have no EN category equivalent); kept at
    the same ~400px width standalone rather than stretching it full-width, which would break the
    proportions the fixed-size thumbnails/rows were designed for. */
-.en-trending { max-width: 420px; margin-block: 24px; overflow: hidden; color: #fff; border-radius: 16px; background: linear-gradient(160deg, #a30b13 0%, #850000 58%, #6b0000 100%); box-shadow: 0 8px 20px rgba(0,0,0,.12); }
+.en-trending { max-width: 420px; margin-block: 24px; overflow: hidden; color: #fff; border-radius: 16px; background: linear-gradient(160deg, #a30b13 0%, #b90000 58%, #6b0000 100%); box-shadow: 0 8px 20px rgba(0,0,0,.12); }
 .en-trending__head { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,.15); padding: 12px 16px; }
 .en-trending__icon { display: flex; flex-shrink: 0; width: 28px; height: 28px; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,.15); }
 .en-trending__title { font-family: var(--en-font-display); font-weight: 800; font-size: 1.1rem; }

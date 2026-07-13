@@ -67,7 +67,7 @@ export function QalahMenu({
         {/* رأس مُهيّب بتدرّج الهويّة + دوائر زخرفيّة شفّافة + زرّ إغلاق مصقول */}
         <div
           className="relative shrink-0 overflow-hidden px-5 py-5 text-white"
-          style={{ background: 'linear-gradient(135deg, #850000 0%, #5c0000 100%)' }}
+          style={{ background: 'linear-gradient(135deg, #b90000 0%, #5c0000 100%)' }}
         >
           <span className="pointer-events-none absolute -end-8 -top-10 size-28 rounded-full bg-white/[0.06]" aria-hidden />
           <span className="pointer-events-none absolute end-12 top-9 size-16 rounded-full bg-white/[0.05]" aria-hidden />

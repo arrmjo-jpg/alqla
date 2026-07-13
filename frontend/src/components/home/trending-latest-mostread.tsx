@@ -185,7 +185,7 @@ function TrendingBox({ items }: { items: FeedItem[] }) {
   return (
     <div
       className="flex h-full flex-col overflow-hidden text-white shadow-md"
-      style={{ background: 'linear-gradient(160deg, #a30b13 0%, #850000 58%, #6b0000 100%)', borderRadius: '16px' }}
+      style={{ background: 'linear-gradient(160deg, #a30b13 0%, #b90000 58%, #6b0000 100%)', borderRadius: '16px' }}
     >
       <div className="flex items-center gap-2 border-b border-white/15 px-4 py-3">
         <span className="flex size-7 shrink-0 items-center justify-center bg-white/15" style={{ borderRadius: '9999px' }} aria-hidden>
