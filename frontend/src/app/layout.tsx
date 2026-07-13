@@ -75,7 +75,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           try {
             if (localStorage.getItem('desktop_view') === 'true') {
               var meta = document.querySelector('meta[name="viewport"]');
-              var content = 'width=1200, initial-scale=0.2, shrink-to-fit=yes';
+              var content = 'width=1280, initial-scale=0.2, shrink-to-fit=yes';
               if (meta) {
                 meta.setAttribute('content', content);
               } else {

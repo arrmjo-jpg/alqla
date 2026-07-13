@@ -15,7 +15,7 @@ import { MobileTopToggleBanner } from '@/components/layout/desktop-view-toggle';
 import { NetworkGrid } from '@/components/home/network-grid';
 import { TopNewsCarousel } from '@/components/home/top-news-carousel';
 
-// قشرة الموقع العامّ — تصميم «القلعة نيوز» الجديد، مُنطّق داخل .qalah-skin (إطار 1450px + هويّة).
+// قشرة الموقع العامّ — تصميم «القلعة نيوز» الجديد، مُنطّق داخل .qalah-skin (إطار 1280px + هويّة).
 // الإعلانات وقوائم الموبايل ومودال الكوكيز تبقى كما كانت. لوحة /account خارج هذه المجموعة بقالبها الخاصّ.
 // التراجع للقشرة القديمة: استبدل QalahNavbar/QalahHeader/QalahFooter بـ SiteHeader/SectionsBar/SiteFooter
 // واحذف صنفَي qalah-skin/site-frame من الغلاف (المكوّنات القديمة ما زالت بمكانها).

@@ -43,9 +43,9 @@ export function DesktopViewProvider({ children }: { children: React.ReactNode })
     }
     
     if (forceDesktop) {
-      // Force viewport width to 1200px (standard site-frame desktop width)
+      // Force viewport width to 1280px (matches the site-frame's desktop width)
       // This triggers lg: CSS grid breakpoints on mobile browsers and makes browser scale it down
-      meta.setAttribute('content', 'width=1200, initial-scale=0.2, shrink-to-fit=yes');
+      meta.setAttribute('content', 'width=1280, initial-scale=0.2, shrink-to-fit=yes');
     } else {
       // Restore standard responsive mobile viewport
       meta.setAttribute('content', 'width=device-width, initial-scale=1');

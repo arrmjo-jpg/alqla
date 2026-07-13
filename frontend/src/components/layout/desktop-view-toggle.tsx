@@ -41,25 +41,25 @@ export function DesktopViewToggle({ className = '' }: DesktopViewToggleProps) {
 }
 
 // Mobile top banner that remains visible in full desktop mode on mobile
-// Features exact layout scale compensation (3.2x multiplier) to match physical dimensions perfectly in 1200px viewport
+// Features exact layout scale compensation (~3.41x multiplier) to match physical dimensions perfectly in 1280px viewport
 export function MobileTopToggleBanner() {
   const { isDesktopView, toggleDesktopView, showToggle } = useDesktopView();
 
   if (!showToggle) return null;
 
-  // 3.2x Scale compensation values
+  // ~3.41x scale compensation values (1280px forced viewport / 375px reference mobile width)
   const containerClass = isDesktopView
-    ? "w-full bg-surface-2 border-b-[3.5px] border-border/80 px-12 py-8 flex justify-center items-center print:hidden select-none"
+    ? "w-full bg-surface-2 border-b-[3.75px] border-border/80 px-[51px] py-[34px] flex justify-center items-center print:hidden select-none"
     : "w-full bg-surface-2 border-b border-border/80 px-4 py-2.5 flex justify-center items-center print:hidden select-none";
 
   const buttonClass = isDesktopView
-    ? "w-full text-center py-8 text-[44px] leading-none font-extrabold inline-flex items-center justify-center gap-6 rounded-none border-[3.5px] border-border/80 bg-surface px-12 text-fg transition-all hover:bg-surface-3 hover:border-primary/50 focus-visible:outline-none"
+    ? "w-full text-center py-[34px] text-[47px] leading-none font-extrabold inline-flex items-center justify-center gap-[26px] rounded-none border-[3.75px] border-border/80 bg-surface px-[51px] text-fg transition-all hover:bg-surface-3 hover:border-primary/50 focus-visible:outline-none"
     : "w-full text-center py-2.5 text-sm font-extrabold inline-flex items-center justify-center gap-2 rounded-none border border-border/80 bg-surface px-4 text-fg transition-all hover:bg-surface-3 hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-primary";
 
-  const iconWidth = isDesktopView ? 52 : 16;
-  const iconHeight = isDesktopView ? 52 : 16;
-  const iconClass = isDesktopView ? "w-[52px] h-[52px] text-primary shrink-0" : "size-4 text-primary shrink-0";
-  const strokeWidth = isDesktopView ? "8" : "2.5";
+  const iconWidth = isDesktopView ? 55 : 16;
+  const iconHeight = isDesktopView ? 55 : 16;
+  const iconClass = isDesktopView ? "w-[55px] h-[55px] text-primary shrink-0" : "size-4 text-primary shrink-0";
+  const strokeWidth = isDesktopView ? "8.5" : "2.5";
 
   return (
     <div className={containerClass}>

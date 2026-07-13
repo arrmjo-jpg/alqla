@@ -32,9 +32,9 @@
   font-family: var(--font-cairo), sans-serif;
 }
 
-/* إطار الموقع 1450px بحدود حمراء جانبيّة (توقيع التصميم) */
+/* إطار الموقع 1280px بحدود حمراء جانبيّة (توقيع التصميم) */
 .qalah-skin.site-frame {
-  width: 1450px;
+  width: 1280px;
   max-width: 100%;
   margin: 0 auto;
   border-left: 5px solid var(--primary-color);
@@ -48,10 +48,10 @@
 }
 
 /* تمديد المحتوى الداخليّ لعرض الإطار: كل المحتوى كان محصورًا بـ max-w-[1200px]
-   (مكوّن Container + الاستخدامات المضمّنة). داخل الكسوة نرفع السقف ليملأ الإطار 1450px،
+   (مكوّن Container + الاستخدامات المضمّنة). داخل الكسوة نرفع السقف ليملأ الإطار 1280px،
    مع هامش بسيط عن الحدّين الأحمرين. الحشوة الجانبيّة للحاويات (px) تبقى كما هي. */
 .qalah-skin .max-w-\[1200px\] {
-  max-width: 1410px;
+  max-width: 1240px;
 }
 
 /* ─── الشريط العلويّ الأسود (Navbar) ─────────────────────────────────────── */
@@ -738,7 +738,7 @@
 .qalah-skin .scroll-to-top-btn {
   position: fixed;
   bottom: 2rem;
-  right: calc((100vw - 1450px) / 2 + 2rem);
+  right: calc((100vw - 1280px) / 2 + 2rem);
   width: 45px;
   height: 45px;
   border-radius: 50%;
@@ -758,7 +758,7 @@
   transform: translateY(-5px);
   box-shadow: 0 8px 25px rgba(133, 0, 0, 0.55);
 }
-@media (max-width: 1450px) {
+@media (max-width: 1280px) {
   .qalah-skin .scroll-to-top-btn { right: 2rem; }
 }
 /* رفع الزرّ فوق شريط العاجل كي لا يلامسه. الشريط السفليّ يظهر على ≥768px فقط (تحتها مودال منبثق). */
@@ -778,7 +778,7 @@
 .qalah-skin .header-socials a svg,
 .qalah-skin .social-icon-btn svg { display: block; flex-shrink: 0; }
 
-/* ─── تجاوب الموبايل (التصميم الأصليّ لسطح المكتب 1450px) ─────────────────── */
+/* ─── تجاوب الموبايل (التصميم الأصليّ لسطح المكتب 1280px) ─────────────────── */
 @media (max-width: 768px) {
   /* الشريط الأسود العلويّ: سكرول أفقيّ بدل الازدحام/الالتفاف */
   .qalah-skin .navbar {

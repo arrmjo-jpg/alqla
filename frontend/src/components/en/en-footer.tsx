@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { socialEntries } from '@/components/layout/social-map';
+import { EnDesktopViewToggle } from '@/components/en/en-desktop-view-toggle';
 import { enCategoryUrl, enSocialLabel, enUrl, looksArabic } from '@/lib/en';
 import { getEnCategories } from '@/lib/en-data';
 import type { SiteSettings } from '@/lib/site-settings';
@@ -157,6 +158,10 @@ export async function EnFooter({ settings }: { settings: SiteSettings | null }) 
               <p className="en-footer-muted">Not available yet</p>
             )}
           </nav>
+        </div>
+
+        <div className="en-footer-toggle-wrap">
+          <EnDesktopViewToggle className="en-footer-toggle-btn" />
         </div>
 
         <div className="en-footer-bottom">
