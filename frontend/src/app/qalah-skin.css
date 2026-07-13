@@ -879,7 +879,7 @@
   white-space: nowrap;
   will-change: transform;
   backface-visibility: hidden;
-  animation: news-ticker-move 40s linear infinite;
+  animation: news-ticker-move 70s linear infinite;
 }
 .qalah-skin .news-ticker-marquee:hover .news-ticker-track,
 .qalah-skin .news-ticker-marquee:focus-within .news-ticker-track {
@@ -1064,7 +1064,7 @@
   white-space: nowrap;
   will-change: transform;
   backface-visibility: hidden;
-  animation: news-ticker-move 25s linear infinite;
+  animation: news-ticker-move 45s linear infinite;
 }
 .qalah-skin .breaking-marquee:hover .breaking-marquee-track,
 .qalah-skin .breaking-marquee:focus-within .breaking-marquee-track {
