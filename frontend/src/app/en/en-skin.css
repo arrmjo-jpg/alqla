@@ -126,10 +126,11 @@
 .en-navbar-lang { grid-column: 3; justify-self: end; }
 .en-navbar-lang a { color: rgba(255, 255, 255, 0.92); font-size: 0.95rem; font-weight: 700; padding: 0.4rem 0.85rem; border-radius: 6px; transition: var(--transition-smooth); }
 .en-navbar-lang a:hover { background: #000; color: #fff; }
+/* على الجوّال/التابلت (أقلّ من 1024): لا حاجة للشريط الأحمر العلويّ — الوسائط وتبديل اللغة
+   موجودان الآن في القائمة الجانبيّة (EnMenu) وشريط التنقّل السفليّ (EnMobileBottomNav)، تمامًا
+   مثل إخفاء .navbar المكافئ في AR بنفس نقطة التوقّف. */
 @media (max-width: 1023px) {
-  .en-navbar { grid-template-columns: 1fr auto; padding: 0 1rem; }
-  .en-navbar-nav { grid-column: auto; justify-content: flex-start; gap: 1.1rem; overflow-x: auto; }
-  .en-navbar-nav::-webkit-scrollbar { display: none; }
+  .en-navbar { display: none; }
 }
 
 .en-header { background: #fff; border-bottom: 1px solid rgba(0, 0, 0, 0.08); padding: 0.5rem 0 0.9rem; }
