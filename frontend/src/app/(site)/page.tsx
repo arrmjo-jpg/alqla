@@ -54,8 +54,9 @@ export default async function Home() {
   return (
     <>
       <FeaturedHero items={heroItems} />
-      {/* إعلان كبير أسفل الهيرو مباشرةً (aalan_kbyr_asfl_alhyrw_1410) — إعلان واحد، الرئيسيّة فقط. */}
-      <AdZone zone="aalan_kbyr_asfl_alhyrw_1410" className="mt-2 flex justify-center px-4" />
+      {/* إعلان كبير أسفل الهيرو — جوّال فقط (بلا تغيير)؛ على سطح المكتب انتقل داخل FeaturedHero
+          نفسها، بجانب الكاروسيل الجديد (٣ أعمدة) بدل تحته. */}
+      <AdZone zone="aalan_kbyr_asfl_alhyrw_1410" className="mt-2 flex justify-center px-4 lg:hidden" />
       {/* زوج إعلانات أسفل السلايدر مباشرةً — جمب بعض على المتصفّح، تحت بعض على الجوّال. */}
       <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-2 px-4 sm:flex-row sm:px-6 lg:px-8">
         <AdZone zone="aalan_asfl_alslaydr_mbarshraymyn" className="mt-1 flex justify-center sm:flex-1" />
