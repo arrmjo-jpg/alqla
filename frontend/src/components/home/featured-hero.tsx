@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from 'next/link';
 
 import { AdZone } from '@/components/ads/ad-zone';
@@ -48,18 +49,19 @@ export function FeedBadge({ badge }: { badge: FeedItem['badge'] }) {
   );
 }
 
-// اسم القسم كشارة حمراء — رابط مستقلّ يفتح القسم (فوق رابط الخبر) إن توفّر slug.
+// اسم القسم كشارة ذهبيّة — رابط مستقلّ يفتح القسم (فوق رابط الخبر) إن توفّر slug.
 export function CategoryChip({ name, href }: { name: string | null; href: string | null }) {
   if (!name) return null;
-  const cls = 'bg-primary px-2 py-0.5 text-caption font-bold text-primary-foreground';
+  const cls = 'px-2 py-0.5 text-caption font-bold text-black';
+  const style = { background: '#C9A227' } as React.CSSProperties;
   if (href) {
     return (
-      <Link href={href} className={`pointer-events-auto relative transition-colors hover:bg-primary/90 ${cls}`}>
+      <Link href={href} className={`pointer-events-auto relative transition-opacity hover:opacity-90 ${cls}`} style={style}>
         {name}
       </Link>
     );
   }
-  return <span className={cls}>{name}</span>;
+  return <span className={cls} style={style}>{name}</span>;
 }
 
 // حالة فارغة صادقة (عزل فشل الكتلة، لا تلفيق) — لا تُترك الصفحة فارغة.

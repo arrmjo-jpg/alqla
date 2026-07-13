@@ -68,6 +68,24 @@
   top: 0;
   z-index: 100;
   padding: 0 2rem;
+  overflow: hidden;
+}
+.qalah-skin .navbar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent 0%, rgba(201,162,39,0.35) 50%, transparent 100%);
+  animation: navbar-shimmer-ar 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes navbar-shimmer-ar {
+  0%   { left: -60%; }
+  60%  { left: 120%; }
+  100% { left: 120%; }
 }
 .qalah-skin .navbar-nav {
   display: flex;
@@ -79,6 +97,8 @@
   justify-content: center;
   margin: 0;
   padding: 0;
+  position: relative;
+  z-index: 2;
 }
 /* أيقونات السوشال في الشريط الأسود العلويّ (جهة البداية، ديسكتوب) — outline فاتح احترافيّ */
 .qalah-skin .navbar-socials {
@@ -128,22 +148,26 @@
   background-color: #000000;
   color: #ffffff;
 }
-/* رابط اللغة (English) — نهاية الشريط، بنفس نمط الروابط (hover أسود/أبيض) */
+/* رابط اللغة (English) — خلفية سوداء + نص ذهبي ثابت */
 .qalah-skin .navbar-lang {
   justify-self: end;
+  position: relative;
+  z-index: 2;
 }
 .qalah-skin .navbar-lang a {
-  color: rgba(255, 255, 255, 0.92);
+  position: relative;
+  display: inline-block;
+  color: #C9A227;
   text-decoration: none;
   font-size: 1.05rem;
-  font-weight: 600;
-  padding: 0.4rem 0.75rem;
-  border-radius: 6px;
-  transition: var(--transition-smooth);
+  font-weight: 700;
+  padding: 0.35rem 0.85rem;
+  border-radius: 4px;
+  background-color: #000;
+  transition: opacity 0.2s;
 }
 .qalah-skin .navbar-lang a:hover {
-  background-color: #000000;
-  color: #ffffff;
+  opacity: 0.85;
 }
 
 /* ─── الهيدر الأبيض ───────────────────────────────────────────────────────── */

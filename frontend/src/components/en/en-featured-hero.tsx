@@ -1,73 +1,30 @@
-import Link from 'next/link';
-
-import { OptimizedImage } from '@/components/ui/optimized-image';
-import { enRelative, enUrl } from '@/lib/en';
+import { AdZone } from '@/components/ads/ad-zone';
 import type { FeedItem } from '@/lib/feed';
 
-import { EnFeedBadge } from './en-feed-badge';
+import { EnHeroDesktopCarousel } from './en-hero-desktop-carousel';
 import { EnHeroMobileCarousel } from './en-hero-mobile-carousel';
 
-// Fork of components/home/featured-hero.tsx — identical structure: lead card (50%, object-fill,
-// 500px desktop height) + 2x2 grid (50%, 250px each) on desktop, EnHeroMobileCarousel below
-// 1024px. Data source matches AR exactly: getHomepageFeed(locale).hero (is_featured articles).
+// Fork of components/home/featured-hero.tsx — identical 9+3 grid layout:
+// Mobile: swipe carousel (EnHeroMobileCarousel, below 1024px).
+// Desktop: 9 cols carousel + 3 cols ad (≥1024px), matching AR exactly.
 export function EnFeaturedHero({ items }: { items: FeedItem[] }) {
   if (items.length === 0) return <EnFeaturedHeroEmpty />;
 
-  const [lead, ...rest] = items;
-  const grid = rest.slice(0, 4);
-
   return (
     <div className="en-container" style={{ paddingBlock: 24 }}>
+      {/* Mobile: swipe carousel */}
       <EnHeroMobileCarousel items={items.slice(0, 5)} />
 
-      <div className="en-hero-desktop">
-        <div className="en-hero-desktop__lead">
-          <EnHeroCard item={lead} variant="lead" priority />
-        </div>
-        {grid.length > 0 && (
-          <div className="en-hero-desktop__grid">
-            {grid.map((item) => (
-              <EnHeroCard key={item.id} item={item} variant="grid" />
-            ))}
+      {/* Desktop (≥1024px): 9 cols carousel + 3 cols ad — same as AR */}
+      <div className="en-hero-desktop-new">
+        <div className="en-hero-desktop-grid">
+          <div className="en-hero-desktop-grid__carousel">
+            <EnHeroDesktopCarousel items={items.slice(0, 5)} />
           </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function EnHeroCard({ item, variant, priority = false }: { item: FeedItem; variant: 'lead' | 'grid'; priority?: boolean }) {
-  const isLead = variant === 'lead';
-  const href = enUrl(item.href);
-
-  return (
-    <div className={isLead ? 'en-herocard en-herocard--lead' : 'en-herocard en-herocard--grid'}>
-      <Link href={href} className="en-herocard__link" aria-label={item.title} />
-
-      <OptimizedImage
-        cover={item.cover}
-        src={item.image}
-        alt={item.imageAlt}
-        priority={priority}
-        sizes={isLead ? '(max-width: 1024px) 100vw, 66vw' : '(max-width: 1024px) 100vw, 33vw'}
-        className="en-herocard__img"
-      />
-
-      <div className="en-herocard__scrim" aria-hidden />
-
-      <EnFeedBadge badge={item.badge} />
-
-      <div className={isLead ? 'en-herocard__content en-herocard__content--lead' : 'en-herocard__content'}>
-        <div className="en-herocard__meta">
-          {item.category &&
-            (item.categoryHref ? (
-              <Link href={enUrl(item.categoryHref)} className="en-hero-chip">{item.category}</Link>
-            ) : (
-              <span className="en-hero-chip">{item.category}</span>
-            ))}
-          {item.publishedAt && <time dateTime={item.publishedAt} className="en-herocard__time">{enRelative(item.publishedAt)}</time>}
+          <div className="en-hero-desktop-grid__ad">
+            <AdZone zone="aalan_kbyr_asfl_alhyrw_1410" className="en-hero-ad" />
+          </div>
         </div>
-        <h3 className={isLead ? 'en-herocard__title en-herocard__title--lead' : 'en-herocard__title'}>{item.title}</h3>
       </div>
     </div>
   );

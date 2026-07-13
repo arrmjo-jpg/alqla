@@ -11,7 +11,7 @@ import type { FeedItem } from '@/lib/feed';
 // continuous scroll); that's superseded now that AR itself moved to this shared design. LTR here,
 // so — unlike AR's RTL version — scrollLeft uses the standard positive-going range, no negation.
 function cardsPerPage(width: number): number {
-  if (width >= 1024) return 4;
+  if (width >= 1024) return 5;
   if (width >= 640) return 3;
   return 2;
 }

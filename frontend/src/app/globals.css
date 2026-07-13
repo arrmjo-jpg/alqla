@@ -473,6 +473,14 @@
 @keyframes qn-sheet-out-start { from { transform: translateX(0); } to { transform: translateX(100%); } }
 @keyframes qn-sheet-in-end { from { transform: translateX(-100%); } to { transform: translateX(0); } }
 @keyframes qn-sheet-out-end { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+@keyframes ticker-badge-shimmer {
+  0%   { transform: translateX(-150%); }
+  55%  { transform: translateX(200%); }
+  100% { transform: translateX(200%); }
+}
+@keyframes ar-ticker-ping {
+  75%, 100% { transform: scale(1.6); opacity: 0; }
+}
 .qn-sheet-overlay[data-state='open'] { animation: qn-sheet-overlay-in 0.25s ease both; }
 .qn-sheet-overlay[data-state='closed'] { animation: qn-sheet-overlay-out 0.2s ease both; }
 .qn-sheet-content[data-side='start'][data-state='open'] { animation: qn-sheet-in-start 0.34s cubic-bezier(0.32, 0.72, 0, 1) both; }

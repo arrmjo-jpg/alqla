@@ -82,12 +82,32 @@ export function NewsTicker({ items }: { items: TickerItem[] }) {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {/* شارة آخر الأخبار */}
+        {/* شارة آخر الأخبار — خلفية سوداء + نص ذهبي + فلاش متكرر */}
         <span
-          className="flex shrink-0 items-center justify-center gap-2 bg-primary px-4 sm:px-6 text-[13px] font-extrabold text-white self-stretch"
+          className="relative overflow-hidden flex shrink-0 items-center justify-center gap-2 px-4 sm:px-6 text-[13px] font-extrabold self-stretch select-none"
+          style={{ background: '#000', color: '#C9A227' }}
         >
-          <span className="size-2 animate-ping rounded-full bg-white/80" aria-hidden />
-          آخر الأخبار
+          <span
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background: 'linear-gradient(120deg, transparent 0%, rgba(201,162,39,0.5) 50%, transparent 100%)',
+              animation: 'ticker-badge-shimmer 3s ease-in-out infinite',
+            }}
+            aria-hidden
+          />
+          {/* نقطة دائرية نابضة — مثل الإنجليزي */}
+          <span
+            className="relative z-10 shrink-0"
+            style={{
+              width: 8, height: 8,
+              borderRadius: '50%',
+              background: '#C9A227',
+              animation: 'ar-ticker-ping 1.4s cubic-bezier(0,0,0.2,1) infinite',
+              display: 'inline-block',
+            }}
+            aria-hidden
+          />
+          <span className="relative z-10">آخر الأخبار</span>
         </span>
 
         {/* النص الإخباري (آلة كاتبة) — ديسكتوب فقط، الجوّال يستعمل التكير المتحرّك بالأسفل */}

@@ -71,8 +71,9 @@ export function HeroMobileCarousel({ items }: { items: FeedItem[] }) {
               aria-label={`الانتقال إلى الخبر ${i + 1}`}
               aria-current={i === active}
               className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === active ? 'w-6 bg-primary' : 'w-1.5 bg-border'
+                i === active ? 'w-6' : 'w-1.5 bg-border'
               }`}
+              style={i === active ? { backgroundColor: '#C9A227', width: '24px' } : {}}
             />
           ))}
         </div>
@@ -121,12 +122,13 @@ function HeroSlide({ item, priority }: { item: FeedItem; priority: boolean }) {
             (item.categoryHref ? (
               <Link
                 href={item.categoryHref}
-                className="pointer-events-auto relative bg-primary px-2 py-0.5 text-caption font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+                className="pointer-events-auto relative px-2 py-0.5 text-caption font-bold text-black transition-opacity hover:opacity-90"
+                style={{ background: '#C9A227' }}
               >
                 {item.category}
               </Link>
             ) : (
-              <span className="bg-primary px-2 py-0.5 text-caption font-bold text-primary-foreground">
+              <span className="px-2 py-0.5 text-caption font-bold text-black" style={{ background: '#C9A227' }}>
                 {item.category}
               </span>
             ))}

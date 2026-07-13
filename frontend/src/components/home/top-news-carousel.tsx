@@ -11,7 +11,7 @@ import type { FeedItem } from '@/lib/feed';
 // card (w-1/2 sm:w-1/3 lg:w-1/4) so the JS-computed dot count/scroll-page-size matches what's
 // actually visible. Native horizontal scroll (scroll-snap) handles touch/trackpad swipe for free.
 function cardsPerPage(width: number): number {
-  if (width >= 1024) return 4;
+  if (width >= 1024) return 5;
   if (width >= 640) return 3;
   return 2;
 }
@@ -90,7 +90,10 @@ export function TopNewsCarousel({ items }: { items: FeedItem[] }) {
               <button
                 type="button"
                 onClick={() => goTo(page - 1)}
-                className="absolute -right-3 top-1/2 z-20 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-primary shadow-lg ring-1 ring-black/5 transition-all hover:bg-primary hover:text-white"
+                className="absolute -right-3 top-1/2 z-20 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-black/5 transition-all hover:text-white"
+                style={{ color: '#C9A227' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#C9A227'; (e.currentTarget as HTMLButtonElement).style.color = '#fff'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#fff'; (e.currentTarget as HTMLButtonElement).style.color = '#C9A227'; }}
                 aria-label="السابق"
               >
                 <ChevronRight className="size-5" />
@@ -98,7 +101,10 @@ export function TopNewsCarousel({ items }: { items: FeedItem[] }) {
               <button
                 type="button"
                 onClick={() => goTo(page + 1)}
-                className="absolute -left-3 top-1/2 z-20 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-primary shadow-lg ring-1 ring-black/5 transition-all hover:bg-primary hover:text-white"
+                className="absolute -left-3 top-1/2 z-20 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-black/5 transition-all hover:text-white"
+                style={{ color: '#C9A227' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#C9A227'; (e.currentTarget as HTMLButtonElement).style.color = '#fff'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#fff'; (e.currentTarget as HTMLButtonElement).style.color = '#C9A227'; }}
                 aria-label="التالي"
               >
                 <ChevronLeft className="size-5" />
@@ -113,7 +119,7 @@ export function TopNewsCarousel({ items }: { items: FeedItem[] }) {
               className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
               {items.map((item) => (
-                <div key={item.id} className="w-1/2 shrink-0 snap-start px-1 sm:w-1/3 sm:px-2 lg:w-1/4">
+                <div key={item.id} className="w-1/2 shrink-0 snap-start px-1 sm:w-1/3 sm:px-2 lg:w-1/5">
                   <TopNewsCard item={item} />
                 </div>
               ))}
@@ -129,7 +135,8 @@ export function TopNewsCarousel({ items }: { items: FeedItem[] }) {
                   onClick={() => goTo(i)}
                   aria-label={`الصفحة ${i + 1}`}
                   aria-current={page === i ? 'true' : undefined}
-                  className={`h-2 rounded-full transition-all duration-300 ${page === i ? 'w-5 bg-primary' : 'w-2 bg-black/10'}`}
+                  className={`h-2 rounded-full transition-all duration-300 ${page === i ? 'w-5' : 'w-2 bg-black/10'}`}
+                  style={page === i ? { backgroundColor: '#C9A227', width: '20px' } : {}}
                 />
               ))}
             </div>
@@ -148,7 +155,7 @@ function TopNewsCard({ item }: { item: FeedItem }) {
         <div className="flex flex-col items-center px-2 py-4 sm:px-4 sm:pt-5">
           {/* avatar: escapes the site-wide "square design" reset ([class*='rounded']:not(.avatar)
               in globals.css, !important) that otherwise flattens rounded-full back to square. */}
-          <div className="avatar relative size-20 shrink-0 overflow-hidden rounded-full border-2 border-primary bg-surface-2 shadow-sm sm:size-[120px]">
+          <div className="avatar relative size-20 shrink-0 overflow-hidden rounded-full border-2 bg-surface-2 shadow-sm sm:size-[120px]" style={{ borderColor: '#C9A227' }}>
             {item.image ? (
               // eslint-disable-next-line @next/next/no-img-element -- <img> مقصود: حارس أداء الهوم
               <img src={item.image} alt={item.imageAlt} loading="lazy" decoding="async" className="size-full object-cover" />

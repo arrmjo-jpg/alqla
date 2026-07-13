@@ -52,9 +52,8 @@ export default async function EnHome() {
 
       <EnFeaturedHero items={heroItems} />
 
-      {/* Ad zones — same placement as AR's homepage: one large below hero, two pairs framing
-          the categoryId-based sections below. Reused as-is (AdZone is locale-agnostic). */}
-      <AdZone zone="aalan_kbyr_asfl_alhyrw_1410" className="en-adzone" />
+      {/* Ad zones — two pairs framing the categoryId-based sections below.
+          aalan_kbyr_asfl_alhyrw_1410 moved inside EnFeaturedHero (3-col aside). */}
       <div className="en-container en-adzone-row">
         <AdZone zone="aalan_asfl_alslaydr_mbarshraymyn" className="en-adzone-row__item" />
         <AdZone zone="aalan_asfl_alslaydr_mbarshra_shmal" className="en-adzone-row__item" />

@@ -119,13 +119,41 @@
   display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem;
   padding: 0 2rem; position: sticky; top: 0; z-index: 100;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
 }
-.en-navbar-nav { display: flex; gap: 1.75rem; align-items: center; justify-content: center; grid-column: 2; list-style: none; margin: 0; padding: 0; }
+.en-navbar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent 0%, rgba(201,162,39,0.35) 50%, transparent 100%);
+  animation: en-navbar-shimmer 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes en-navbar-shimmer {
+  0%   { left: -60%; }
+  60%  { left: 120%; }
+  100% { left: 120%; }
+}
+.en-navbar-nav { display: flex; gap: 1.75rem; align-items: center; justify-content: center; grid-column: 2; list-style: none; margin: 0; padding: 0; z-index: 2; position: relative; }
 .en-navbar-nav a { color: rgba(255, 255, 255, 0.92); font-size: 1rem; font-weight: 700; padding: 0.4rem 0.75rem; border-radius: 6px; transition: var(--transition-smooth); white-space: nowrap; }
 .en-navbar-nav a:hover, .en-navbar-nav a[aria-current='page'] { background: #000; color: #fff; }
-.en-navbar-lang { grid-column: 3; justify-self: end; }
-.en-navbar-lang a { color: rgba(255, 255, 255, 0.92); font-size: 0.95rem; font-weight: 700; padding: 0.4rem 0.85rem; border-radius: 6px; transition: var(--transition-smooth); }
-.en-navbar-lang a:hover { background: #000; color: #fff; }
+.en-navbar-lang { grid-column: 3; justify-self: end; position: relative; z-index: 2; }
+.en-navbar-lang a {
+  display: inline-block;
+  color: #C9A227;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.35rem 0.85rem;
+  border-radius: 4px;
+  background-color: #000;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.en-navbar-lang a:hover { opacity: 0.85; }
 /* على الجوّال/التابلت (أقلّ من 1024): لا حاجة للشريط الأحمر العلويّ — الوسائط وتبديل اللغة
    موجودان الآن في القائمة الجانبيّة (EnMenu) وشريط التنقّل السفليّ (EnMobileBottomNav)، تمامًا
    مثل إخفاء .navbar المكافئ في AR بنفس نقطة التوقّف. */
@@ -406,8 +434,8 @@
 .en-feedbadge { pointer-events: none; position: absolute; left: 8px; top: 8px; z-index: 20; display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; font-family: var(--en-font); font-size: 0.72rem; font-weight: 700; color: #fff; background: #ff1e1e; border-radius: 0; }
 
 /* Category chip (red pill, independent link over an image card) */
-.en-hero-chip { position: relative; z-index: 20; pointer-events: auto; background: var(--en-primary); padding: 3px 8px; font-family: var(--en-font); font-size: 0.72rem; font-weight: 700; color: #fff; transition: var(--transition-smooth); }
-a.en-hero-chip:hover { background: var(--en-primary-hover); }
+.en-hero-chip { position: relative; z-index: 20; pointer-events: auto; background: #C9A227; padding: 3px 8px; font-family: var(--en-font); font-size: 0.72rem; font-weight: 700; color: #111; transition: var(--transition-smooth); }
+a.en-hero-chip:hover { background: #b8911f; }
 
 /* Hero mobile carousel — fork of AR's HeroMobileCarousel (scroll-snap + dot pagination) */
 .en-hero-carousel { display: block; }
@@ -417,7 +445,7 @@ a.en-hero-chip:hover { background: var(--en-primary-hover); }
 .en-hero-carousel__slide-wrap { width: 100%; flex-shrink: 0; scroll-snap-align: center; }
 .en-hero-carousel__dots { margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; }
 .en-hero-carousel__dot { height: 6px; width: 6px; border-radius: 9999px; background: var(--en-surface-3); border: none; padding: 0; cursor: pointer; transition: var(--transition-smooth); }
-.en-hero-carousel__dot--active { width: 24px; background: var(--en-primary); }
+.en-hero-carousel__dot--active { width: 24px; background: #C9A227; }
 
 .en-hero-slide { position: relative; display: block; width: 100%; aspect-ratio: 4 / 3; max-height: 480px; overflow: hidden; background: var(--en-surface-2); border-radius: 15px; }
 @media (min-width: 640px) { .en-hero-slide { aspect-ratio: 16 / 9; } }
@@ -436,6 +464,16 @@ a.en-hero-chip:hover { background: var(--en-primary-hover); }
   .en-hero-desktop { display: flex; flex-direction: row; overflow: hidden; border-radius: 15px; }
   .en-hero-desktop__lead { width: 50%; }
   .en-hero-desktop__grid { width: 50%; display: grid; grid-template-columns: repeat(2, 1fr); }
+}
+
+/* New gold-strip desktop carousel — 9+3 grid matching AR HeroDesktopCarousel layout */
+.en-hero-desktop-new { display: none; }
+@media (min-width: 1024px) {
+  .en-hero-desktop-new { display: block; }
+  .en-hero-desktop-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+  .en-hero-desktop-grid__carousel { grid-column: span 9; }
+  .en-hero-desktop-grid__ad { grid-column: span 3; display: flex; align-items: flex-start; justify-content: center; }
+  .en-hero-ad { width: 100%; }
 }
 .en-herocard { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; background: var(--en-surface-2); }
 @media (min-width: 1024px) {
@@ -857,8 +895,8 @@ a.en-opinion-photo__name:hover { color: rgba(255,255,255,.8); }
 .en-topnews-section { margin-block: 5px; padding-block: 1.5rem; border-block: 1px solid var(--en-line); }
 
 .en-topnews-viewport { position: relative; }
-.en-topnews-arrow { position: absolute; top: 50%; z-index: 20; display: flex; height: 40px; width: 40px; -webkit-transform: translateY(-50%); transform: translateY(-50%); align-items: center; justify-content: center; border-radius: 9999px; background: #fff; color: var(--en-primary); box-shadow: 0 4px 12px rgba(0,0,0,.12); border: 1px solid var(--en-line); cursor: pointer; transition: var(--transition-smooth); }
-.en-topnews-arrow:hover { background: var(--en-primary); color: #fff; }
+.en-topnews-arrow { position: absolute; top: 50%; z-index: 20; display: flex; height: 40px; width: 40px; -webkit-transform: translateY(-50%); transform: translateY(-50%); align-items: center; justify-content: center; border-radius: 9999px; background: #fff; color: #C9A227; box-shadow: 0 4px 12px rgba(0,0,0,.12); border: 1px solid var(--en-line); cursor: pointer; transition: var(--transition-smooth); }
+.en-topnews-arrow:hover { background: #C9A227; color: #fff; }
 .en-topnews-arrow--start { left: -12px; }
 .en-topnews-arrow--end { right: -12px; }
 
@@ -867,12 +905,12 @@ a.en-opinion-photo__name:hover { color: rgba(255,255,255,.8); }
 .en-topnews-track::-webkit-scrollbar { display: none; }
 .en-topnews-slide { flex-shrink: 0; scroll-snap-align: start; width: 50%; padding-inline: 4px; }
 @media (min-width: 640px) { .en-topnews-slide { width: 33.333%; padding-inline: 8px; } }
-@media (min-width: 1024px) { .en-topnews-slide { width: 25%; } }
+@media (min-width: 1024px) { .en-topnews-slide { width: 20%; } }
 
 .en-topnews-card { display: flex; height: 100%; min-width: 0; flex-direction: column; border-radius: 12px; border: 1px solid var(--en-line); background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.04); transition: box-shadow .2s ease; }
 .en-topnews-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,.08); }
 .en-topnews-card__link { display: block; flex: 1; text-decoration: none; }
-.en-topnews-card__photo { position: relative; margin: 20px auto 0; width: 80px; height: 80px; overflow: hidden; border-radius: 9999px; border: 2px solid var(--en-primary); background: var(--en-surface-2); }
+.en-topnews-card__photo { position: relative; margin: 20px auto 0; width: 80px; height: 80px; overflow: hidden; border-radius: 9999px; border: 2px solid #C9A227; background: var(--en-surface-2); }
 @media (min-width: 640px) { .en-topnews-card__photo { width: 120px; height: 120px; } }
 .en-topnews-card__photo img { width: 100%; height: 100%; object-fit: cover; }
 .en-topnews-card__photo-empty { width: 100%; height: 100%; background: var(--en-surface-3); }
@@ -884,7 +922,7 @@ a.en-opinion-photo__name:hover { color: rgba(255,255,255,.8); }
 
 .en-topnews-dots { margin-top: 1.25rem; display: flex; justify-content: center; gap: 8px; }
 .en-topnews-dot { height: 8px; width: 8px; border-radius: 9999px; background: var(--en-surface-3); border: 0; cursor: pointer; transition: var(--transition-smooth); }
-.en-topnews-dot--active { width: 20px; background: var(--en-primary); }
+.en-topnews-dot--active { width: 20px; background: #C9A227; }
 
 /* Desktop-view toggle — fork of components/layout/desktop-view-toggle.tsx, English labels.
    MobileTopToggleBanner's desktop-mode values are the same ~3.41x scale compensation as AR's

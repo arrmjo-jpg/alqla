@@ -85,9 +85,29 @@ export function EnNewsTicker({ items }: { items: EnTickerItem[] }) {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <span className="en-newsticker__badge">
-          <span className="en-newsticker__dot" aria-hidden />
-          Latest News
+        <span
+          className="en-newsticker__badge"
+          style={{ background: '#000', color: '#C9A227', position: 'relative', overflow: 'hidden' }}
+        >
+          <span
+            style={{
+              position: 'absolute', inset: 0, pointerEvents: 'none',
+              background: 'linear-gradient(120deg, transparent 0%, rgba(201,162,39,0.5) 50%, transparent 100%)',
+              animation: 'ticker-badge-shimmer 3s ease-in-out infinite',
+            }}
+            aria-hidden
+          />
+          <span
+            aria-hidden
+            className="animate-ping"
+            style={{
+              position: 'relative', zIndex: 1,
+              display: 'inline-block', width: 8, height: 8,
+              borderRadius: '50%', background: '#C9A227', opacity: 0.85,
+              flexShrink: 0,
+            }}
+          />
+          <span style={{ position: 'relative', zIndex: 1 }}>Latest News</span>
         </span>
 
         <div className="en-newsticker__headline-wrap">
