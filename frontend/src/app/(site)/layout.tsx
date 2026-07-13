@@ -62,8 +62,9 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
 
       {/* الإعلانات وشبكة الأخبار على الرئيسية فقط (HomeOnly) */}
       <HomeOnly>
-        {/* الكروسيل الجديد تحت الشريط الإخباري (يظهر في الرئيسية فقط) */}
-        <TopNewsCarousel items={latest.filter((i) => i.is_squares).slice(0, 10)} />
+        {/* الكروسيل الجديد تحت الشريط الإخباري (يظهر في الرئيسية فقط) — كلّ الأخبار is_squares
+            بلا حدّ أقصى؛ الكاروسيل يتصفّح صفحات بدلًا من قصّ القائمة. */}
+        <TopNewsCarousel items={latest.filter((i) => i.is_squares)} />
 
         {/* إعلان السلايدر الكبير (aalan_fy_qsm_slaydr_kbyr_1410) — إعلان واحد كبير فوق الهيرو والإعلانين. */}
         <AdZone zone="aalan_fy_qsm_slaydr_kbyr_1410" className="mb-2 flex justify-center px-4" />
