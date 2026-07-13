@@ -5,6 +5,7 @@ import { EnFeaturedHero } from '@/components/en/en-featured-hero';
 import { EnLatestUpdates } from '@/components/en/en-latest-updates';
 import { EnSectionHeading } from '@/components/en/en-section-heading';
 import { EnSidebar } from '@/components/en/en-sidebar';
+import { EnTopNewsCarousel } from '@/components/en/en-top-news-carousel';
 import { AdZone } from '@/components/ads/ad-zone';
 import { enCategoryUrl } from '@/lib/en';
 import { getCategoryById, getCategoryFeed, getHomepageFeed, getLatestFeed, getMostReadFeed } from '@/lib/feed';
@@ -41,9 +42,13 @@ export default async function EnHome() {
   const specialCoverage = [...latest, ...editorsPick].filter((it) => it.badge?.kind === 'live').slice(0, 4);
 
   const nothing = heroItems.length === 0 && latest.length === 0;
+  // Same is_squares flag + slice(0,10) AR's TopNewsCarousel uses, off data already fetched above.
+  const topNews = latest.filter((it) => it.is_squares).slice(0, 10);
 
   return (
     <div>
+      <EnTopNewsCarousel items={topNews} />
+
       <EnFeaturedHero items={heroItems} />
 
       {/* Ad zones — same placement as AR's homepage: one large below hero, two pairs framing
