@@ -90,8 +90,8 @@ export function NewsTicker({ items }: { items: TickerItem[] }) {
           آخر الأخبار
         </span>
 
-        {/* النص الإخباري (آلة كاتبة) */}
-        <div className="min-w-0 flex-1 flex items-center">
+        {/* النص الإخباري (آلة كاتبة) — ديسكتوب فقط، الجوّال يستعمل التكير المتحرّك بالأسفل */}
+        <div className="min-w-0 flex-1 hidden md:flex items-center">
           <Link
             href={currentItem.href}
             className="block truncate text-[14.5px] font-bold text-fg transition-all duration-300 hover:text-primary"
@@ -100,10 +100,28 @@ export function NewsTicker({ items }: { items: TickerItem[] }) {
             <span className="news-cursor ms-0.5 inline-block font-normal text-primary">▌</span>
           </Link>
         </div>
+
+        {/* تكير متحرّك مستمرّ لكلّ العناوين معًا — جوّال فقط (يحلّ مشكلة اختفاء النصّ خلف الشارة/الأزرار) */}
+        <div className="news-ticker-marquee min-w-0 flex-1 flex md:hidden items-center overflow-hidden">
+          <div className="news-ticker-track">
+            {items.map((it) => (
+              <span key={`a-${it.id}`} className="news-ticker-marquee__item-wrap">
+                <Link href={it.href} className="news-ticker-marquee__item">{it.title}</Link>
+                <span className="news-ticker-marquee__sep" aria-hidden>•</span>
+              </span>
+            ))}
+            {items.map((it) => (
+              <span key={`b-${it.id}`} className="news-ticker-marquee__item-wrap" aria-hidden>
+                <Link href={it.href} className="news-ticker-marquee__item" tabIndex={-1}>{it.title}</Link>
+                <span className="news-ticker-marquee__sep" aria-hidden>•</span>
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* أزرار التحكم */}
-      <div className="ms-4 flex shrink-0 items-center gap-1.5 border-r border-border ps-4 pe-4 sm:pe-6 md:pe-8">
+      {/* أزرار التحكم — ديسكتوب فقط */}
+      <div className="ms-4 hidden md:flex shrink-0 items-center gap-1.5 border-r border-border ps-4 pe-4 sm:pe-6 md:pe-8">
         {/* زر السابق */}
         <button
           onClick={handlePrev}

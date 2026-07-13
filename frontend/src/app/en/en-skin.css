@@ -515,8 +515,23 @@ a.en-localnews-item__cat:hover { text-decoration: underline; }
 .en-breaking-share-btn:hover { background: #fff; color: #b90000; }
 .en-breaking-close { flex-shrink: 0; height: 100%; padding: 0 1.25rem; display: flex; align-items: center; justify-content: center; color: #fff; border-inline-start: 1px solid rgba(255,255,255,.2); transition: background .2s ease; }
 .en-breaking-close:hover { background: rgba(255,255,255,.1); }
+
+/* Continuous marquee of every headline — mobile only. Replaces .en-breaking-stage (one fixed
+   headline), which the fixed-width share buttons squeeze to zero width on small screens. */
+.en-breaking-marquee { display: none; flex: 1; min-width: 0; height: 100%; align-items: center; overflow: hidden; }
+@media (max-width: 768px) {
+  .en-breaking-stage, .en-breaking-share { display: none; }
+  .en-breaking-marquee { display: flex; }
+}
+.en-breaking-marquee-track { display: inline-flex; align-items: center; white-space: nowrap; will-change: transform; backface-visibility: hidden; animation: en-ticker-move 25s linear infinite; }
+.en-breaking-marquee:hover .en-breaking-marquee-track,
+.en-breaking-marquee:focus-within .en-breaking-marquee-track { animation-play-state: paused; }
+.en-breaking-marquee__item { font-family: var(--en-font); font-weight: 900; font-size: 1rem; color: #fff; }
+.en-breaking-marquee__item:hover { color: rgba(255,255,255,.82); }
+.en-breaking-marquee__sep { margin: 0 0.75rem; color: rgba(255,255,255,.5); }
+
 @media (prefers-reduced-motion: reduce) {
-  .en-breaking, .en-breaking-badge-text, .en-breaking-slide { animation: none !important; transition: none !important; }
+  .en-breaking, .en-breaking-badge-text, .en-breaking-slide, .en-breaking-marquee-track { animation: none !important; transition: none !important; }
 }
 
 /* News ticker — fork of AR's NewsTicker (site-wide, sits directly above the breaking bar).
@@ -537,8 +552,25 @@ a.en-localnews-item__cat:hover { text-decoration: underline; }
 @media (min-width: 768px) { .en-newsticker__controls { padding-inline-end: 32px; } }
 .en-newsticker__btn { display: flex; height: 28px; width: 28px; align-items: center; justify-content: center; border: 0; background: var(--en-primary); color: #fff; cursor: pointer; transition: background .2s ease; }
 .en-newsticker__btn:hover { background: #000; }
+
+/* Continuous marquee of every headline — mobile only. The typewriter headline + controls get
+   squeezed to near-zero width on small screens (same bug as AR), so mobile swaps to this instead. */
+.en-newsticker__marquee { display: none; min-width: 0; flex: 1; align-items: center; overflow: hidden; }
+@media (max-width: 768px) {
+  .en-newsticker__headline-wrap, .en-newsticker__controls { display: none; }
+  .en-newsticker__marquee { display: flex; }
+}
+@keyframes en-ticker-move { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } }
+.en-newsticker__marquee-track { display: inline-flex; align-items: center; white-space: nowrap; will-change: transform; backface-visibility: hidden; animation: en-ticker-move 40s linear infinite; }
+.en-newsticker__marquee:hover .en-newsticker__marquee-track,
+.en-newsticker__marquee:focus-within .en-newsticker__marquee-track { animation-play-state: paused; }
+.en-newsticker__marquee-item { font-family: var(--en-font); font-size: 0.9rem; font-weight: 700; color: var(--en-ink); }
+.en-newsticker__marquee-item:hover { color: var(--en-primary); }
+.en-newsticker__marquee-sep { margin: 0 0.6rem; color: var(--en-muted); }
+
 @media (prefers-reduced-motion: reduce) {
   .en-newsticker__dot { animation: none !important; }
+  .en-newsticker__marquee-track { animation: none !important; }
 }
 
 /* Editorial row — single shared 3-column block (Articles / Most Popular / Latest News), fork of
@@ -654,6 +686,18 @@ a.en-opinion-photo__name:hover { color: rgba(255,255,255,.8); }
 .en-footer-contact__text { display: inline-flex; flex-direction: column; line-height: 1.4; }
 .en-footer-contact__text small { opacity: 0.7; font-size: 0.78rem; }
 .en-footer-muted { font-size: 0.85rem; color: #6e6e6e; }
+@media (max-width: 768px) { .en-footer-grid { display: none; } }
+
+/* Mobile: simplified footer — mirrors AR's .footer-mobile (logo, WhatsApp CTA, social icons, up
+   to 6 quick links, view-toggle), hidden on desktop; .en-footer-grid above is hidden on mobile. */
+.en-footer-mobile { display: flex; flex-direction: column; align-items: center; gap: 1.25rem; text-align: center; margin-bottom: 1.5rem; }
+@media (min-width: 769px) { .en-footer-mobile { display: none; } }
+.en-footer-m-logo { height: auto; width: auto; max-height: 56px; max-width: none; font-family: var(--en-font-display); font-size: 1.6rem; font-weight: 800; color: #fff; }
+.en-footer-m-whatsapp { display: inline-flex; align-items: center; gap: 0.5rem; background: #25D366; color: #fff; font-weight: 700; padding: 0.6rem 1.4rem; border-radius: 9999px; text-decoration: none; font-size: 0.9rem; }
+.en-footer-m-whatsapp:hover { background: #1ebe5a; color: #fff; }
+.en-footer-m-social { display: flex; gap: 0.6rem; }
+.en-footer-m-social a { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); display: flex; align-items: center; justify-content: center; color: #adadad; }
+.en-footer-m-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 1.1rem; font-size: 0.85rem; }
 
 /* ============================================================================
    LAYOUT GRIDS

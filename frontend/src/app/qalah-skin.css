@@ -867,12 +867,35 @@
   from { transform: translate3d(-50%, 0, 0); }
   to { transform: translate3d(0, 0, 0); }
 }
+.qalah-skin .news-ticker-marquee {
+  /* السياق العام RTL يجعل flex-start (الافتراضيّ) يُثبِّت العنصر عند الحافّة اليمنى، فيُدفَع
+     المسار (أعرض من حاويته بكثير) آلاف البكسلات خارج الشاشة بلا رجعة. LTR هنا يُصحِّح موضع
+     التثبيت فقط؛ نص كل عنوان يبقى يُعرَض RTL بفضل خوارزميّة bidi على مستوى النصّ لا الحاوية. */
+  direction: ltr;
+}
 .qalah-skin .news-ticker-track {
   display: inline-flex;
+  align-items: center;
   white-space: nowrap;
   will-change: transform;
   backface-visibility: hidden;
-  animation: news-ticker-move 50s linear infinite;
+  animation: news-ticker-move 40s linear infinite;
+}
+.qalah-skin .news-ticker-marquee:hover .news-ticker-track,
+.qalah-skin .news-ticker-marquee:focus-within .news-ticker-track {
+  animation-play-state: paused;
+}
+.qalah-skin .news-ticker-marquee__item {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--color-fg);
+}
+.qalah-skin .news-ticker-marquee__item:hover {
+  color: var(--primary-color);
+}
+.qalah-skin .news-ticker-marquee__sep {
+  margin: 0 0.6rem;
+  color: var(--color-muted);
 }
 @media (prefers-reduced-motion: reduce) {
   .qalah-skin .news-cursor { animation: none; }
@@ -1014,6 +1037,52 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+/* تكير متحرّك مستمرّ لكلّ عناوين العاجل معًا — جوّال فقط. يحلّ محلّ .breaking-stage (خبر واحد ثابت)
+   الذي يضغط العنوان لعرض صفريّ على الجوّال حين تضاف إليه أزرار المشاركة الثابتة العرض. */
+.qalah-skin .breaking-marquee {
+  display: none;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  align-items: center;
+  overflow: hidden;
+  /* نفس تصحيح .news-ticker-marquee: RTL يُثبِّت flex-start يمينًا فيدفع المسار خارج الشاشة. */
+  direction: ltr;
+}
+@media (max-width: 768px) {
+  .qalah-skin .breaking-stage,
+  .qalah-skin .breaking-share {
+    display: none;
+  }
+  .qalah-skin .breaking-marquee {
+    display: flex;
+  }
+}
+.qalah-skin .breaking-marquee-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  will-change: transform;
+  backface-visibility: hidden;
+  animation: news-ticker-move 25s linear infinite;
+}
+.qalah-skin .breaking-marquee:hover .breaking-marquee-track,
+.qalah-skin .breaking-marquee:focus-within .breaking-marquee-track {
+  animation-play-state: paused;
+}
+.qalah-skin .breaking-marquee__item {
+  font-weight: 900;
+  font-size: 1rem;
+  color: #fff;
+}
+.qalah-skin .breaking-marquee__item:hover {
+  color: rgba(255, 255, 255, 0.82);
+}
+.qalah-skin .breaking-marquee__sep {
+  margin: 0 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
 /* مودال الجوّال — يفتح تلقائيًّا للأخبار غير المقروءة */
 .qalah-skin .breaking-modal {
   position: fixed;
@@ -1102,6 +1171,7 @@
   .qalah-skin .breaking-bar,
   .qalah-skin .breaking-badge-text,
   .qalah-skin .breaking-slide,
+  .qalah-skin .breaking-marquee-track,
   .qalah-skin .breaking-modal,
   .qalah-skin .breaking-modal-card,
   .qalah-skin .breaking-modal-head {

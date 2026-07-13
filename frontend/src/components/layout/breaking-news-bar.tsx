@@ -89,6 +89,24 @@ export function BreakingNewsBar({ items }: { items: BreakingItem[] }) {
         ))}
       </div>
 
+      {/* تكير متحرّك مستمرّ لكلّ العناوين معًا — جوّال فقط (يحلّ اختفاء العنوان خلف أزرار المشاركة) */}
+      <div className="breaking-marquee">
+        <div className="breaking-marquee-track">
+          {items.map((it) => (
+            <span key={`a-${it.id}`} className="breaking-marquee__item-wrap">
+              <Link href={it.href} className="breaking-marquee__item">{it.title}</Link>
+              <span className="breaking-marquee__sep" aria-hidden>•</span>
+            </span>
+          ))}
+          {items.map((it) => (
+            <span key={`b-${it.id}`} className="breaking-marquee__item-wrap" aria-hidden>
+              <Link href={it.href} className="breaking-marquee__item" tabIndex={-1}>{it.title}</Link>
+              <span className="breaking-marquee__sep" aria-hidden>•</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
       {/* زرّ الإغلاق */}
       <button onClick={() => setDesktopOpen(false)} className="breaking-close" aria-label="إغلاق شريط العاجل">
         <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" aria-hidden>

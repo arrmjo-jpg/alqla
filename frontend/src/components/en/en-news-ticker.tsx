@@ -98,6 +98,25 @@ export function EnNewsTicker({ items }: { items: EnTickerItem[] }) {
             </span>
           </Link>
         </div>
+
+        {/* Continuous marquee of every headline — mobile only. Replaces the typewriter headline,
+            which the fixed-width badge/controls squeeze to near-zero width on small screens. */}
+        <div className="en-newsticker__marquee">
+          <div className="en-newsticker__marquee-track">
+            {items.map((it) => (
+              <span key={`a-${it.id}`} className="en-newsticker__marquee-item-wrap">
+                <Link href={it.href} className="en-newsticker__marquee-item">{it.title}</Link>
+                <span className="en-newsticker__marquee-sep" aria-hidden>•</span>
+              </span>
+            ))}
+            {items.map((it) => (
+              <span key={`b-${it.id}`} className="en-newsticker__marquee-item-wrap" aria-hidden>
+                <Link href={it.href} className="en-newsticker__marquee-item" tabIndex={-1}>{it.title}</Link>
+                <span className="en-newsticker__marquee-sep" aria-hidden>•</span>
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="en-newsticker__controls">

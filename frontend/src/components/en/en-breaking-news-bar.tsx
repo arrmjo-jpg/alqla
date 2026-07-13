@@ -84,6 +84,25 @@ export function EnBreakingNewsBar({ items }: { items: EnBreakingItem[] }) {
         ))}
       </div>
 
+      {/* Continuous marquee of every headline — mobile only. Replaces the single-slide stage, which
+          the fixed-width share buttons squeeze to zero width on small screens. */}
+      <div className="en-breaking-marquee">
+        <div className="en-breaking-marquee-track">
+          {items.map((it) => (
+            <span key={`a-${it.id}`} className="en-breaking-marquee__item-wrap">
+              <Link href={it.href} className="en-breaking-marquee__item">{it.title}</Link>
+              <span className="en-breaking-marquee__sep" aria-hidden>•</span>
+            </span>
+          ))}
+          {items.map((it) => (
+            <span key={`b-${it.id}`} className="en-breaking-marquee__item-wrap" aria-hidden>
+              <Link href={it.href} className="en-breaking-marquee__item" tabIndex={-1}>{it.title}</Link>
+              <span className="en-breaking-marquee__sep" aria-hidden>•</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
       <button onClick={() => setDesktopOpen(false)} className="en-breaking-close" aria-label="Close breaking news bar">
         <svg viewBox="0 0 24 24" width={22} height={22} fill="none" stroke="currentColor" aria-hidden>
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />

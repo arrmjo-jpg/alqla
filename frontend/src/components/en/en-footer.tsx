@@ -160,8 +160,49 @@ export async function EnFooter({ settings }: { settings: SiteSettings | null }) 
           </nav>
         </div>
 
-        <div className="en-footer-toggle-wrap">
-          <EnDesktopViewToggle className="en-footer-toggle-btn" />
+        {/* Mobile: simplified footer — mirrors AR's .footer-mobile exactly (logo, WhatsApp CTA,
+            social icons, up to 6 quick links, view-toggle), hidden on desktop via CSS. The full
+            grid above (Sections/Quick Links/Contact columns) is hidden on mobile instead. */}
+        <div className="en-footer-mobile">
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element -- absolute backend URL, no next/image config
+            <img src={logo} alt={name} className="en-footer-m-logo" />
+          ) : (
+            <div className="en-footer-m-logo">{name}</div>
+          )}
+
+          {whatsapp && WaIcon && (
+            <a
+              href={whatsapp.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="en-footer-m-whatsapp"
+              aria-label="Chat with us on WhatsApp"
+            >
+              <WaIcon className="size-5" aria-hidden />
+              <span>Follow us on WhatsApp</span>
+            </a>
+          )}
+
+          {socialRow.length > 0 && (
+            <div className="en-footer-m-social">
+              {socialRow.map(({ key, url, Icon }) => (
+                <a key={key} href={url} target="_blank" rel="noopener noreferrer" aria-label={enSocialLabel(key)}>
+                  <Icon className="size-4" aria-hidden />
+                </a>
+              ))}
+            </div>
+          )}
+
+          <nav className="en-footer-m-links" aria-label="Quick Links">
+            {quickLinks.slice(0, 6).map((l) => (
+              <Link key={`${l.label}-${l.href}`} href={l.href}>{l.label}</Link>
+            ))}
+          </nav>
+
+          <div className="en-footer-toggle-wrap">
+            <EnDesktopViewToggle className="en-footer-toggle-btn" />
+          </div>
         </div>
 
         <div className="en-footer-bottom">
