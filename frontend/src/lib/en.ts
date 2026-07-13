@@ -82,6 +82,20 @@ export function enSocialLabel(key: string): string {
   return SOCIAL_LABELS[key] ?? key;
 }
 
+// Media/service links — mirrors the Arabic navbar's SECTIONS_NAV (shared platform features).
+// English labels; same routes. Lives here (not en-header.tsx) so it can be imported from both
+// server components (EnHeader) and client components (EnMenu) without pulling en-header.tsx's
+// getEnCategories()/'server-only' import chain into a client bundle.
+export const EN_MEDIA_NAV: { label: string; href: string }[] = [
+  { label: 'Videos', href: '/videos' },
+  { label: 'Reels', href: '/reels' },
+  { label: 'Live', href: '/live' },
+  { label: 'Sports', href: '/sport' },
+  { label: 'Amman Bourse', href: '/bourse' },
+  { label: 'Gold Prices', href: '/gold-prices' },
+  { label: 'Weather', href: '/weather' },
+];
+
 const ARABIC_SCRIPT = /[؀-ۿ]/;
 
 /** True if the string contains Arabic-script characters. Some Site Settings free-text fields

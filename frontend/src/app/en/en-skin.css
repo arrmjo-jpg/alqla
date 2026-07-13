@@ -8,6 +8,12 @@
    ========================================================================== */
 
 .en-skin {
+  /* Mirrors qalah-skin.css's own --color-primary override: without this, Tailwind's bg-primary/
+     text-primary utilities (used by shared components like Sheet, or new EN components that mix
+     Tailwind utilities with the .en-* custom classes) would fall back to the global theme's old
+     #c8102e instead of the site's current #b90000 brand red. */
+  --color-primary: #b90000;
+
   /* ── Palette (Qalah red preserved — same brand, different expression) ───── */
   --en-primary: #b90000;
   --en-primary-hover: #a60000;
@@ -128,6 +134,7 @@
 
 .en-header { background: #fff; border-bottom: 1px solid rgba(0, 0, 0, 0.08); padding: 0.5rem 0 0.9rem; }
 .en-header-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.en-header-logo-group { display: flex; align-items: center; gap: 12px; }
 .en-brand { display: inline-flex; align-items: center; gap: 12px; }
 .en-brand img { height: 66px; width: auto; object-fit: contain; }
 .en-brand-name { font-family: var(--en-font-display); font-weight: 800; font-size: 2rem; letter-spacing: -0.01em; color: var(--en-ink); }
@@ -834,9 +841,11 @@ a.en-opinion-photo__name:hover { color: rgba(255,255,255,.8); }
 /* Desktop-view toggle — fork of components/layout/desktop-view-toggle.tsx, English labels.
    MobileTopToggleBanner's desktop-mode values are the same ~3.41x scale compensation as AR's
    version (1280px forced viewport / 375px reference mobile width). */
-.en-desktop-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--en-surface-3); background: var(--en-surface-2); padding: 10px 16px; font-family: var(--en-font); font-size: 0.85rem; font-weight: 800; color: var(--en-ink); cursor: pointer; transition: var(--transition-smooth); }
-.en-desktop-toggle:hover { background: var(--en-surface-3); border-color: var(--en-primary); }
-.en-desktop-toggle__icon { color: var(--en-primary); flex-shrink: 0; }
+/* Hardcoded hex, not var(--en-*): also rendered inside EnMenu's portaled SheetContent (outside
+   .en-skin's DOM subtree), where .en-skin-scoped custom properties don't resolve. */
+.en-desktop-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid #e0e3e6; background: #eceef0; padding: 10px 16px; font-family: var(--font-inter), system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 0.85rem; font-weight: 800; color: #171717; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.en-desktop-toggle:hover { background: #e0e3e6; border-color: #b90000; }
+.en-desktop-toggle__icon { color: #b90000; flex-shrink: 0; }
 
 .en-mobile-toggle-banner { width: 100%; display: flex; align-items: center; justify-content: center; background: var(--en-surface-2); border-bottom: 1px solid var(--en-surface-3); padding: 10px 16px; }
 .en-mobile-toggle-banner--desktop { border-bottom-width: 3.75px; padding: 34px 51px; }
@@ -849,3 +858,30 @@ a.en-opinion-photo__name:hover { color: rgba(255,255,255,.8); }
    the component's own showToggle gate, so no media query needed here. */
 .en-footer-toggle-wrap { margin-top: 1.75rem; display: flex; justify-content: center; }
 .en-footer-toggle-btn { width: 100%; max-width: 280px; }
+
+/* Fixed mobile bottom nav — fork of components/layout/mobile-bottom-nav.tsx (Home/Reels/Videos/
+   Sports/Weather). Hidden ≥1024px, matching AR's lg:hidden. */
+.en-mobile-bottom-nav { position: fixed; inset-inline: 0; bottom: 0; z-index: 40; border-top: 1px solid rgba(255,255,255,.15); background: var(--en-primary); color: #fff; }
+@media (min-width: 1024px) { .en-mobile-bottom-nav { display: none; } }
+.en-mobile-bottom-nav__list { margin: 0 auto; display: flex; max-width: 480px; align-items: stretch; justify-content: space-around; list-style: none; padding: 0; }
+.en-mobile-bottom-nav__item { flex: 1; }
+.en-mobile-bottom-nav__link { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; font-family: var(--en-font); font-size: 11px; font-weight: 700; color: #fff; opacity: 0.7; transition: opacity 0.2s ease; }
+.en-mobile-bottom-nav__link:hover, .en-mobile-bottom-nav__link--active { opacity: 1; }
+
+/* Hamburger menu sheet — fork of components/layout/qalah/menu.tsx. Shown at all sizes (matches
+   AR's own "visible on all sizes" hamburger, not just mobile). */
+.en-hamburger-btn { background: none; border: none; cursor: pointer; color: var(--en-ink); display: flex; align-items: center; justify-content: center; padding: 0.25rem; transition: var(--transition-smooth); }
+.en-hamburger-btn:hover { opacity: 0.7; }
+
+/* Language-switch bar — its own fixed-height strip at the very top of the sheet (not squeezed
+   into the gradient header's flex row), so the black background always fills the whole strip
+   instead of just hugging the text (that's what caused the earlier "flash" of partial background). */
+/* Everything inside Radix's SheetContent is rendered in a portal appended directly to <body>,
+   OUTSIDE .en-skin's DOM subtree — so var(--en-*)/var(--color-primary) (both scoped to .en-skin)
+   silently resolve to nothing there (an invalid `background` value is dropped entirely, leaving
+   it transparent). Every rule below that's used inside EnMenu's SheetContent is hardcoded to the
+   literal brand hex for that reason, same as AR's own menu.tsx hardcodes its gradient inline. */
+.en-menu-lang-bar { display: flex; align-items: center; justify-content: center; height: 44px; background: #000; flex-shrink: 0; }
+.en-menu-lang-bar__link { color: #fff; font-family: var(--font-inter), system-ui, -apple-system, 'Segoe UI', sans-serif; font-weight: 700; font-size: 0.95rem; text-decoration: none; }
+
+.en-menu-header { padding: 1.25rem; color: #fff; background: linear-gradient(135deg, #b90000 0%, #5c0000 100%); }

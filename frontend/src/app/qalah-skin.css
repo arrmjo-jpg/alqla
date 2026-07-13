@@ -208,6 +208,24 @@
 .qalah-skin .hamburger-btn:hover {
   opacity: 0.7;
 }
+/* تبديل اللغة داخل القائمة الجانبيّة — شريط بارتفاع ثابت فتملأ خلفيّته السوداء الشريط كاملًا.
+   غير مُسبوقة بـ.qalah-skin عمدًا: Radix Sheet يضع محتوى SheetContent في portal مباشرة تحت
+   <body> (شقيقًا لـ.qalah-skin، وليس ابنًا لها) — فمحدِّد .qalah-skin .menu-lang-bar لن يُطابق
+   العنصر إطلاقًا مهما كانت قيمه، بخلاف الامتداد الوصفيّ العاديّ غير المُقيَّد بسلف. */
+.menu-lang-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  background: #000;
+  flex-shrink: 0;
+}
+.menu-lang-bar__link {
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+}
 .qalah-skin .header-logo-link {
   display: block;
 }

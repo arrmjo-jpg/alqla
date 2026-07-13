@@ -5,6 +5,7 @@ import { EnBreakingNewsBar } from '@/components/en/en-breaking-news-bar';
 import { EnMobileTopToggleBanner } from '@/components/en/en-desktop-view-toggle';
 import { EnFooter } from '@/components/en/en-footer';
 import { EnHeader } from '@/components/en/en-header';
+import { EnMobileBottomNav } from '@/components/en/en-mobile-bottom-nav';
 import { EnNewsTicker } from '@/components/en/en-news-ticker';
 import { getBreakingFeed, getLatestFeed } from '@/lib/feed';
 import { getSiteSettings } from '@/lib/site-settings';
@@ -42,6 +43,11 @@ export default async function EnLayout({ children }: Readonly<{ children: React.
         <EnBreakingNewsBar items={breaking.map((i) => ({ id: i.id, title: i.title, href: i.href }))} />
         <main>{children}</main>
         <EnFooter settings={settings} />
+
+        {/* Spacer so the fixed bottom nav doesn't cover the footer's last content — mirrors AR's
+            <div className="h-14 lg:hidden" /> in (site)/layout.tsx. */}
+        <div className="h-14 lg:hidden" aria-hidden />
+        <EnMobileBottomNav />
       </div>
     </DesktopViewProvider>
   );

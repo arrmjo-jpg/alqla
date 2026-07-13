@@ -64,6 +64,13 @@ export function QalahMenu({
       </SheetTrigger>
 
       <SheetContent side="start" className="gap-0 p-0">
+        {/* تبديل اللغة — شريط علويّ بارتفاع ثابت (وليس ملاصقًا لصفّ العنوان)، فتبقى الخلفيّة السوداء
+            تملأ الشريط كاملًا بدل أن تلتصق بالنصّ فقط. لم يكن هناك أيّ وسيلة للتبديل للإنجليزيّة على
+            الجوّال قبل هذا — الشريط الأسود العلويّ (فيه navbar-lang) مخفيّ بالكامل تحت 1024px. */}
+        <div className="menu-lang-bar">
+          <Link href="/en" className="menu-lang-bar__link" onClick={close}>English</Link>
+        </div>
+
         {/* رأس مُهيّب بتدرّج الهويّة + دوائر زخرفيّة شفّافة + زرّ إغلاق مصقول */}
         <div
           className="relative shrink-0 overflow-hidden px-5 py-5 text-white"

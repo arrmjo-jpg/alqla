@@ -1,21 +1,10 @@
 import Link from 'next/link';
 
 import { socialEntries } from '@/components/layout/social-map';
-import { enSocialLabel } from '@/lib/en';
+import { EN_MEDIA_NAV, enSocialLabel } from '@/lib/en';
 import { getEnCategories } from '@/lib/en-data';
 import type { SiteSettings } from '@/lib/site-settings';
-
-// Media / service links — mirrors the Arabic navbar's SECTIONS_NAV (shared
-// platform features). English labels; same routes.
-const EN_MEDIA_NAV: { label: string; href: string }[] = [
-  { label: 'Videos', href: '/videos' },
-  { label: 'Reels', href: '/reels' },
-  { label: 'Live', href: '/live' },
-  { label: 'Sports', href: '/sport' },
-  { label: 'Amman Bourse', href: '/bourse' },
-  { label: 'Gold Prices', href: '/gold-prices' },
-  { label: 'Weather', href: '/weather' },
-];
+import { EnMenu } from './en-menu';
 
 // English masthead (LTR), structured like the Arabic one:
 //  • red top navbar: social (start) + media/service links (center) + Arabic switch (end)
@@ -60,14 +49,17 @@ export async function EnHeader({ settings }: { settings: SiteSettings | null }) 
       <header className="en-header">
         <div className="en-container">
           <div className="en-header-row">
-            <Link href="/en" className="en-brand" aria-label={name}>
-              {logo ? (
-                // eslint-disable-next-line @next/next/no-img-element -- absolute backend URL, no next/image config
-                <img src={logo} alt={name} />
-              ) : (
-                <span className="en-brand-name">{name}</span>
-              )}
-            </Link>
+            <div className="en-header-logo-group">
+              <EnMenu categories={cats} social={settings?.social} />
+              <Link href="/en" className="en-brand" aria-label={name}>
+                {logo ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- absolute backend URL, no next/image config
+                  <img src={logo} alt={name} />
+                ) : (
+                  <span className="en-brand-name">{name}</span>
+                )}
+              </Link>
+            </div>
             <span className="en-header-date">{today}</span>
           </div>
 
