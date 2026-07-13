@@ -146,7 +146,9 @@ function TopNewsCard({ item }: { item: FeedItem }) {
     <article className="group flex h-full min-w-0 flex-col rounded-xl border border-black/5 bg-white shadow-sm transition hover:shadow-md">
       <Link href={item.href} className="block flex-1">
         <div className="flex flex-col items-center px-2 py-4 sm:px-4 sm:pt-5">
-          <div className="relative size-20 shrink-0 overflow-hidden rounded-full border-2 border-primary bg-surface-2 shadow-sm sm:size-[120px]">
+          {/* avatar: escapes the site-wide "square design" reset ([class*='rounded']:not(.avatar)
+              in globals.css, !important) that otherwise flattens rounded-full back to square. */}
+          <div className="avatar relative size-20 shrink-0 overflow-hidden rounded-full border-2 border-primary bg-surface-2 shadow-sm sm:size-[120px]">
             {item.image ? (
               // eslint-disable-next-line @next/next/no-img-element -- <img> مقصود: حارس أداء الهوم
               <img src={item.image} alt={item.imageAlt} loading="lazy" decoding="async" className="size-full object-cover" />
@@ -168,7 +170,7 @@ function TopNewsCard({ item }: { item: FeedItem }) {
         <div className="mt-auto flex items-center justify-center gap-1.5 border-t border-black/5 px-2 py-2 sm:gap-2 sm:px-4 sm:py-2.5">
           {item.author.avatar && (
             // eslint-disable-next-line @next/next/no-img-element -- <img> مقصود: حارس أداء الهوم
-            <img src={item.author.avatar} alt={item.author.name} loading="lazy" className="size-5 shrink-0 rounded-full object-cover sm:size-6" />
+            <img src={item.author.avatar} alt={item.author.name} loading="lazy" className="avatar size-5 shrink-0 rounded-full object-cover sm:size-6" />
           )}
           <span className="min-w-0 truncate text-[11px] font-bold text-muted">{item.author.name}</span>
         </div>
