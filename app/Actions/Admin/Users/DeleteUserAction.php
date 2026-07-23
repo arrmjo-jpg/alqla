@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Users;
 
 use App\Models\User;
+use App\Support\Frontend\FrontendRevalidate;
 use App\Support\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
@@ -23,6 +24,9 @@ class DeleteUserAction
         }
 
         $target->delete();
+
+        // انظر UpdateUserAction — بروفايل الكاتب العامّ يجب أن يختفي فوراً بعد الحذف الناعم.
+        FrontendRevalidate::tags(['writers', "writer:{$target->id}"]);
 
         return ApiResponse::success(__('user.deleted'));
     }

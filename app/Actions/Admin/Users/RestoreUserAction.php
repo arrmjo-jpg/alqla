@@ -6,6 +6,7 @@ namespace App\Actions\Admin\Users;
 
 use App\Http\Resources\Admin\Users\UserResource;
 use App\Models\User;
+use App\Support\Frontend\FrontendRevalidate;
 use App\Support\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
@@ -18,6 +19,9 @@ class RestoreUserAction
         }
 
         $target->restore();
+
+        // انظر UpdateUserAction — بروفايل الكاتب العامّ يجب أن يظهر فوراً بعد الاستعادة.
+        FrontendRevalidate::tags(['writers', "writer:{$target->id}"]);
 
         return ApiResponse::success(
             __('user.restored'),

@@ -1,12 +1,51 @@
 
-# ── AlphaCMS — Coolify Production ─────────────────────────
+# -- AlphaCMS -- Coolify Production ------------------------
+#
+# Media handling (audit note): both media paths are host bind mounts to fixed absolute paths on
+# the production server, NOT baked into any image and NOT anonymous Docker-managed volumes.
+#   - storage/app/public (Laravel's default "public" disk)  -> ${STORAGE_PUBLIC_HOST_PATH}
+#   - public/uploads     (the custom "uploads" disk, config/filesystems.php) -> ${UPLOADS_HOST_PATH}
+# Both env vars default to the paths already in production use so this is a drop-in, non-breaking
+# change; overriding them lets ops relocate media storage (e.g. to a mounted block volume) without
+# touching this file. Bind mounts (vs. the previous Docker-managed named volume for storage/public)
+# were chosen so both media directories are equally easy to inspect, back up, and rsync directly
+# from the host -- a named volume's data lives inside Docker's own storage driver directory, which
+# is harder to reach and easy to lose with an incautious `docker compose down -v`.
+#
+# For local development (Docker Desktop on Windows/macOS/Linux), see docker-compose.override.yml,
+# which is auto-loaded alongside this file and replaces these absolute Linux host paths with
+# relative bind mounts into the repo itself.
 
 x-backend-common: &backend-common
   image: alphacms-backend:latest
- 
+
   restart: unless-stopped
+  # ROOT CAUSE FIX: backend/worker/worker-media/scheduler had NEITHER env_file NOR an
+  # environment: block anywhere in this file. .env is excluded from the image by .dockerignore
+  # (correctly — secrets must not be baked in) and never mounted either, so these 4 containers
+  # booted with ZERO Laravel configuration: APP_KEY, DB_*, REDIS_*, MEILISEARCH_KEY all fell back
+  # to Laravel's internal package defaults. php-fpm/schedule:work don't hard-fail on that (no DB/
+  # Redis connection needed just to boot), which is why `backend`/`scheduler` looked "running" —
+  # but `queue:work` (worker/worker-media) connects to its queue driver immediately at startup,
+  # so it crashed on boot every time -> restart loop. This line is the fix: every service built
+  # from this anchor now actually receives .env at runtime.
+  env_file:
+    - .env
+  # ROOT CAUSE FIX 2: both media mounts belong in the shared anchor, not repeated (or
+  # forgotten) per service. Before this, only `backend` redeclared its own `volumes:` with
+  # BOTH mounts — YAML `<<: *anchor` merge semantics make a service's own `volumes:` key
+  # REPLACE the anchor's, not merge with it, so worker/worker-media/scheduler (which never
+  # redeclared `volumes:`) silently inherited only `storage/app/public`, never `public/uploads`.
+  # Confirmed live via `docker inspect`: worker-media had zero visibility into `public/uploads`,
+  # so every `GenerateMediaAssetConversionsJob` (queue=media, runs in worker-media) hit the
+  # silent `Storage::disk('uploads')->exists()===false` early-return in
+  # MediaConversions::generate() and marked the asset 'failed' with no exception, ever
+  # (measured: 91.4% of the media library in this exact silent-failure state). Same gap also
+  # affects the scheduler container's media:prune-orphans (local file deletion silently no-ops)
+  # and media:sync:remote. Any future service built off this anchor gets both mounts for free.
   volumes:
-    - media:/var/www/html/storage/app/public
+    - ${STORAGE_PUBLIC_HOST_PATH:-/data/storage-public}:/var/www/html/storage/app/public:rw
+    - ${UPLOADS_HOST_PATH:-/data/uploads}:/var/www/html/public/uploads:rw
 
 services:
 
@@ -20,6 +59,13 @@ services:
     restart: unless-stopped
     expose:
       - "80"
+    healthcheck:
+      # 127.0.0.1 لا localhost: busybox wget في Alpine يفضّل ::1 (IPv6) الذي لا يُستمَع عليه هنا.
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:80/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     labels:
       - traefik.enable=true
       - traefik.http.routers.admin.rule=Host(`admin.alpha-cms.shop`)
@@ -36,14 +82,21 @@ services:
       dockerfile: docker/php/Dockerfile
     expose:
       - "80"
-    volumes:
-    - media:/var/www/html/storage/app/public
-    - /data/uploads:/var/www/html/public/uploads:rw
-    # ── Public media on the SITE domain, served directly by the backend web server ──────────────
-    # Route `<public-site>/storage/*` to the backend nginx (→ public/storage, static + Cache-Control).
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    # volumes: now inherited entirely from the backend-common anchor (both mounts) — this
+    # service-level override used to exist here and was the ONLY reason `backend` had correct
+    # media visibility while worker/worker-media/scheduler silently didn't. Removed since it's
+    # now redundant with the anchor.
+    # -- Public media on the SITE domain, served directly by the backend web server --------------
+    # Route `<public-site>/storage/*` to the backend nginx (-> public/storage, static + Cache-Control).
     # So branding/media resolve on the public origin and Cloudflare caches them:
-    #   Browser → Cloudflare → Traefik → backend nginx → Laravel public/storage   (never via Next.js).
-    # The API domain (api.<domain> → backend) stays as Coolify manages it; this is an extra router.
+    #   Browser -> Cloudflare -> Traefik -> backend nginx -> Laravel public/storage   (never via Next.js).
+    # The API domain (api.<domain> -> backend) stays as Coolify manages it; this is an extra router.
     # NOTE: the Host() below must equal the PUBLIC site domain (SITE_URL). priority beats the
     # frontend catch-all so only /storage is peeled off to the backend.
     labels:
@@ -70,11 +123,30 @@ services:
     <<: *backend-common
     user: www-data
     command: php artisan queue:work redis-media --queue=media --tries=2 --timeout=2520 --sleep=2 --max-time=3600
+    # 2550s > --timeout=2520s (job cap) > TranscodeVideoAssetJob::$timeout=2400s. Docker's
+    # default 10s SIGTERM->SIGKILL grace period would otherwise kill an in-flight video
+    # transcode outright on every deploy/restart.
+    stop_grace_period: 2550s
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "queue:work"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   scheduler:
     <<: *backend-common
     user: www-data
+    # schedule:work runs as PID 1 with no init process, so it never reaps the child
+    # processes it forks for each due command -> unbounded zombie accumulation over the
+    # container's lifetime (measured: ~2000 defunct processes after ~2h uptime). init: true
+    # injects Docker's built-in tini as PID 1, which reaps them automatically.
+    init: true
     command: php artisan schedule:work
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "schedule:work"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   frontend:
     build:
@@ -85,28 +157,53 @@ services:
     image: alphacms-frontend:${CLIENT:-shaabjo}
     restart: unless-stopped
     environment:
-      API_BASE_URL: ${API_BASE_URL}
-      SITE_URL: ${SITE_URL}
-      REVALIDATE_SECRET: ${REVALIDATE_SECRET}
+      # :? بدل قيمة افتراضية فارغة صامتة — كانت هذه بالضبط سلاسل التحذير الثلاث التي ظهرت
+      # ("variable is not set. Defaulting to a blank string"). الفراغ الصامت هنا لا يكسر
+      # `docker compose build` (Compose يكمل بتحذير فقط) لكنه يكسر Next.js فعلياً في وقت
+      # التشغيل (rewrites() في next.config.ts تُعطّل، lib/env.ts apiBaseUrl يصبح ""). :? يحوّل
+      # هذا لفشل فوري وواضح في `docker compose up`/`config` بدل عطل صامت يُكتشف لاحقاً بالصدفة.
+      API_BASE_URL: ${API_BASE_URL:?API_BASE_URL is required — set it in .env (see .env.example)}
+      SITE_URL: ${SITE_URL:?SITE_URL is required — set it in .env (see .env.example)}
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:?REVALIDATE_SECRET is required — must match FRONTEND_REVALIDATE_SECRET}
     volumes:
       - frontend-cache:/app/.next/cache
     expose:
       - "3000"
+    healthcheck:
+      # Next.js standalone هنا يستمع على عنوان الحاوية نفسها لا 127.0.0.1/localhost —
+      # $HOSTNAME (يضبطه Docker تلقائياً) يحلّ لعنوان الحاوية عبر /etc/hosts الداخلي.
+      # /api/health (وليس /): الصفحة الرئيسية كانت dynamic بالكامل (cookies() في الهيدر —
+      # راجع ISR Restoration)، فكانت كل نبضة فحص هنا كل 30 ثانية تُطلق Render كامل + عشرات
+      # نداءات Laravel API. /api/health لا يستخدم أي API ديناميكي، فلا يُطلق أي عمل فعليّ أبداً.
+      test: ["CMD-SHELL", "wget --spider -q http://$$HOSTNAME:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     depends_on:
       - backend
 
- 
+
   meilisearch:
     image: getmeili/meilisearch:v1.16
-  
+
     restart: unless-stopped
     environment:
-      MEILI_MASTER_KEY: ${MEILISEARCH_KEY}
+      # :? بدل الفراغ الصامت — هذا تحديداً ما كان يُنتج "The master key must be at least 16
+      # bytes... The provided key is only 0 bytes": .env كان يعرّف MEILISEARCH_MASTER_KEY (اسم
+      # خاطئ لا تقرأه Compose) بينما هذا السطر يستبدل ${MEILISEARCH_KEY} (فارغ) -> "". أُصلح الاسم
+      # في .env، و:? هنا يمنع تكرار هذا الصنف من الأخطاء صامتاً في المستقبل.
+      MEILI_MASTER_KEY: ${MEILISEARCH_KEY:?MEILISEARCH_KEY is required (>=16 bytes) — set it in .env}
       MEILI_ENV: production
+    healthcheck:
+      # 127.0.0.1 لا localhost: نفس ملاحظة busybox wget/IPv6 في خدمة admin أعلاه.
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:7700/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
       - meili-data:/meili_data
 
 volumes:
-  media:
   frontend-cache:
   meili-data:
