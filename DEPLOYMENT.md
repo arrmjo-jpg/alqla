@@ -111,7 +111,108 @@ live only in the host `.env` (mode 600) or a secrets manager — never in git, n
 
 ---
 
-## 6. Backups & recovery (spatie/laravel-backup — already wired)
+## 6. Frontend revalidation (cache invalidation flow)
+
+Every admin write to content that has a public page (categories, articles, pages, …) must reach
+the live frontend within seconds, not just the next ISR tick. This is the on-demand revalidation
+webhook — it is a **queued, fire-and-forget notification from the backend to the frontend**, not a
+frontend→backend call.
+
+```
+Admin Update
+  ↓
+Laravel  (e.g. UpdateCategoryAction::handle())
+  ↓
+Redis tag flush            Cache::tags(['categories'])->flush()
+  ↓
+RevalidateFrontendCacheJob  (queued — tries=1, timeout=15s, isolated failure)
+  ↓
+POST FRONTEND_REVALIDATE_URL   (x-revalidate-secret header, {"tags":[...]})
+  ↓
+Next.js  POST /api/revalidate  (frontend/src/app/api/revalidate/route.ts)
+  ↓
+revalidateTag(tag)  for every tag in the payload
+  ↓
+Updated UI  (next request to any page whose fetch used that tag re-runs against the DB)
+```
+
+**`FRONTEND_REVALIDATE_URL` is resolved by the backend/worker container, not by a browser.** Its
+value must be an address *the backend container can reach* — never `http://localhost:<port>`.
+Inside a container, `localhost` always means "this container", never a sibling container. Two
+services in the same `docker-compose.yml` reach each other only by **service name** (the same
+mechanism already used for `MEILISEARCH_HOST=http://meilisearch:7700` and `REDIS_HOST`) — Docker's
+embedded DNS resolves the service name to the right container IP on the compose network.
+
+| Deployment shape | `FRONTEND_REVALIDATE_URL` |
+| --- | --- |
+| Docker / Coolify (backend + frontend on the same compose network) | `http://frontend:3000/api/revalidate` |
+| Non-Docker / frontend on a different host or network | `https://your-domain.com/api/revalidate` |
+
+This project's actual Compose service names (from `docker-compose.yml`, `docker compose config
+--services`): `frontend`, `backend`, `worker`, `worker-media`, `worker-migration`, `scheduler`,
+`admin`, `app-db` (MySQL), `redis-app`, `meilisearch`. Use these — not generic guesses like
+`mariadb` or `redis` — when wiring any new inter-container URL in this repo.
+
+**Fail-safe by design:** an unset URL/secret is a silent no-op (§3); a wrong-but-reachable URL logs
+a warning (`[frontend-revalidate] rejected`/`failed` in the worker log) and does **not** fail the
+admin write. This means a misconfigured `FRONTEND_REVALIDATE_URL` (e.g. pointing at `localhost`)
+produces **no error anywhere in the admin UI** — the only symptom is that renamed/edited content
+takes up to the page's ISR ceiling (5 min for categories/site-settings, up to 1h for the homepage,
+see `revalidate` exports in `frontend/src/lib/*.ts` and `frontend/src/app/**/page.tsx`) to appear
+live, instead of updating instantly. Always verify this endpoint after any change to Compose
+networking, container names, or `.env` — see §7.
+
+---
+
+## 7. Troubleshooting: cache revalidation
+
+**1. Confirm the URL is reachable from where the job actually runs** — the `backend`/`worker`
+container, not your host machine:
+
+```bash
+docker exec <backend-or-worker-container> sh -c \
+  "curl -s -o /dev/null -w 'HTTP:%{http_code}\n' --max-time 3 \
+   -X POST \$FRONTEND_REVALIDATE_URL \
+   -H \"x-revalidate-secret: \$FRONTEND_REVALIDATE_SECRET\" \
+   -H 'Content-Type: application/json' \
+   -d '{\"tags\":[\"categories\"]}'"
+```
+
+**Expected response:** `HTTP:200`. A `curl: (7) Failed to connect` / `HTTP:000` means the URL is
+unreachable from inside the container — almost always a `localhost` vs. service-name mistake (§6).
+A `HTTP:401` means the secret doesn't match `REVALIDATE_SECRET` in the frontend's env. A `HTTP:503`
+means the frontend has no `REVALIDATE_SECRET` configured at all. On success the frontend returns
+`{"revalidated":true,"count":N,"tags":[...]}`.
+
+**2. Verify `RevalidateFrontendCacheJob` actually ran** (queue log, not just "the write succeeded" —
+a failed job never blocks or errors the admin request, by design):
+
+```bash
+docker logs <worker-container> --tail 50 | grep -i "RevalidateFrontendCacheJob\|frontend-revalidate"
+```
+- `RevalidateFrontendCacheJob ... DONE` only means the job didn't throw — it does **not** prove the
+  HTTP call succeeded (the job catches all failures and logs a warning instead of throwing, so the
+  write path is never blocked by a frontend outage). Look specifically for a
+  `[frontend-revalidate] rejected` or `[frontend-revalidate] failed` warning nearby to catch a
+  silent failure.
+- No warning + a `200` from the manual curl test in step 1 = the chain is healthy.
+
+**3. Confirm a category rename actually appears instantly** (end-to-end proof, not just log
+inspection):
+```bash
+# 1) note the current live name (e.g. curl the public API or load the site)
+# 2) rename the category via the admin API/UI
+# 3) reload the site WITHOUT restarting/rebuilding the frontend container
+# 4) the new name must appear immediately — if it only appears after a container
+#    restart or after several minutes, the revalidate webhook is not reaching Next.js
+```
+If step 4 requires a restart or a multi-minute wait, re-check `FRONTEND_REVALIDATE_URL` per §6
+before assuming a frontend bug — the frontend's fetch/tag wiring can be entirely correct while the
+webhook that triggers it never arrives.
+
+---
+
+## 8. Backups & recovery (spatie/laravel-backup — already wired)
 
 - Set `BACKUP_DESTINATION_DISKS=s3` (or `local,s3` — offsite is mandatory), `BACKUP_ARCHIVE_PASSWORD`,
   `BACKUP_NOTIFICATION_EMAIL`, and AWS/R2 creds. Verify `backup:run`/`backup:clean` are enabled in the
@@ -123,7 +224,7 @@ live only in the host `.env` (mode 600) or a secrets manager — never in git, n
 
 ---
 
-## 7. Monitoring (spatie/laravel-health — already wired)
+## 9. Monitoring (spatie/laravel-health — already wired)
 
 - `php artisan health:check` runs every 15m; failures notify `HEALTH_NOTIFICATION_EMAIL`. Protect the
   results endpoint with `HEALTH_SECRET_TOKEN`. Checks include DB, Redis, queue heartbeat, schedule heartbeat.
@@ -133,7 +234,7 @@ live only in the host `.env` (mode 600) or a secrets manager — never in git, n
 
 ---
 
-## 8. Launch smoke-test checklist
+## 10. Launch smoke-test checklist
 
 Run against the **production** domains after deploy:
 
@@ -156,7 +257,7 @@ Run against the **production** domains after deploy:
 
 ---
 
-## 9. Production assumptions
+## 11. Production assumptions
 
 - Single `frontend` instance (ISR cache is per-instance) and single `scheduler` instance.
 - Redis is present and mandatory (tagged cache invalidation; `onOneServer` locks).
@@ -167,7 +268,7 @@ Run against the **production** domains after deploy:
 
 ---
 
-## 10. Launch risks
+## 12. Launch risks
 
 | Risk | Impact | Mitigation |
 | --- | --- | --- |

@@ -47,7 +47,13 @@
 - **مراقبة قائمة**: Spatie Health — `QueueCheck` (heartbeat، مسجَّل لكلّ السائقين) + `ScheduleCheck` +
   `SchedulerHealthCheck`. إنذارات: `HEALTH_NOTIFICATION_EMAIL` (بريد) و`SCHEDULE_HEARTBEAT_URL`
   (مراقب خارجيّ — يكسر دائرة «مراقبة تراقب نفسها»). أصلِح بريد الإرسال (فشل backups التاريخيّ سببه sender مرفوض).
-- envs الربط: `FRONTEND_REVALIDATE_URL` + `FRONTEND_REVALIDATE_SECRET` (مضبوطان).
+- envs الربط: `FRONTEND_REVALIDATE_URL` + `FRONTEND_REVALIDATE_SECRET` (مضبوطان). **تحذير شائع:**
+  المُرسِل هو حاوية backend/worker لا المتصفّح — فالقيمة يجب أن تكون عنوانًا تراه **تلك الحاوية**.
+  `localhost` داخل حاوية Docker يعني الحاوية نفسها دائمًا، لا حاوية الواجهة؛ استخدم اسم خدمة
+  Compose (مثل `http://frontend:3000/api/revalidate`، مرآة `MEILISEARCH_HOST`) لا `localhost`. الفشل
+  هنا **صامت** (rescue/tries=1 — لا استثناء يكسر الكتابة)، فتحقّق يدويًّا بعد أيّ تغيير شبكة/تسمية
+  حاويات: `docker exec <backend> curl -X POST $FRONTEND_REVALIDATE_URL -H "x-revalidate-secret: $FRONTEND_REVALIDATE_SECRET" -d '{"tags":["categories"]}'`
+  (المتوقَّع `200` + `{"revalidated":true,...}`). التفاصيل والاستكشاف الكامل: DEPLOYMENT.md §6-7.
 
 ## بوّابة التوسّع الأفقيّ (إلزاميّة قبل Next × N)
 `revalidateTag`/ISR محلّيّان لكلّ نسخة Next. قبل تشغيل أكثر من نسخة خلف موازن: فعِّل

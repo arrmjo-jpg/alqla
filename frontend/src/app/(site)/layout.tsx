@@ -9,16 +9,16 @@ import { QalahHeader } from '@/components/layout/qalah/header';
 import { QalahNavbar } from '@/components/layout/qalah/navbar';
 import { getBreakingFeed, getLatestFeed } from '@/lib/feed';
 import { getSiteSettings } from '@/lib/site-settings';
-import { DesktopViewProvider } from '@/lib/desktop-view-context';
-import { MobileTopToggleBanner } from '@/components/layout/desktop-view-toggle';
+import { MobileViewBanner } from '@/components/layout/mobile-view-banner';
 
 import { NetworkGrid } from '@/components/home/network-grid';
 import { TopNewsCarousel } from '@/components/home/top-news-carousel';
 
 // قشرة الموقع العامّ — تصميم «القلعة نيوز» الجديد، مُنطّق داخل .qalah-skin (إطار 1280px + هويّة).
 // الإعلانات وقوائم الموبايل ومودال الكوكيز تبقى كما كانت. لوحة /account خارج هذه المجموعة بقالبها الخاصّ.
-// التراجع للقشرة القديمة: استبدل QalahNavbar/QalahHeader/QalahFooter بـ SiteHeader/SectionsBar/SiteFooter
-// واحذف صنفَي qalah-skin/site-frame من الغلاف (المكوّنات القديمة ما زالت بمكانها).
+// (القشرة القديمة SiteHeader/SectionsBar/SiteFooter حُذفت 2026-07-24 — لم تكن مستخدَمة، ولا كانت
+// SiteHeader موجودة أصلاً. لا مسار تراجع محفوظ؛ Category نفسها تبقى المصدر الوحيد لأسماء الأقسام
+// في كلّ مكوّن حيّ — راجع QalahHeader/QalahNavLinks/QalahMenu/QalahFooter.)
 export default async function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   // كانت تجلب getHomepageFeed('ar') كاملة (5 مناطق، ~70 كيلوبايت) لاستخدام latest+breaking فقط —
   // استبدال بنداءين خفيفين مخصَّصين (المُستخدَمان فعليّاً في هذا الملفّ) يوفِّر ~43 كيلوبايت لكل صفحة.
@@ -30,11 +30,10 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
 
 
   return (
-    <DesktopViewProvider>
-      <div className={`qalah-skin site-frame${breaking.length > 0 ? ' has-breaking' : ''}`}>
+    <div className={`qalah-skin site-frame${breaking.length > 0 ? ' has-breaking' : ''}`}>
       {/* مزوّد دفعة الإعلانات — طلب واحد لكلّ مساحات الصفحة (chrome + مساحات الصفحة). page يُشتقّ من المسار. */}
       <AdBatchProvider>
-      <MobileTopToggleBanner />
+      <MobileViewBanner />
 
       {/* إعلان بداية الموقع — أعلى كلّ شيء (قبل الشريط العلويّ والهيدر)، في كلّ صفحات الموقع. */}
       <AdZone zone="aalan_fwq_alhydr_fy_bdaya_almwqa" className="flex justify-center px-4 py-2" />
@@ -84,7 +83,6 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
 
       <CookiePolicyModal text={settings?.cookie_policy?.trim() || ''} hideTrigger autoOpenKey="acm_cookie_ack" />
       </AdBatchProvider>
-      </div>
-    </DesktopViewProvider>
+    </div>
   );
 }
