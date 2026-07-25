@@ -112,7 +112,19 @@ services:
   worker:
     <<: *backend-common
     user: www-data
-    command: php artisan queue:work redis --queue=default,notifications,mail,search,sitemap,ai,analytics --tries=3 --backoff=10 --sleep=1 --max-time=3600
+    # notifications-high/notifications-low added: DispatchCampaignJob for Critical/High priority
+    # events (e.g. article.breaking, broadcast.live) and Low priority events (article.updated,
+    # digest.daily) dispatches onto these via NotificationQueues::forPriority() — nothing
+    # previously consumed them, so those campaigns sat permanently pending. Ordered
+    # high,default,low around 'notifications' per NotificationQueues.php's own documented
+    # convention. whatsapp/vertix/migration/cdn-purge added for the same reason (confirmed live
+    # producers, zero prior consumers) — see queue-routing audit.
+    command: php artisan queue:work redis --queue=default,notifications-high,notifications,notifications-low,mail,search,sitemap,ai,analytics,whatsapp,cdn-purge,vertix,migration --tries=3 --backoff=10 --sleep=1 --max-time=3600
+    # 930s > DispatchCampaignJob::$timeout=900s, still the longest job across all queues above
+    # (vertix=600s, migration jobs=120-300s, whatsapp=30-300s, cdn-purge=30s all fit under it).
+    # Same class of fix as worker-media below: Docker's default ~10s SIGTERM->SIGKILL grace
+    # period would otherwise kill an in-flight job outright on every deploy/restart.
+    stop_grace_period: 930s
     healthcheck:
       test: ["CMD", "pgrep", "-f", "queue:work"]
       interval: 30s
@@ -165,6 +177,8 @@ services:
       API_BASE_URL: ${API_BASE_URL:?API_BASE_URL is required — set it in .env (see .env.example)}
       SITE_URL: ${SITE_URL:?SITE_URL is required — set it in .env (see .env.example)}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:?REVALIDATE_SECRET is required — must match FRONTEND_REVALIDATE_SECRET}
+      # اختياري — غيابه لا يكسر التشغيل (lib/weather.ts يرجّع null/[] بلا مفتاح، القسم يُخفى بأدب).
+      OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY:-}
     volumes:
       - frontend-cache:/app/.next/cache
     expose:

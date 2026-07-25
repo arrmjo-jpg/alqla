@@ -1,0 +1,26 @@
+# ── frontend build context — was MISSING entirely (audit: fix/coolify-production-readiness) ────
+# Mirrors admin-frontend/.dockerignore's categories, adapted for this Next.js app's own build
+# artifacts (.next instead of Vite's dist/build). Without this file, the Dockerfile's `COPY . .`
+# pulls in whatever happens to be sitting in the build context — confirmed at audit time to
+# include two tracked-but-scratch files at this directory's root (test-acc.txt,
+# tmp_api_check.json) that have no runtime purpose, plus whatever local node_modules/.next a
+# developer's own checkout happens to have on disk.
+
+.git
+.gitignore
+node_modules
+.next
+.env
+.env.*
+*.log
+.vscode
+.idea
+.cursor
+.DS_Store
+Thumbs.db
+coverage
+*.tsbuildinfo
+
+# -- Local scratch files observed at this directory's root at audit time --
+test-acc.txt
+tmp_api_check.json
