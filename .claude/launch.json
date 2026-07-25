@@ -5,7 +5,7 @@
       "name": "frontend",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "cwd": "D:\\gasem\\frontend",
+      "cwd": "frontend",
       "port": 3000,
       "autoPort": true
     },

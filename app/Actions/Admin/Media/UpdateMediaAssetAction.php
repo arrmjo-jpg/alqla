@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Media;
 
 use App\Models\MediaAsset;
+use App\Support\Cache\MediaCacheInvalidator;
 
 /**
  * تحديث البيانات الوصفية التحريرية (alt/caption/credit/source) لأصل موجود
@@ -22,6 +23,10 @@ class UpdateMediaAssetAction
         }
 
         $asset->save();
+
+        // alt/caption تظهر علنياً في صفحات المحتوى المالك — يجب إبطال كاشه فوراً
+        // (تعديل الأصل نفسه لا يُعيد حفظ Article/Category/... المالك).
+        MediaCacheInvalidator::invalidate($asset);
 
         return $asset->fresh();
     }

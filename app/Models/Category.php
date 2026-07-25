@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\CategoryScope;
 use App\Enums\CategoryStatus;
+use App\Enums\SectionLayoutType;
 use App\Support\Audit\AuditsChanges;
 use App\Support\Content\SlugGenerator;
 use Cviebrock\EloquentSluggable\Sluggable;
@@ -42,6 +43,8 @@ class Category extends Model
         'parent_id', 'locale', 'scope', 'name', 'slug', 'description',
         'icon', 'status', 'show_in_header', 'show_in_body',
         'show_in_footer', 'sort_order',
+        'banner_media_id', 'show_title', 'layout_type',
+        'provider', 'external_id',
     ];
 
     protected $fillable = [
@@ -58,6 +61,13 @@ class Category extends Model
         'show_in_body',
         'show_in_footer',
         'sort_order',
+        'banner_media_id',
+        'show_title',
+        'layout_type',
+        'appearance',
+        'provider',
+        'external_id',
+        'provider_metadata',
     ];
 
     protected function casts(): array
@@ -69,6 +79,11 @@ class Category extends Model
             'show_in_body' => 'boolean',
             'show_in_footer' => 'boolean',
             'sort_order' => 'integer',
+            'banner_media_id' => 'integer',
+            'show_title' => 'boolean',
+            'layout_type' => SectionLayoutType::class,
+            'appearance' => 'array',
+            'provider_metadata' => 'array',
         ];
     }
 
@@ -97,7 +112,10 @@ class Category extends Model
     }
 
     /**
-     * تقييد فرادة الـ slug ضمن نفس اللغة فقط (ADR slug per-locale).
+     * تقييد فرادة الـ slug ضمن نفس اللغة **ونفس الأب** (2026-07-18، كان
+     * per-locale فقط سابقاً). ضروريّ لسلامة المسار المتداخل الجديد
+     * /news/category/{...}: لولا هذا القيد لأمكن تصنيفَين تحت أبوين مختلفين
+     * أن يتشاركا نفس الـ slug فيتعذّر تمييز مسارهما.
      */
     protected function scopeWithUniqueSlugConstraints(
         Builder $query,
@@ -106,7 +124,12 @@ class Category extends Model
         array $config,
         string $slug
     ): Builder {
-        return $query->where('locale', $model->locale);
+        return $query->where('locale', $model->locale)
+            ->when(
+                $model->parent_id === null,
+                fn (Builder $q): Builder => $q->whereNull('parent_id'),
+                fn (Builder $q): Builder => $q->where('parent_id', $model->parent_id),
+            );
     }
 
     // ─── Relationships ──────────────────────────────────────────────
@@ -131,6 +154,12 @@ class Category extends Model
     public function primaryArticles(): HasMany
     {
         return $this->hasMany(Article::class, 'primary_category_id');
+    }
+
+    /** صورة بانر القسم (Section Design System) — نفس نمط Broadcast/Article.ogImage. */
+    public function bannerMedia(): BelongsTo
+    {
+        return $this->belongsTo(MediaAsset::class, 'banner_media_id');
     }
 
     // ─── Scopes ─────────────────────────────────────────────────────
@@ -191,5 +220,22 @@ class Category extends Model
         }
 
         return false;
+    }
+
+    // ─── Canonical URL foundation (revised 2026-07-23) ──────────────────────
+
+    /**
+     * المسار القانوني: /category-{id}/{slug} — المعرّف إلزاميّ وهو الهوية
+     * الثابتة (لا يتغيّر أبداً)؛ الـ slug زخرفيّ لقابلية القراءة/SEO فقط. تغيير
+     * اسم/سلَغ التصنيف لا يكسر الروابط القديمة: UpdateCategoryAction يلتقط
+     * المسار السابق في category_url_history، ويُحلّه CategoryRedirectResolver
+     * إلى قيمة canonicalPath() الحاليّة حيّاً (301) — مرآة تماماً لآلية المقالات.
+     *
+     * (يُلغي الشكل السابق المعتمد على سلسلة أسماء الآباء /news/category/{...}:
+     * كان بلا id، فأيّ تغيير في الاسم يكسر الرابط فوراً بلا أي مسار لاستعادته).
+     */
+    public function canonicalPath(): string
+    {
+        return "/category-{$this->id}/{$this->slug}";
     }
 }

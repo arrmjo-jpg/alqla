@@ -24,7 +24,7 @@ class DeleteVideoAction
 
         $tags = VideoCacheTags::invalidationTags($video, categorySlug: $video->category?->slug);
         Cache::tags($tags)->flush();
-        FrontendRevalidate::tags(FrontendCacheTags::fromVideoTags($tags));
+        FrontendRevalidate::tags([...FrontendCacheTags::fromVideoTags($tags), FrontendCacheTags::videoDetail($video)]);
 
         return ApiResponse::success(__('video.deleted'));
     }

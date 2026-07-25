@@ -6,6 +6,7 @@ namespace App\Actions\Admin\Content;
 
 use App\Http\Resources\Admin\Content\CategoryResource;
 use App\Models\Category;
+use App\Models\CategoryUrlHistory;
 use App\Support\Content\CategoryHierarchyGuard;
 use App\Support\Frontend\FrontendCacheTags;
 use App\Support\Frontend\FrontendRevalidate;
@@ -18,6 +19,8 @@ class UpdateCategoryAction
     public function handle(Category $category, array $validated): JsonResponse
     {
         $oldSlug = (string) $category->slug; // قبل أيّ تعديل — لإبطال وسم السلَغ القديم عند تغييره
+        $oldPath = $category->canonicalPath(); // قبل أيّ تعديل — لالتقاط category_url_history عند تغيّره
+        $oldLocale = $category->locale;
 
         $locale = $validated['locale'] ?? $category->locale;
         $parentId = array_key_exists('parent_id', $validated)
@@ -38,7 +41,9 @@ class UpdateCategoryAction
         }
 
         foreach (['name', 'description', 'icon', 'scope', 'status', 'show_in_header',
-            'show_in_body', 'show_in_footer', 'sort_order', 'locale'] as $field) {
+            'show_in_body', 'show_in_footer', 'sort_order', 'locale',
+            'banner_media_id', 'show_title', 'layout_type', 'appearance',
+            'provider', 'external_id'] as $field) {
             if (array_key_exists($field, $validated)) {
                 $category->{$field} = $validated[$field];
             }
@@ -54,13 +59,21 @@ class UpdateCategoryAction
 
         $category->save();
 
+        $newPath = $category->fresh()->canonicalPath();
+        if ($newPath !== $oldPath) {
+            CategoryUrlHistory::firstOrCreate(
+                ['locale' => $oldLocale, 'old_path' => $oldPath],
+                ['category_id' => $category->id, 'reason' => 'canonical_change']
+            );
+        }
+
         Cache::tags(['categories'])->flush();
-        // إبطال الواجهة: الشجرة + تنقّل الهيدر + قوائم القسم (+ السلَغ القديم ومظلّة المقالات عند تغييره).
-        FrontendRevalidate::tags(FrontendCacheTags::category($category, $oldSlug));
+        // إبطال الواجهة: الشجرة + تنقّل الهيدر + صفحة القسم (بالـid الثابت — لا يتأثر بتغيّر السلَغ).
+        FrontendRevalidate::tags(FrontendCacheTags::category($category));
 
         return ApiResponse::success(
             __('category.updated'),
-            new CategoryResource($category->fresh())
+            new CategoryResource($category->fresh()->load('bannerMedia'))
         );
     }
 }

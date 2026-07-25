@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Models\MediaAsset;
+use App\Support\Cache\MediaCacheInvalidator;
 use App\Support\Media\MediaConversions;
 use App\Support\Media\RemoteStorage;
 use Illuminate\Bus\Queueable;
@@ -54,13 +55,19 @@ class GenerateMediaAssetConversionsJob implements ShouldQueue
             $ready = ! empty($asset->fresh()?->conversions);
             $asset->forceFill(['processing_status' => $ready ? 'ready' : 'failed'])->save();
 
+            // المشتقّات (thumb/medium) صارت جاهزة الآن فعلياً — هذه نقطة التغيّر
+            // الحقيقية (لا وقت الـ dispatch)، فيجب إبطال كاش كل مالك يعرضها.
+            if ($ready) {
+                MediaCacheInvalidator::invalidate($asset->fresh());
+            }
+
             // التخزين الهجين: انسخ الأصل + مشتقّاته إلى المرآة البعيدة (إن فُعّلت).
             if ($ready && RemoteStorage::enabled()) {
                 MirrorMediaToRemoteJob::dispatch($asset->id);
             }
         } catch (Throwable $e) {
             $asset->forceFill(['processing_status' => 'failed'])->save();
-            throw $e; // TEMP DIAGNOSTIC — surface real error, revert before done
+            throw $e;
         }
     }
 

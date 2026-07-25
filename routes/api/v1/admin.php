@@ -40,6 +40,11 @@ use App\Http\Controllers\Api\V1\Admin\Roles\RoleController;
 use App\Http\Controllers\Api\V1\Admin\Scheduler\SchedulerController;
 use App\Http\Controllers\Api\V1\Admin\Settings\MediaController;
 use App\Http\Controllers\Api\V1\Admin\Settings\SettingsController;
+use App\Http\Controllers\Api\V1\Admin\Sport\CompetitionController;
+use App\Http\Controllers\Api\V1\Admin\Sport\MatchBarSettingsController;
+use App\Http\Controllers\Api\V1\Admin\Sport\SportMenuItemController;
+use App\Http\Controllers\Api\V1\Admin\Sport\SportSettingsController;
+use App\Http\Controllers\Api\V1\Admin\Sport\SportsHomeBarSettingsController;
 use App\Http\Controllers\Api\V1\Admin\System\FailedJobController;
 use App\Http\Controllers\Api\V1\Admin\System\OpsController;
 use App\Http\Controllers\Api\V1\Admin\System\SystemController;
@@ -440,6 +445,91 @@ Route::prefix('team-members')->group(function (): void {
         ->middleware('permission:team.force_delete')
         ->withTrashed()
         ->whereNumber('teamMember');
+});
+
+// ─── Competitions (تغطية المزامنة + أعلام شريط المباريات التحريريّة — مستقلّان بنيويًّا،
+// راجع Competition::class docblock). حجم متوقَّع صغير ⇒ بلا ترقيم صفحات/حذف ناعم. ────
+Route::prefix('competitions')->group(function (): void {
+    Route::get('/', [CompetitionController::class, 'index'])
+        ->middleware('permission:competitions.view');
+
+    Route::post('/', [CompetitionController::class, 'store'])
+        ->middleware('permission:competitions.manage');
+
+    // إعادة الترتيب — مسار حرفيّ قبل {competition} الرقمي.
+    Route::patch('/match-bar/reorder', [CompetitionController::class, 'reorderMatchBar'])
+        ->middleware('permission:competitions.manage');
+
+    // إعادة ترتيب شريط الصفحة الرئيسية للرياضة — ميزة مستقلّة عن أعلاه، نفس Action المشترك
+    // بعمود ترتيب مختلف (راجع ReorderCompetitionsBarAction).
+    Route::patch('/sports-home-bar/reorder', [CompetitionController::class, 'reorderSportsHomeBar'])
+        ->middleware('permission:competitions.manage');
+
+    Route::put('/{competition}', [CompetitionController::class, 'update'])
+        ->middleware('permission:competitions.manage')
+        ->whereNumber('competition');
+
+    // تبديل show_in_match_bar فقط — تفعيل يُلحِق البطولة بآخر القائمة تلقائيًّا (راجع
+    // ToggleCompetitionBarSelectionAction)؛ بلا جسم طلب، نمط PollController::toggleActive.
+    Route::patch('/{competition}/match-bar', [CompetitionController::class, 'toggleMatchBar'])
+        ->middleware('permission:competitions.manage')
+        ->whereNumber('competition');
+
+    // تبديل show_in_sports_home_bar فقط — ميزة مستقلّة تمامًا عن شريط المباريات أعلاه، نفس
+    // Action المشترك بعمود اختيار/ترتيب مختلفَين. راجع Competition::class docblock.
+    Route::patch('/{competition}/sports-home-bar', [CompetitionController::class, 'toggleSportsHomeBar'])
+        ->middleware('permission:competitions.manage')
+        ->whereNumber('competition');
+
+    Route::delete('/{competition}', [CompetitionController::class, 'destroy'])
+        ->middleware('permission:competitions.manage')
+        ->whereNumber('competition');
+});
+
+// ─── إعدادات شريط المباريات — مفتاح تفعيل/تعطيل واحد. القراءة مصادَقة عامّة؛ التبديل
+// settings.edit (مطابق لنمط NewspaperSettingsController). ────────────────────────────
+Route::prefix('settings/match-bar')->group(function (): void {
+    Route::get('/', [MatchBarSettingsController::class, 'show']);
+    Route::put('/', [MatchBarSettingsController::class, 'update'])
+        ->middleware('permission:settings.edit');
+});
+
+// ─── إعدادات شريط الصفحة الرئيسية للرياضة — ميزة مستقلّة تمامًا عن شريط المباريات أعلاه،
+// تشترك معه فقط بجدول Competition كمصدر بطولات واحد. نفس نمط المسارات أعلاه بالضبط. ──────
+Route::prefix('settings/sports-home-bar')->group(function (): void {
+    Route::get('/', [SportsHomeBarSettingsController::class, 'show']);
+    Route::put('/', [SportsHomeBarSettingsController::class, 'update'])
+        ->middleware('permission:settings.edit');
+});
+
+// ─── Sport Menu Items — قائمة قسم الرياضة (تصنيفات + أقسام وظيفية)، شجرة (أب/أبناء) بمستوى
+// واحد من التداخل. حجم متوقَّع صغير ⇒ بلا ترقيم صفحات/حذف ناعم (Phase 1.1). ─────────────────
+Route::prefix('sport-menu-items')->group(function (): void {
+    Route::get('/', [SportMenuItemController::class, 'index'])
+        ->middleware('permission:sport_menu.view');
+
+    Route::post('/', [SportMenuItemController::class, 'store'])
+        ->middleware('permission:sport_menu.manage');
+
+    // إعادة الترتيب — مسار حرفيّ قبل {sportMenuItem} الرقمي.
+    Route::patch('/reorder', [SportMenuItemController::class, 'reorder'])
+        ->middleware('permission:sport_menu.manage');
+
+    Route::put('/{sportMenuItem}', [SportMenuItemController::class, 'update'])
+        ->middleware('permission:sport_menu.manage')
+        ->whereNumber('sportMenuItem');
+
+    Route::delete('/{sportMenuItem}', [SportMenuItemController::class, 'destroy'])
+        ->middleware('permission:sport_menu.manage')
+        ->whereNumber('sportMenuItem');
+});
+
+// ─── إعدادات قسم الرياضة العامة (Sport Settings) — نمط القراءة/الكتابة نفسه أعلاه
+// (settings.edit فقط للكتابة، لا صلاحية إضافية للقراءة). ────────────────────────────────
+Route::prefix('settings/sport')->group(function (): void {
+    Route::get('/', [SportSettingsController::class, 'show']);
+    Route::put('/', [SportSettingsController::class, 'update'])
+        ->middleware('permission:settings.edit');
 });
 
 // ─── Video Library → Videos (نطاق من الدرجة الأولى) ────────────────────

@@ -83,7 +83,7 @@ class UpdateVideoAction
             oldCategorySlug: $oldCategorySlug,
         );
         Cache::tags($tags)->flush();
-        FrontendRevalidate::tags(FrontendCacheTags::fromVideoTags($tags));
+        FrontendRevalidate::tags([...FrontendCacheTags::fromVideoTags($tags), FrontendCacheTags::videoDetail($video)]);
 
         return ApiResponse::success(
             __('video.updated'),

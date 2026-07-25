@@ -17,7 +17,6 @@ import {
 } from '@/components/icons';
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
-import { EnDesktopViewToggle } from './en-desktop-view-toggle';
 import { EN_MEDIA_NAV, enSocialLabel } from '@/lib/en';
 import { socialEntries } from '@/components/layout/social-map';
 
@@ -131,10 +130,6 @@ export function EnMenu({
             </>
           )}
         </nav>
-
-        <div className="shrink-0 border-t border-border px-5 py-4 flex justify-center bg-surface-2/40">
-          <EnDesktopViewToggle className="w-full" />
-        </div>
 
         {socials.length > 0 && (
           <div className="shrink-0 border-t border-border px-4 py-3.5">

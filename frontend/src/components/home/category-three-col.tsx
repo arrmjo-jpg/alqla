@@ -69,17 +69,15 @@ export async function CategoryThreeCol({
             </div>
 
             {/* العمود الأوسط: الخبر الرئيسي (Item 0) */}
-            <div className="col-span-5 flex flex-col">
+            <div className="col-span-6 flex flex-col">
               {feature && <FeatureCard item={feature} largeTitle />}
             </div>
 
-            {/* العمود الأيسر: قائمة الأخبار الصغيرة (Item 3 to end) متقطعة */}
-            <div className="col-span-4 pl-2">
-              <ul className="flex flex-col divide-y divide-dashed divide-border/70">
-                {items.slice(3, count).map((item) => (
-                  <SmallItem key={item.id} item={item} />
-                ))}
-              </ul>
+            {/* العمود الأيسر: خبران بصورة كبيرة (Item 3 & 4) — نفس عرض العمود الأيمن (col-span-3) فتصير الصور بنفس الحجم تمامًا. */}
+            <div className="col-span-3 flex flex-col gap-6">
+              {items.slice(3, 5).map((item) => (
+                <GridCard key={item.id} item={item} />
+              ))}
             </div>
           </div>
         ) : (
@@ -101,7 +99,7 @@ function FeatureCard({ item, largeTitle }: { item: FeedItem; largeTitle?: boolea
   return (
     <article className="group relative flex flex-col">
       <Link href={item.href} className="absolute inset-0 z-10" aria-label={item.title} />
-      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[14px] bg-surface-2 shadow-sm">
+      <div className={`relative w-full overflow-hidden rounded-[14px] bg-surface-2 shadow-sm ${largeTitle ? 'aspect-[3/2]' : 'aspect-[16/10]'}`}>
         {item.image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -127,7 +125,8 @@ function FeatureCard({ item, largeTitle }: { item: FeedItem; largeTitle?: boolea
 }
 
 // بطاقات العمود الأيمن (صورتان تحت بعض)
-function GridCard({ item }: { item: FeedItem }) {
+// مُصدَّرة لإعادة الاستخدام (الخبر الأول بصورة في CategoryLeadHeadlines).
+export function GridCard({ item }: { item: FeedItem }) {
   return (
     <article className="group relative flex flex-col">
       <Link href={item.href} className="absolute inset-0 z-10" aria-label={item.title} />

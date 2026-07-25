@@ -1,19 +1,19 @@
 import React from 'react';
 import Link from 'next/link';
 
-import { AdZone } from '@/components/ads/ad-zone';
 import { Container } from '@/components/layout/container';
 import { LivePulse } from '@/components/ui/live-pulse';
 import type { FeedItem } from '@/lib/feed';
 
 import { HeroDesktopCarousel } from './hero-desktop-carousel';
 import { HeroMobileCarousel } from './hero-mobile-carousel';
+import { LatestHeaderList } from './latest-header-list';
 
 // كتلة الهيرو (الأخبار المميّزة is_featured). الجوّال يبقى كما هو (HeroMobileCarousel، بلا تغيير).
-// سطح المكتب: صورة رئيسية + شريط صور مصغّرة متزامن (HeroDesktopCarousel، 9 أعمدة) بجانب إعلان
-// (3 أعمدة) — يحلّ محلّ الكرت الرئيسيّ + شبكة 2×2 السابقين، بطلب المستخدم اعتمادًا على مرجع خارجيّ.
-// الإعلان aalan_kbyr_asfl_alhyrw_1410 انتقل إلى هنا من أسفل الهيرو في (site)/page.tsx.
-export function FeaturedHero({ items }: { items: FeedItem[] }) {
+// سطح المكتب: صورة رئيسية + شريط صور مصغّرة متزامن (HeroDesktopCarousel، 9 أعمدة) بجانب قائمة
+// «آخر المستجدات» (3 أعمدة، علم is_header من كلّ الموقع) — محلّ إعلان aalan_kbyr_asfl_alhyrw_1410
+// الذي كان هنا سابقًا (بطلب المستخدم: استبدال الإعلان بالقائمة).
+export function FeaturedHero({ items, headerItems = [] }: { items: FeedItem[]; headerItems?: FeedItem[] }) {
   if (items.length === 0) return <FeaturedHeroEmpty />;
 
   return (
@@ -21,13 +21,13 @@ export function FeaturedHero({ items }: { items: FeedItem[] }) {
       {/* الجوّال: كاروسيل عصريّ بملء العرض قابل للسحب + نقاط ترقيم — بدل الشبكة المزدحمة. */}
       <HeroMobileCarousel items={items.slice(0, 5)} />
 
-      {/* سطح المكتب (≥1024px): 9 أعمدة كاروسيل + 3 أعمدة إعلان. */}
+      {/* سطح المكتب (≥1024px): 8 أعمدة كاروسيل + 4 أعمدة «آخر المستجدات» (كانت 9/3 — كاروسيل أصغر شوي لصالح القائمة). */}
       <div className="hidden lg:grid lg:grid-cols-12 lg:gap-4">
-        <div className="lg:col-span-9">
+        <div className="lg:col-span-8">
           <HeroDesktopCarousel items={items.slice(0, 5)} />
         </div>
-        <div className="lg:col-span-3">
-          <AdZone zone="aalan_kbyr_asfl_alhyrw_1410" className="flex h-full items-start justify-center" />
+        <div className="lg:col-span-4">
+          <LatestHeaderList items={headerItems} />
         </div>
       </div>
     </Container>

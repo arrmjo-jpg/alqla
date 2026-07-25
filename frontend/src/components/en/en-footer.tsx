@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
 import { socialEntries } from '@/components/layout/social-map';
-import { EnDesktopViewToggle } from '@/components/en/en-desktop-view-toggle';
 import { enCategoryUrl, enSocialLabel, enUrl, looksArabic } from '@/lib/en';
 import { getEnCategories } from '@/lib/en-data';
 import type { SiteSettings } from '@/lib/site-settings';
@@ -199,10 +198,6 @@ export async function EnFooter({ settings }: { settings: SiteSettings | null }) 
               <Link key={`${l.label}-${l.href}`} href={l.href}>{l.label}</Link>
             ))}
           </nav>
-
-          <div className="en-footer-toggle-wrap">
-            <EnDesktopViewToggle className="en-footer-toggle-btn" />
-          </div>
         </div>
 
         <div className="en-footer-bottom">

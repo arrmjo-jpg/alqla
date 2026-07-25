@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Media;
 
 use App\Models\MediaAsset;
+use App\Support\Cache\MediaCacheInvalidator;
 use App\Support\Media\MediaFileCleaner;
 use App\Support\Media\MediaUsage;
 
@@ -27,6 +28,10 @@ class DeleteMediaAssetAction
         if ($usageCount > 0 && ! $force) {
             return ['deleted' => false, 'usage_count' => $usageCount];
         }
+
+        // قبل الحذف: العلاقات ما زالت قابلة للاستعلام هنا (nullOnDelete/cascade
+        // يُفرَّغها بعد delete())، فيجب إبطال كاش المالكين الآن وإلا يبقى بلا فرصة.
+        MediaCacheInvalidator::invalidate($asset);
 
         MediaFileCleaner::purge($asset);
         $asset->delete();

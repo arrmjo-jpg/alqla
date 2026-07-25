@@ -168,7 +168,8 @@ export const getHomepageFeed = cache(async (locale = 'ar'): Promise<HomepageFeed
     try {
       const res = await fetch(
         `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/homepage`,
-        { headers: env.internalHeaders, next: { revalidate: 120, tags: ['articles', 'homepage'] } }
+        // ISR = سقف أمان 36000s (10 ساعات)؛ التحديث الفعليّ حدثيّ عبر revalidateTag('homepage').
+        { headers: env.internalHeaders, next: { revalidate: 36000, tags: ['articles', 'homepage'] } }
       );
       if (!res.ok) return empty;
       const parsed = HomepageEnvelopeSchema.safeParse(await res.json());
@@ -188,24 +189,29 @@ export const getHomepageFeed = cache(async (locale = 'ar'): Promise<HomepageFeed
 });
 
 
-// كتلة الهيرو: الأخبار المميّزة (is_featured) — حدّ 5 (= hero(source:featured,limit:5))، ISR 300s.
-export const getHeroFeed = (locale = 'ar') => fetchFeed('hero', 5, locale, 300);
+// كتلة الهيرو: الأخبار المميّزة (is_featured) — حدّ 5 (= hero(source:featured,limit:5)). ISR = سقف
+// أمان 36000s (10 ساعات)؛ التحديث الفعليّ حدثيّ عبر revalidateTag('feed:hero') (2026-07-24: كانت
+// 300s — تسحب الـeffective revalidate للرئيسية بأكملها تحتها بحكم قاعدة Next: الحدّ الأدنى بين كل
+// fetch ضمن شجرة الصفحة يفوز، راجع تقرير تدقيق الكاش §14).
+export const getHeroFeed = (locale = 'ar') => fetchFeed('hero', 5, locale, 36000);
 
-// كتلة «آخر المستجدات»: أخبار الهيدر (is_header) — حدّ 9 (كرت رئيسيّ + شبكة 8)، ISR 300s.
-export const getHeaderFeed = (locale = 'ar') => fetchFeed('header', 9, locale, 300);
+// كتلة «آخر المستجدات»: أخبار الهيدر (is_header) — حدّ 9 (كرت رئيسيّ + شبكة 8). ISR = سقف أمان 36000s.
+export const getHeaderFeed = (locale = 'ar') => fetchFeed('header', 9, locale, 36000);
 
-// صفحة «آخر المستجدات» /latest: أحدث الأخبار المنشورة — حدّ 30، ISR 60s (أحدث = تحديث أسرع).
-export const getLatestFeed = (locale = 'ar') => fetchFeed('latest', 30, locale, 60);
+// صفحة «آخر المستجدات» /latest + كتلة مماثلة على الرئيسية. ISR = سقف أمان 36000s؛ التحديث حدثيّ عبر
+// revalidateTag('feed:latest').
+export const getLatestFeed = (locale = 'ar') => fetchFeed('latest', 30, locale, 36000);
 
-// كتلة «تريندينغ»: اختيارات المحرّر (is_editor_pick) — من كلّ الأقسام حين ينطبق العلم. ISR 300s.
-export const getEditorsPickFeed = (limit = 5, locale = 'ar') => fetchFeed('editors_pick', limit, locale, 300);
+// كتلة «تريندينغ»: اختيارات المحرّر (is_editor_pick) — من كلّ الأقسام حين ينطبق العلم. ISR = سقف أمان 36000s.
+export const getEditorsPickFeed = (limit = 5, locale = 'ar') => fetchFeed('editors_pick', limit, locale, 36000);
 
-// كتلة «عاجل» (is_breaking) — للشريط السفليّ. حدّ 5، ISR قصير 120s (العاجل حسّاس للوقت). فارغ ⇒ يُخفى.
-export const getBreakingFeed = (limit = 5, locale = 'ar') => fetchFeed('breaking', limit, locale, 120);
+// كتلة «عاجل» (is_breaking) — للشريط السفليّ. حدّ 5. ISR = سقف أمان 36000s؛ التحديث حدثيّ عبر
+// revalidateTag('feed:breaking') فوريّ عند تبديل is_breaking (لا حاجة لـTTL قصير).
+export const getBreakingFeed = (limit = 5, locale = 'ar') => fetchFeed('breaking', limit, locale, 36000);
 
 // كتلة «الأكثر شيوعا»: الأكثر قراءة (مشاهدات مُتتبَّعة، بلا نافذة 7 أيام الضيّقة) — المطابق الدلاليّ
 // لـ«الأكثر شيوعا/الأكثر قراءة». endpoint مستقلّ بمُعامل per_page (ليس /feed/{kind})، لكنّه يعيد نفس
-// مغلّف {data:[…]} ومورد القائمة ⇒ إعادة استخدام EnvelopeSchema/mapItem. ISR 300s؛ أي فشل ⇒ [] (عزل الكتلة).
+// مغلّف {data:[…]} ومورد القائمة ⇒ إعادة استخدام EnvelopeSchema/mapItem. ISR = سقف أمان 36000s؛ أي فشل ⇒ [] (عزل الكتلة).
 // (الرائج /articles/trending متاح أيضاً لكن نافذته 7 أيام تُفرغه إن لم يوجد محتوى حديث.)
 export const getMostReadFeed = cache(async (limit = 6, locale = 'ar', days = 0): Promise<FeedItem[]> => {
   if (!env.apiBaseUrl) return [];
@@ -214,7 +220,7 @@ export const getMostReadFeed = cache(async (limit = 6, locale = 'ar', days = 0):
     const qs = `per_page=${limit}${days > 0 ? `&days=${days}` : ''}`;
     const res = await fetch(
       `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles/most-read?${qs}`,
-      { headers: env.internalHeaders, next: { revalidate: 300, tags: ['articles', 'feed:most_read'] } },
+      { headers: env.internalHeaders, next: { revalidate: 36000, tags: ['articles', 'feed:most_read'] } },
     );
     if (!res.ok) return [];
     const parsed = EnvelopeSchema.safeParse(await res.json());
@@ -318,18 +324,24 @@ async function fetchCursorFeed(opts: {
 }
 
 // مقالات تصنيف محدّد (slug) — قائمة المقالات العامّة بمرشّح allow-list `filter[category]`.
-// ISR 300s + كاش عبوريّ إضافيّ 60ث (getCached) — الوحيد بين الثلاثة الذي يحمل هذه الطبقة الإضافيّة.
+// وسم الكاش **بالـid الثابت** (2026-07-24: كان بالـslug، ينكسر الإبطال عند إعادة تسمية القسم) —
+// يُحلّ id القسم من الفهرس المُكاش (fetchCategoryIndex، نداء واحد لكل طلب صفحة عبر React cache()).
+// ISR = سقف أمان 36000s (10 ساعات)؛ التحديث الفعليّ حدثيّ عبر revalidateTag('category:{id}').
+// + كاش عبوريّ إضافيّ 60ث (getCached) — الوحيد بين الثلاثة الذي يحمل هذه الطبقة الإضافيّة.
 export const getCategoryFeed = cache(
   async (slug: string, limit = 4, locale = 'ar'): Promise<FeedItem[]> =>
-    getCached(`category-feed:${locale}:${slug}:${limit}`, 60000, () =>
-      fetchCursorFeed({
+    getCached(`category-feed:${locale}:${slug}:${limit}`, 60000, async () => {
+      const category = await getCategoryBySlug(slug, locale);
+      // غياب القسم من الفهرس (فشل عابر/تصنيف غير مفهرس) ⇒ وسم احتياطيّ بالسلَغ بدل تعطيل الكاش تماماً.
+      const tag = category ? `category:${category.id}` : `category:slug-fallback:${slug}`;
+      return fetchCursorFeed({
         locale,
         limit,
         filters: { 'filter[category]': slug },
-        revalidate: 300,
-        tags: ['articles', `category:${slug}`],
-      }),
-    ),
+        revalidate: 36000,
+        tags: ['articles', tag],
+      });
+    }),
 );
 
 export const getTagFeed = cache(
@@ -419,14 +431,17 @@ export async function fetchPaginatedArticles(opts: {
 }
 
 export const getCategoryPage = cache(
-  async (slug: string, page = 1, perPage = 18, locale = 'ar'): Promise<CategoryPageResult> =>
-    fetchPaginatedArticles({
+  async (slug: string, page = 1, perPage = 18, locale = 'ar'): Promise<CategoryPageResult> => {
+    const category = await getCategoryBySlug(slug, locale);
+    const tag = category ? `category:${category.id}` : `category:slug-fallback:${slug}`;
+    return fetchPaginatedArticles({
       locale,
       page,
       perPage,
       filters: { 'filter[category]': slug },
       sort: '-published_at',
-      revalidate: 300,
-      tags: ['articles', `category:${slug}`],
-    }),
+      revalidate: 36000,
+      tags: ['articles', tag],
+    });
+  },
 );

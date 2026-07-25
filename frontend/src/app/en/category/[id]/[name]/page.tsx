@@ -9,7 +9,8 @@ import { env } from '@/lib/env';
 import { getCategoryById, getCategoryPage } from '@/lib/feed';
 import { buildMetadata } from '@/lib/seo';
 
-export const revalidate = 21600;
+// ISR = 36000s (10h) safety ceiling; event-driven refresh via revalidateTag('category:{id}').
+export const revalidate = 36000;
 const PER_PAGE = 18;
 
 export async function generateMetadata({
@@ -48,7 +49,7 @@ export default async function EnCategoryPage({
   // Canonical redirect check:
   const decodedName = name ? decodeURIComponent(name) : '';
   if (category.slug.normalize('NFC') !== decodedName.normalize('NFC')) {
-    permanentRedirect(`/en/category-${category.id}/${category.slug}`);
+    permanentRedirect(`/en/category-${category.id}/${encodeURIComponent(category.slug)}`);
   }
 
   const sp = await searchParams;

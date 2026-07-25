@@ -95,7 +95,10 @@ export const getSiteSettings = cache(async (locale = 'ar'): Promise<SiteSettings
     try {
       const res = await fetch(`${env.apiBaseUrl}/api/v1/site?locale=${encodeURIComponent(locale)}`, {
         headers: env.internalHeaders,
-        next: { revalidate: 300, tags: ['site-settings'] },
+        // ISR = سقف أمان 36000s (10 ساعات)؛ التحديث الفعليّ حدثيّ عبر revalidateTag('site-settings').
+        // مُحمَّلة من (site)/layout.tsx المشترك لكل صفحة — كانت القيمة السابقة (300s) تسحب الـeffective
+        // revalidate لكل صفحة عامّة تحتها بحكم قاعدة Next (الحدّ الأدنى بين كل fetch يفوز)، راجع §14.
+        next: { revalidate: 36000, tags: ['site-settings'] },
       });
       if (!res.ok) return null;
       const parsed = EnvelopeSchema.safeParse(await res.json());

@@ -23,7 +23,8 @@ import { getCategoryFeed, getMostReadFeed, getEditorsPickFeed, getLatestFeed, ge
 import { extractHeadings } from '@/lib/reading';
 import { getTtsConfig } from '@/lib/tts';
 
-export const revalidate = 21600;
+// ISR = سقف أمان (10 ساعات)؛ التحديث الفعليّ حدثيّ عبر revalidateTag('article:{id}').
+export const revalidate = 36000;
 
 export async function generateMetadata({
   params,

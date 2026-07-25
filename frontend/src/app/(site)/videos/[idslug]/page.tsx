@@ -20,8 +20,8 @@ import { getLatestVideos, getPlaylist, getRelatedVideos, getVideo, type VideoIte
 // `notFound()` = **404 حقيقيّ** (لذا لا `loading.tsx` على المسار: بثّ القشرة المبكّر يثبّت 200؛ نُبقي القائمة الجانبيّة
 // تبثّ عبر `<Suspense>` بهيكل). ذات صلة حقيقيّة، وعند غيابها الأحدث (fallback مسموح صريح). القائمة عبر سياق
 // `?playlist=` (لا تلفيق عضويّة). SEO: metadata+OG+canonical+JSON-LD VideoObject من حقول حقيقيّة (تُحذَف الفارغة).
-// RSC؛ ISR = سقف أمان (6 ساعات) والتحديث حدثيّ عبر video:{locale}:{slug}؛ منارة المشاهدة مؤجَّلة.
-export const revalidate = 21600;
+// RSC؛ ISR = سقف أمان (10 ساعات) والتحديث حدثيّ عبر revalidateTag('video:{id}')؛ منارة المشاهدة مؤجَّلة.
+export const revalidate = 36000;
 
 // فكّ ترميز المقطع (عربيّ مُرمَّز %D9..) ثمّ إزالة بادئة المعرّف (أوّل مقطع رقميّ فقط؛ آمن مع سلَغ يبدأ برقم).
 const bareSlug = (idslug: string): string => {
@@ -45,7 +45,7 @@ export async function generateMetadata({
   params: Promise<{ idslug: string }>;
 }): Promise<Metadata> {
   const { idslug } = await params;
-  const video = await getVideo(bareSlug(idslug));
+  const video = await getVideo(idslug);
   if (!video) return { title: 'فيديو' };
 
   return articleSeoToMetadata(video, `${env.siteUrl}/videos/${idslug}`);
@@ -63,7 +63,7 @@ export default async function WatchPage({
   const playlistSlug = typeof sp.playlist === 'string' ? sp.playlist : undefined;
   const slug = bareSlug(idslug);
 
-  const video = await getVideo(slug);
+  const video = await getVideo(idslug);
   if (!video) notFound(); // 404 حقيقيّ — قبل أيّ بثّ
 
   const canonical = `${env.siteUrl}/videos/${idslug}`;

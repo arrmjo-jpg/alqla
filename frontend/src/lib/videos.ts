@@ -20,12 +20,38 @@ import { env } from './env';
 // المظروف القياسيّ: { success, message, data, meta }.
 
 const REVALIDATE = 120; // ISR — سقف أمان؛ التحديث الفعليّ حدثيّ عبر وسوم القاموس الموحَّد أدناه.
-// القاموس الموحَّد (يطابق FrontendCacheTags::fromVideoTags حرفيًّا): القوائم على وسم الخلاصة،
-// والتفاصيل على وسم العنصر وحده (فلا يبطل تعديلُ فيديو كلَّ صفحات التفاصيل).
+// تفاصيل الفيديو: ISR = سقف أمان 36000s (10 ساعات)؛ التحديث الفعليّ حدثيّ عبر revalidateTag('video:{id}').
+const DETAIL_REVALIDATE = 36000;
+// القاموس الموحَّد (يطابق FrontendCacheTags حرفيًّا): القوائم على وسم الخلاصة، والتفاصيل على وسم
+// العنصر وحده (فلا يبطل تعديلُ فيديو كلَّ صفحات التفاصيل). وسم التفاصيل **بالـid الثابت**
+// (2026-07-24: كان بالـslug، ينكسر الإبطال عند إعادة تسمية الفيديو) — مطابق لـFrontendCacheTags::videoDetail().
 const videoFeedTag = (locale: string) => `video-feed:${locale}`;
-const videoTag = (locale: string, slug: string) => `video:${locale}:${slug}`;
+const videoDetailTag = (id: number) => `video:${id}`;
 const videoCategoryTag = (locale: string, slug: string) => `video-category:${locale}:${slug}`;
 const playlistTag = (locale: string, slug: string) => `playlist:${locale}:${slug}`;
+
+// استخراج id من مقطع {id}-{slug} القانونيّ (نفس نمط bareSlug في صفحة المشاهدة/الريلز). لا رقم
+// بادئ (رابط قديم/مشوَّه) ⇒ null — يُستخدَم حينها وسم احتياطيّ بالسلَغ (انظر getVideo).
+function idFromIdSlug(idslug: string): number | null {
+  let s = idslug;
+  try {
+    s = decodeURIComponent(idslug);
+  } catch {
+    /* مقطع غير صالح الترميز — نُبقي الخام */
+  }
+  const m = s.match(/^(\d+)-/);
+  return m ? Number(m[1]) : null;
+}
+
+function bareSlugFrom(idslug: string): string {
+  let s = idslug;
+  try {
+    s = decodeURIComponent(idslug);
+  } catch {
+    /* مقطع غير صالح الترميز — نُبقي الخام */
+  }
+  return s.replace(/^\d+-/, '');
+}
 
 const enc = encodeURIComponent;
 import { SeoSchema, type ArticleSeo } from './articles';
@@ -243,14 +269,22 @@ export const getRelatedVideos = cache((slug: string, limit = 8, locale = 'ar'): 
   fetchCardList(`/api/v1/${enc(locale)}/videos/${enc(slug)}/related?per_page=${limit}`, [videoFeedTag(locale)]),
 );
 
-/** تفاصيل فيديو واحد بالسلَغ **المجرَّد** (نقطة التفاصيل الموجودة؛ النقطة تقبل السلَغ لا id-slug). غير موجود/فشل ⇒ null. */
-export const getVideo = cache(async (slug: string, locale = 'ar'): Promise<VideoItem | null> => {
+/**
+ * تفاصيل فيديو واحد بالمقطع القانونيّ **{id}-{slug}** (يستقبل idslug خاماً كما وصل من رابط الصفحة؛
+ * يستخرج id للوسم ويجرّد السلَغ للنقطة الفعليّة — النقطة تقبل السلَغ لا id-slug). غير موجود/فشل ⇒ null.
+ */
+export const getVideo = cache(async (idslug: string, locale = 'ar'): Promise<VideoItem | null> => {
   if (!env.apiBaseUrl) return null;
+  const slug = bareSlugFrom(idslug);
+  const id = idFromIdSlug(idslug);
+  // وسم بالـid الثابت حين متاح من الرابط (الحالة القياسية دوماً)؛ رابط قديم/مشوَّه بلا بادئة رقمية
+  // ⇒ وسم احتياطيّ بالسلَغ (لن يُبطَل حدثيّاً من الباك إند، لكنه يبقى ضمن سقف الأمان 36000s).
+  const tag = id !== null ? videoDetailTag(id) : `video:slug-fallback:${locale}:${slug}`;
   try {
     const res = await fetch(`${env.apiBaseUrl}/api/v1/${enc(locale)}/videos/${enc(slug)}`, {
       headers: env.internalHeaders,
       // وسم العنصر وحده — تعديل فيديو آخر لا يبطل هذه الصفحة (رفّ «ذات صلة» يحمل وسم الخلاصة بنفسه).
-      next: { revalidate: REVALIDATE, tags: [videoTag(locale, slug)] },
+      next: { revalidate: DETAIL_REVALIDATE, tags: [tag] },
     });
     if (!res.ok) return null;
     const parsed = VideoDetailEnvelope.safeParse(await res.json());

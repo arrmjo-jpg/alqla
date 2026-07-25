@@ -9,8 +9,8 @@ import { getReelByIdSlug, getReelsFeed } from '@/lib/reels';
 import { REELS_PRIMARY, REELS_SERVICES } from '@/lib/reels-nav';
 import { getSiteSettings } from '@/lib/site-settings';
 
-// رابط عميق لريل محدّد — يفتح الـfeed مبتدئاً به. ISR = سقف أمان؛ التحديث حدثيّ عبر reel:{locale}:{slug}.
-export const revalidate = 21600;
+// رابط عميق لريل محدّد — يفتح الـfeed مبتدئاً به. ISR = سقف أمان (10 ساعات)؛ التحديث حدثيّ عبر revalidateTag('reel:{id}').
+export const revalidate = 36000;
 
 import { env } from '@/lib/env';
 import { articleSeoToMetadata } from '@/lib/articles';

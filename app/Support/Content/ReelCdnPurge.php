@@ -45,9 +45,8 @@ final class ReelCdnPurge
     private static function doPurge(Reel $reel, ?string $oldPath = null): void
     {
         // إخطار واجهة Next بإبطال الوسوم — مستقلّ عن إعداد الـ CDN أدناه؛ مُجدوَل ومعزول الفشل.
-        // السلَغ القديم من oldPath (canonical = /{locale}/reels/{id}-{slug}) ليُبطَل وسمه أيضاً.
-        $oldSlug = $oldPath !== null ? preg_replace('/^\d+-/', '', basename($oldPath)) : null;
-        FrontendRevalidate::tags(FrontendCacheTags::reel($reel, $oldSlug));
+        // وسم reel:{id} ثابت بثبات id الريل (2026-07-24) — لا حاجة لاشتقاق سلَغ قديم بعد الآن.
+        FrontendRevalidate::tags(FrontendCacheTags::reel($reel));
 
         // إخطار محركات البحث بتحديث الخريطة عند تغيّر ريل منشور (بوابته SEARCH_PING_ENABLED).
         if ($reel->status->value === 'published') {

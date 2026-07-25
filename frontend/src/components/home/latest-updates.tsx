@@ -99,7 +99,8 @@ function LeadCard({ item }: { item: FeedItem }) {
 }
 
 // كرت القائمة: صورة مربّعة (بداية) + عنوان + اسم القسم بالأحمر (رابط مستقلّ) — كرت أبيض بحدّ.
-function ListCard({ item }: { item: FeedItem }) {
+// مُصدَّرة لإعادة الاستخدام (الخبر الأول بصورة صغيرة في CategoryLeadHeadlines).
+export function ListCard({ item }: { item: FeedItem }) {
   return (
     <div
       className="group relative flex h-full items-center gap-3 border border-border bg-surface p-2 transition hover:border-primary/30 hover:shadow-sm"

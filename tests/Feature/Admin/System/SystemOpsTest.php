@@ -2,11 +2,18 @@
 
 declare(strict_types=1);
 
+use App\Jobs\RevalidateFrontendCacheJob;
 use App\Models\User;
+use App\Support\Cache\AdCacheTags;
 use App\Support\Cache\ArticleCacheTags;
+use App\Support\Cache\BroadcastCacheTags;
+use App\Support\Cache\PageCacheTags;
 use App\Support\Cache\ReelCacheTags;
+use App\Support\Cache\TeamMemberCacheTags;
+use App\Support\Cache\VideoCacheTags;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Queue;
 
 uses(RefreshDatabase::class);
 
@@ -68,6 +75,35 @@ it('clears tagged content cache for cache.clear holders', function (): void {
     expect($res->json('data.cleared'))->toContain(ArticleCacheTags::ALL);
     expect(Cache::tags([ArticleCacheTags::ALL])->get('probe-a'))->toBeNull();
     expect(Cache::tags([ReelCacheTags::ALL])->get('probe-r'))->toBeNull();
+});
+
+it('clears every content tag group, not just articles/reels/categories', function (): void {
+    foreach ([
+        VideoCacheTags::ALL, BroadcastCacheTags::ALL, PageCacheTags::ALL,
+        TeamMemberCacheTags::ALL, AdCacheTags::ALL, 'live_updates',
+    ] as $tag) {
+        Cache::tags([$tag])->put('probe', 'x', 600);
+    }
+
+    $res = $this->withToken(opsAdminToken())->postJson('/api/v1/admin/system/cache/clear')->assertOk();
+
+    foreach ([
+        VideoCacheTags::ALL, BroadcastCacheTags::ALL, PageCacheTags::ALL,
+        TeamMemberCacheTags::ALL, AdCacheTags::ALL, 'live_updates',
+    ] as $tag) {
+        expect($res->json('data.cleared'))->toContain($tag);
+        expect(Cache::tags([$tag])->get('probe'))->toBeNull();
+    }
+});
+
+it('notifies the frontend (Next.js ISR) when clearing content cache', function (): void {
+    config(['services.frontend_revalidate.url' => 'https://example.test/api/revalidate']);
+    config(['services.frontend_revalidate.secret' => 'test-secret']);
+    Queue::fake();
+
+    $this->withToken(opsAdminToken())->postJson('/api/v1/admin/system/cache/clear')->assertOk();
+
+    Queue::assertPushed(RevalidateFrontendCacheJob::class);
 });
 
 it('forbids cache clear without cache.clear permission', function (): void {

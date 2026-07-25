@@ -437,6 +437,21 @@ export type CategoryScope = 'news' | 'opinion' | 'both';
 
 export type CategoryStatus = 'active' | 'hidden';
 
+/** Section Design System — layout registry read by the public Next.js SectionRenderer. */
+export type SectionLayoutType = 'default' | 'hero' | 'magazine' | 'featured';
+
+/** v1 border sub-form — fixed to solid; type/shadow/gradient are a fast-follow. */
+export interface CategoryBorderAppearance {
+  enabled: boolean;
+  width: number;
+  radius: number;
+  color: string;
+}
+
+export interface CategoryAppearance {
+  border?: CategoryBorderAppearance;
+}
+
 export interface CategoryData {
   id: number;
   parent_id: number | null;
@@ -452,10 +467,18 @@ export interface CategoryData {
   show_in_body: boolean;
   show_in_footer: boolean;
   sort_order: number;
+  banner_media_id: number | null;
+  banner_url?: string | null;
+  show_title: boolean;
+  layout_type: SectionLayoutType;
+  appearance: CategoryAppearance | null;
   created_at: string;
   /** Total articles (primary + secondary) — list endpoint only. */
   articles_count?: number;
   children: CategoryData[];
+  /** ربط تصنيف نوع رياضة بمزوّد بيانات (Sports Engine, Approved Baseline v1.0 §0). */
+  provider?: string | null;
+  external_id?: string | null;
 }
 
 /** A soft-deleted category (flat trash list). */
@@ -496,6 +519,12 @@ export interface CategoryUpsertPayload {
   show_in_body?: boolean;
   show_in_footer?: boolean;
   sort_order?: number;
+  banner_media_id?: number | null;
+  show_title?: boolean;
+  layout_type?: SectionLayoutType;
+  appearance?: CategoryAppearance | null;
+  provider?: string | null;
+  external_id?: string | null;
 }
 
 // ─── Unified Media Studio (P9 — central shared assets) ─────────────────────

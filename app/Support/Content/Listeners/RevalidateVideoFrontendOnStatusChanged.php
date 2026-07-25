@@ -23,7 +23,7 @@ final class RevalidateVideoFrontendOnStatusChanged
         $video = $event->video;
         $video->load('category');
         $tags = VideoCacheTags::invalidationTags($video, categorySlug: $video->category?->slug);
-        FrontendRevalidate::tags(FrontendCacheTags::fromVideoTags($tags));
+        FrontendRevalidate::tags([...FrontendCacheTags::fromVideoTags($tags), FrontendCacheTags::videoDetail($video)]);
 
         if ($event->to === VideoStatus::Published) {
             SearchEngineNotify::sitemaps();

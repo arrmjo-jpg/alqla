@@ -7,13 +7,12 @@ import { Container } from '@/components/layout/container';
 import { FeedBadge } from '@/components/home/featured-hero';
 import type { FeedItem } from '@/lib/feed';
 
-// Card count per page at each breakpoint — kept in sync with the Tailwind width classes on each
-// card (w-1/2 sm:w-1/3 lg:w-1/4) so the JS-computed dot count/scroll-page-size matches what's
-// actually visible. Native horizontal scroll (scroll-snap) handles touch/trackpad swipe for free.
+// Card count per page — two tiers only, kept in sync with the Tailwind width classes on each
+// card (w-1/2 sm:w-1/5): mobile (<640) shows 2/page (carousel), sm+ shows all 5 in one static row
+// (pageCount resolves to 1 there ⇒ arrows/dots/autoplay auto-hide, no tablet-only carousel tier).
+// Native horizontal scroll (scroll-snap) handles touch/trackpad swipe for free.
 function cardsPerPage(width: number): number {
-  if (width >= 1024) return 5;
-  if (width >= 640) return 3;
-  return 2;
+  return width >= 640 ? 5 : 2;
 }
 
 export function TopNewsCarousel({ items }: { items: FeedItem[] }) {
@@ -91,9 +90,9 @@ export function TopNewsCarousel({ items }: { items: FeedItem[] }) {
                 type="button"
                 onClick={() => goTo(page - 1)}
                 className="absolute -right-3 top-1/2 z-20 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-black/5 transition-all hover:text-white"
-                style={{ color: '#C9A227' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#C9A227'; (e.currentTarget as HTMLButtonElement).style.color = '#fff'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#fff'; (e.currentTarget as HTMLButtonElement).style.color = '#C9A227'; }}
+                style={{ color: 'var(--color-primary)' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-primary)'; (e.currentTarget as HTMLButtonElement).style.color = '#fff'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#fff'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-primary)'; }}
                 aria-label="السابق"
               >
                 <ChevronRight className="size-5" />
@@ -102,9 +101,9 @@ export function TopNewsCarousel({ items }: { items: FeedItem[] }) {
                 type="button"
                 onClick={() => goTo(page + 1)}
                 className="absolute -left-3 top-1/2 z-20 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-black/5 transition-all hover:text-white"
-                style={{ color: '#C9A227' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#C9A227'; (e.currentTarget as HTMLButtonElement).style.color = '#fff'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#fff'; (e.currentTarget as HTMLButtonElement).style.color = '#C9A227'; }}
+                style={{ color: 'var(--color-primary)' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-primary)'; (e.currentTarget as HTMLButtonElement).style.color = '#fff'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#fff'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-primary)'; }}
                 aria-label="التالي"
               >
                 <ChevronLeft className="size-5" />
@@ -119,7 +118,7 @@ export function TopNewsCarousel({ items }: { items: FeedItem[] }) {
               className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
               {items.map((item) => (
-                <div key={item.id} className="w-1/2 shrink-0 snap-start px-1 sm:w-1/3 sm:px-2 lg:w-1/5">
+                <div key={item.id} className="w-1/2 shrink-0 snap-start px-1 sm:w-1/5 sm:px-2">
                   <TopNewsCard item={item} />
                 </div>
               ))}
@@ -136,7 +135,7 @@ export function TopNewsCarousel({ items }: { items: FeedItem[] }) {
                   aria-label={`الصفحة ${i + 1}`}
                   aria-current={page === i ? 'true' : undefined}
                   className={`h-2 rounded-full transition-all duration-300 ${page === i ? 'w-5' : 'w-2 bg-black/10'}`}
-                  style={page === i ? { backgroundColor: '#C9A227', width: '20px' } : {}}
+                  style={page === i ? { backgroundColor: 'var(--color-primary)', width: '20px' } : {}}
                 />
               ))}
             </div>
@@ -150,12 +149,12 @@ export function TopNewsCarousel({ items }: { items: FeedItem[] }) {
 function TopNewsCard({ item }: { item: FeedItem }) {
   const isOpinion = item.type === 'opinion';
   return (
-    <article className="group flex h-full min-w-0 flex-col rounded-xl border border-black/5 bg-white shadow-sm transition hover:shadow-md">
+    <article className="group relative flex h-full min-w-0 flex-col rounded-xl border border-black/5 bg-white shadow-sm transition hover:shadow-md">
       <Link href={item.href} className="block flex-1">
         <div className="flex flex-col items-center px-2 py-4 sm:px-4 sm:pt-5">
           {/* avatar: escapes the site-wide "square design" reset ([class*='rounded']:not(.avatar)
               in globals.css, !important) that otherwise flattens rounded-full back to square. */}
-          <div className="avatar relative size-20 shrink-0 overflow-hidden rounded-full border-2 bg-surface-2 shadow-sm sm:size-[120px]" style={{ borderColor: '#C9A227' }}>
+          <div className="avatar relative size-20 shrink-0 overflow-hidden rounded-full border-2 bg-surface-2 shadow-sm sm:size-[120px]" style={{ borderColor: 'var(--color-primary)' }}>
             {item.image ? (
               // eslint-disable-next-line @next/next/no-img-element -- <img> مقصود: حارس أداء الهوم
               <img src={item.image} alt={item.imageAlt} loading="lazy" decoding="async" className="size-full object-cover" />
@@ -173,15 +172,27 @@ function TopNewsCard({ item }: { item: FeedItem }) {
           </h3>
         </div>
       </Link>
-      {isOpinion && item.author?.name && (
-        <div className="mt-auto flex items-center justify-center gap-1.5 border-t border-black/5 px-2 py-2 sm:gap-2 sm:px-4 sm:py-2.5">
-          {item.author.avatar && (
-            // eslint-disable-next-line @next/next/no-img-element -- <img> مقصود: حارس أداء الهوم
-            <img src={item.author.avatar} alt={item.author.name} loading="lazy" className="avatar size-5 shrink-0 rounded-full object-cover sm:size-6" />
-          )}
-          <span className="min-w-0 truncate text-[11px] font-bold text-muted">{item.author.name}</span>
-        </div>
-      )}
+      {isOpinion && item.author?.name && (() => {
+        const writerHref = item.author.isWriter && item.author.id ? `/writer/${item.author.id}` : null;
+        return (
+          <div className="mt-auto flex items-center justify-center gap-1.5 border-t border-black/5 px-2 py-2 sm:gap-2 sm:px-4 sm:py-2.5">
+            {item.author.avatar && (
+              // eslint-disable-next-line @next/next/no-img-element -- <img> مقصود: حارس أداء الهوم
+              <img src={item.author.avatar} alt={item.author.name} loading="lazy" className="avatar size-5 shrink-0 rounded-full object-cover sm:size-6" />
+            )}
+            {writerHref ? (
+              <Link
+                href={writerHref}
+                className="relative z-20 min-w-0 truncate text-[11px] font-bold text-primary hover:underline"
+              >
+                {item.author.name}
+              </Link>
+            ) : (
+              <span className="min-w-0 truncate text-[11px] font-bold text-primary">{item.author.name}</span>
+            )}
+          </div>
+        );
+      })()}
     </article>
   );
 }

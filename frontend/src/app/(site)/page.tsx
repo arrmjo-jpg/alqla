@@ -3,8 +3,8 @@ import { Suspense } from 'react';
 import { AdZone } from '@/components/ads/ad-zone';
 import { EconomyShowcase } from '@/components/economy/economy-showcase';
 import { CategoryCarousel } from '@/components/home/category-carousel';
+import { CategoryColumnTrio } from '@/components/home/category-column-trio';
 import { CategoryFeatureQuad } from '@/components/home/category-feature-quad';
-import { CategoryGridPair } from '@/components/home/category-grid-pair';
 import { EditorialCategorySection } from '@/components/home/category-editorial-section';
 import { FeaturedHero } from '@/components/home/featured-hero';
 import { IncidentsSection } from '@/components/home/incidents-section';
@@ -21,10 +21,11 @@ import { getReelsFeed } from '@/lib/reels';
 import { getSiteSettings } from '@/lib/site-settings';
 
 import { CategoryThreeCol } from '@/components/home/category-three-col';
+import { TwoColumnCategoryRow } from '@/components/home/category-lead-headlines';
 
 // الصفحة الرئيسية — كتل: الهيرو (is_featured) + أقسام مختلطة (بعضها بتصميمه الأصليّ، وبعضها كروسل).
-// ISR = سقف أمان (ساعة)؛ التحديث حدثيّ عبر الوسوم. تاج «تغطية خاصة» يظهر على البطاقات عند توفّر العلم.
-export const revalidate = 3600;
+// ISR = سقف أمان (10 ساعات)؛ التحديث حدثيّ عبر الوسوم. تاج «تغطية خاصة» يظهر على البطاقات عند توفّر العلم.
+export const revalidate = 36000;
 
 // أقسام الأخبار السفليّة على شكل كروسل (محليات/اخبار الناس/مقالات/حوادث بتصاميمها الأصليّة فوق؛
 // جامعات وأخبار ثقافية نُقلا تحت ودجت تريندينغ مباشرةً). **مصدر واحد بالـID الثابت** (لا slug؛
@@ -50,10 +51,11 @@ export default async function Home() {
   
   const heroItems = homepageData.hero;
   const editorsPick = homepageData.editors_pick;
+  const headerItems = homepageData.header;
 
   return (
     <>
-      <FeaturedHero items={heroItems} />
+      <FeaturedHero items={heroItems} headerItems={headerItems} />
       {/* إعلان كبير أسفل الهيرو — جوّال فقط (بلا تغيير)؛ على سطح المكتب انتقل داخل FeaturedHero
           نفسها، بجانب الكاروسيل الجديد (٣ أعمدة) بدل تحته. */}
       <AdZone zone="aalan_kbyr_asfl_alhyrw_1410" className="mt-2 flex justify-center px-4 lg:hidden" />
@@ -83,15 +85,12 @@ export default async function Home() {
         />
       </Suspense>
 
-      {/* شريط الاشتراك في واتساب. */}
-      <SubscribeBox variant="bar" />
-
-      {/* عربي دولي — 8 أخبار بتصميم الـ 3 أعمدة (#43). */}
+      {/* أخبار الديوان الملكي — تحت البرلمانيات مباشرةً: 4 أخبار (كبير + 3 صغار، بلا سكرول) (#38). */}
       <Suspense fallback={<SectionLoader />}>
-        <CategoryThreeCol categoryId={43} fallbackTitle="عربي دولي" count={8} />
+        <CategoryFeatureQuad categoryId={38} fallbackTitle="أخبار الديوان الملكي" />
       </Suspense>
 
-      {/* أخبار ثقافية — تحت عربي دولي مباشرةً: 10 أخبار (كبير + 9 صغار، بلا سكرول) (#56) بخلفية صورة شفافة. */}
+      {/* أخبار ثقافية — تحت أخبار الديوان الملكي مباشرةً: 10 أخبار (كبير + 9 صغار، بلا سكرول) (#56) بخلفية صورة شفافة. */}
       <Suspense fallback={<SectionLoader />}>
         <CategoryFeatureQuad
           categoryId={56}
@@ -101,29 +100,9 @@ export default async function Home() {
         />
       </Suspense>
 
-      {/* ضيف الأسبوع — تحت أخبار ثقافية مباشرةً (تصنيف #58): 8 أخبار بنمط بطاقات عائمة. */}
-      <Suspense fallback={<SectionLoader />}>
-        <IncidentsSection categoryId={58} headingId="week-stories-heading" fallbackTitle="ضيف الأسبوع" count={8} />
-      </Suspense>
-
-      {/* قسم الاقتصاد (تصميم خاصّ: بورصة + ذهب). */}
-      <Suspense fallback={<SectionLoader />}>
-        <EconomyShowcase />
-      </Suspense>
-
-      {/* ودجت 3 أعمدة: تريندينغ + آخر المستجدات + الأكثر قراءة. */}
+      {/* ودجت 3 أعمدة: تريندينغ + آخر المستجدات + الأكثر قراءة — تحت أخبار ثقافية مباشرةً. */}
       <Suspense fallback={<SectionLoader />}>
         <TrendingLatestMostRead editorsPick={editorsPick} />
-      </Suspense>
-
-      {/* تحت الودجت مباشرةً: جامعات (4 أخبار: كبير + 3 صغار، بلا سكرول). */}
-      <Suspense fallback={<SectionLoader />}>
-        <CategoryFeatureQuad categoryId={42} fallbackTitle="جامعات" />
-      </Suspense>
-
-      {/* قسم الوفيات/التعزية — تصميم خاصّ مع آية قرآنيّة، أسفل أخبار ثقافية مباشرةً. */}
-      <Suspense fallback={<SectionLoader />}>
-        <ObituariesSection categoryId={49} fallbackTitle="الوفيات" count={8} />
       </Suspense>
 
       {/* زوج إعلانات فوق الريلز. */}
@@ -132,12 +111,52 @@ export default async function Home() {
         <AdZone zone="aalan_fwq_qsm_alrylz_shmal" className="mt-1 flex justify-center sm:flex-1" />
       </div>
 
+      {/* الريلز — تحت ودجت تريندينغ/مقالات/مقالات مختارة مباشرةً. */}
       <Suspense fallback={<SectionLoader />}>
         <ReelsCarousel
           items={reels.items}
           siteName={settings?.site_name || 'القلعة نيوز'}
           logo={settings?.logo_dark ?? settings?.logo_light ?? null}
         />
+      </Suspense>
+
+      {/* شريط الاشتراك في واتساب. */}
+      <SubscribeBox variant="bar" />
+
+      {/* عربي دولي — 8 أخبار بتصميم الـ 3 أعمدة (#43). */}
+      <Suspense fallback={<SectionLoader />}>
+        <CategoryThreeCol categoryId={43} fallbackTitle="عربي دولي" count={8} />
+      </Suspense>
+
+      {/* قسم الاقتصاد (تصميم خاصّ: بورصة + ذهب) — فوق ضيف الأسبوع مباشرةً. */}
+      <Suspense fallback={<SectionLoader />}>
+        <EconomyShowcase />
+      </Suspense>
+
+      {/* حوادث + جامعات — تحت الاقتصاد مباشرةً: خبر أوّل بصورة + 3 عناوين فقط لكلّ عمود (#52/#42). */}
+      <Suspense fallback={<SectionLoader />}>
+        <TwoColumnCategoryRow
+          right={{ categoryId: 52, fallbackTitle: 'حوادث' }}
+          left={{ categoryId: 42, fallbackTitle: 'جامعات' }}
+        />
+      </Suspense>
+
+      {/* مختارات + زاوية خاصة — عناوين فقط بلا صور (#34/#32)، بترويسة حمراء موحّدة. */}
+      <Suspense fallback={<SectionLoader />}>
+        <TwoColumnCategoryRow
+          right={{ categoryId: 34, fallbackTitle: 'مختارات', showLead: false }}
+          left={{ categoryId: 32, fallbackTitle: 'زاوية خاصة', showLead: false }}
+        />
+      </Suspense>
+
+      {/* ضيف الأسبوع — تصنيف #58: 8 أخبار بنمط بطاقات عائمة. */}
+      <Suspense fallback={<SectionLoader />}>
+        <IncidentsSection categoryId={58} headingId="week-stories-heading" fallbackTitle="ضيف الأسبوع" count={8} />
+      </Suspense>
+
+      {/* قسم الوفيات/التعزية — تصميم خاصّ مع آية قرآنيّة. */}
+      <Suspense fallback={<SectionLoader />}>
+        <ObituariesSection categoryId={49} fallbackTitle="الوفيات" count={8} />
       </Suspense>
 
       {/* إعلان كبير فوق بقيّة الأقسام. */}
@@ -164,12 +183,13 @@ export default async function Home() {
       {/* قسم الطقس السينمائيّ — أسفل الرياضة: بطاقة «اليوم» الكبيرة (حرارة + إحساس + رطوبة/رياح + شروق/غروب) + الأسبوع. */}
       <WeatherWrapper />
 
-      {/* قسمان شبكة 2×2 — صحة وجمال + منوعات — تحت الطقس (بدل كروسليهما السابقين). */}
+      {/* 3 أعمدة جنب بعض — النصف الآخر + منوعات + صحة وجمال — تحت الطقس (بدل شبكة 2×2 السابقة). */}
       <Suspense fallback={<SectionLoader />}>
-        <CategoryGridPair
+        <CategoryColumnTrio
           categories={[
-            { categoryId: 51, fallbackTitle: 'صحة وجمال' },
+            { categoryId: 54, fallbackTitle: 'النصف الآخر' },
             { categoryId: 55, fallbackTitle: 'منوعات' },
+            { categoryId: 51, fallbackTitle: 'صحة وجمال' },
           ]}
         />
       </Suspense>

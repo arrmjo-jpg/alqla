@@ -10,7 +10,11 @@ import { env } from './env';
 // (news/live/opinion) — العارض يبدّل حسب `type`. الـ`seo` يُمرَّر **كما هو** (PublicSeoBuilder مصدر الحقيقة:
 // structured_data/breadcrumbs/og/twitter/canonical/hreflang) — لا باني SEO جديد. فشل/غياب ⇒ null (لا تلفيق).
 
-const REVALIDATE = 1800; // news-domain-skill §B: تفاصيل المقال الحديثة s-maxage 1800s.
+// تفاصيل المقال: ISR = سقف أمان 36000s (10 ساعات)؛ التحديث الفعليّ حدثيّ عبر revalidateTag('article:{id}').
+const REVALIDATE = 36000;
+// التغطية الحيّة (live-updates): تبقى قصيرة عمداً — محتوًى مباشر متغيّر لحظيّاً (بلا وسم id ثابت
+// اليوم؛ استثناء موثَّق مطابق للبثّ المباشر — راجع تقرير تدقيق الكاش).
+const LIVE_UPDATES_REVALIDATE = 1800;
 const enc = encodeURIComponent;
 
 export type ArticleType = 'news' | 'opinion' | 'live';
@@ -328,7 +332,7 @@ export const getLiveUpdates = cache(async (slug: string, locale = 'ar'): Promise
   try {
     const res = await fetch(`${env.apiBaseUrl}/api/v1/${enc(locale)}/articles/${enc(slug)}/live-updates?per_page=40`, {
       headers: env.internalHeaders,
-      next: { revalidate: REVALIDATE, tags: ['live_updates', `live:${slug}`] },
+      next: { revalidate: LIVE_UPDATES_REVALIDATE, tags: ['live_updates', `live:${slug}`] },
     });
     if (!res.ok) return [];
     const parsed = LiveListEnvelope.safeParse(await res.json());

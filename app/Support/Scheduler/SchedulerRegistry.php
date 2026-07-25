@@ -195,6 +195,20 @@ final class SchedulerRegistry
                 'critical' => false,
                 'manual_run_allowed' => true,
             ],
+            'competitions_sync_fixtures' => [
+                'command' => 'competitions:sync-fixtures',
+                'cron' => '* * * * *',
+                'frequency' => 'everyMinute',
+                'critical' => false,
+                'manual_run_allowed' => true,
+            ],
+            'competitions_sync_matches_feed' => [
+                'command' => 'competitions:sync-matches-feed',
+                'cron' => '0 6 * * *',
+                'frequency' => 'dailyAt0600',
+                'critical' => false,
+                'manual_run_allowed' => true,
+            ],
             'notifications_probe_channels' => [
                 'command' => 'notifications:probe-channels',
                 'cron' => '*/10 * * * *',

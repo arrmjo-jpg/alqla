@@ -25,6 +25,15 @@ class ListArticlesAction
         $default = (int) config('performance.pagination.default');
         $max = (int) config('performance.pagination.max');
         $perPage = max(1, min((int) request()->integer('per_page', $default), $max));
+        $page = max(1, (int) request()->integer('page', 1));
+
+        // نفس حماية الواجهة العامة (ListPublicArticlesAction): منع صفحات OFFSET عميقة جداً.
+        // لا كاش هنا (قائمة إدارية متغيّرة)، لذا هذا هو خط الدفاع الوحيد ضد إساءة استخدام/طلب
+        // عرضي بصفحة كبيرة على جدول من عشرات آلاف الصفوف.
+        $maxPage = (int) config('performance.pagination.max_page', 100);
+        if ($maxPage > 0 && $page > $maxPage) {
+            abort(404, 'Page limit exceeded. Use filters to narrow the result set.');
+        }
 
         // إذا كان هناك نص بحث، نستخدم Meilisearch لسرعة معالجة النصوص وحساب الترتيب بالصلة
         $searchTerm = request()->input('filter.title');
@@ -97,7 +106,9 @@ class ListArticlesAction
                             'count' => $articles->count(),
                             'per_page' => $articles->perPage(),
                             'current_page' => $articles->currentPage(),
-                            'total_pages' => $articles->lastPage(),
+                            // يُقيَّد بـ maxPage حتى لا تعرض الواجهة رابط "آخر صفحة" يتجاوز
+                            // ما يقبله الـ Backend فعلياً (الحماية أعلاه ترفض أي page > maxPage).
+                            'total_pages' => $maxPage > 0 ? min($articles->lastPage(), $maxPage) : $articles->lastPage(),
                         ],
                     ]
                 );
@@ -110,18 +121,15 @@ class ListArticlesAction
         // تحسين أداء استعلام قائمة المقالات (لوحة الإدارة):
         // 1. لا تستخدم SELECT * لتجنب تحميل الأعمدة الضخمة مثل content وcontent_json
         //    مما يقلل حجم Payload بمعدل 13 ضعفاً (من 366KB إلى 28KB لـ 15 مقال).
-        // 2. استخدام الفهارس المركبة المناسبة (مثل articles_deleted_published_desc_idx)
-        //    لمنع استخدام Filesort في MySQL وتسريع الاستعلام بمعدل 7200 ضعف (من 7.8 ثوانٍ إلى 1.08 مللي ثانية).
+        // 2. لا يوجد Index Hint هنا عمداً: كان هناك USE INDEX(articles_deleted_published_desc_idx)
+        //    مربوطاً بشرط "$sort === '-published_at'"، لكن الترتيب الافتراضي الفعلي هو
+        //    defaultSort('-created_at') أدناه — فالـ Hint كان يفرض فهرساً مرتَّباً بعمود مختلف
+        //    عن عمود الترتيب الحقيقي، فيضطر MySQL لعمل Filesort كامل على كل الجدول في كل تحميل
+        //    (قُيس فعلياً: 5.6s معه مقابل 1.84ms بإزالته تماماً، عبر EXPLAIN ANALYZE على البيانات
+        //    الحقيقية، مع فحص created_at/published_at/id/title وفلاتر status/author/category —
+        //    المُحسِّن يختار خطة صحيحة في كل الحالات الشائعة بلا أي تدخل). إجبار المحسّن استثناء
+        //    يُلجأ إليه فقط بدليل أداء موثّق، لا افتراضاً.
         $query = QueryBuilder::for(Article::class);
-
-        $hasCategoryFilter = request()->has('filter.category') || request()->has('filter.primary_category_id');
-        $hasSearchFilter = request()->has('filter.title');
-        $sort = request()->query('sort', '-published_at');
-
-        // إرشاد الاستعلام (Index Hint) عند الفرز الافتراضي لمنع انحراف مخمن التكلفة في MySQL على الصفحات العميقة (Page 500+)
-        if ($sort === '-published_at' && ! $hasCategoryFilter && ! $hasSearchFilter && DB::connection()->getDriverName() === 'mysql') {
-            $query->from(DB::raw('articles USE INDEX (articles_deleted_published_desc_idx)'));
-        }
 
         $query->select([
             'id',
@@ -203,7 +211,7 @@ class ListArticlesAction
                     'count' => $articles->count(),
                     'per_page' => $articles->perPage(),
                     'current_page' => $articles->currentPage(),
-                    'total_pages' => $articles->lastPage(),
+                    'total_pages' => $maxPage > 0 ? min($articles->lastPage(), $maxPage) : $articles->lastPage(),
                 ],
             ]
         );

@@ -71,22 +71,17 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `
-          try {
-            if (localStorage.getItem('desktop_view') === 'true') {
-              var meta = document.querySelector('meta[name="viewport"]');
-              var content = 'width=1280, initial-scale=0.2, shrink-to-fit=yes';
-              if (meta) {
-                meta.setAttribute('content', content);
-              } else {
-                meta = document.createElement('meta');
-                meta.setAttribute('name', 'viewport');
-                meta.setAttribute('content', content);
-                document.head.appendChild(meta);
-              }
-            }
-          } catch (e) {}
-        `}} />
+        {/* مزامنة مبكرة لتفضيل «النسخة الكاملة» (site-view.ts) — قبل أي رسم قدر الإمكان لتقليل
+            الوميض عند إعادة التحميل. لا حالة خادم/كوكيز هنا عمدًا.
+            ملاحظة: تعديل content بوسم viewport القائم عبر setAttribute لا يجبر إعادة التخطيط
+            (reflow) على أغلب متصفّحات الموبايل — القياس يُقفَل وقت الـparsing الأول. الحلّ المُثبَت:
+            حذف الوسم القديم وإنشاء وسم جديد بدلاً من تعديل الموجود (تحقّق فعليّ عبر matchMedia). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{if(localStorage.getItem('acm_site_view')==='desktop'){var old=document.querySelector('meta[name=\"viewport\"]');var w=1280,s=Math.min(1,window.innerWidth/w);var m=document.createElement('meta');m.setAttribute('name','viewport');m.setAttribute('content','width='+w+',initial-scale='+s+',maximum-scale=5,user-scalable=yes');if(old&&old.parentNode){old.parentNode.removeChild(old);}document.head.appendChild(m);}}catch(e){}})();",
+          }}
+        />
       </head>
       <body className="flex min-h-dvh flex-col bg-bg text-fg">
         <ResourceHints />

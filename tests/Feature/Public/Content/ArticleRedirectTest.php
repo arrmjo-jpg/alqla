@@ -113,7 +113,9 @@ it('resolves a full old canonical path to a 301 via the redirect endpoint', func
     $res = $this->getJson('/api/v1/ar/redirects/articles?path='.urlencode($oldPath));
 
     $res->assertStatus(301);
-    expect($res->headers->get('Location'))->toContain("/ar/articles/{$article->id}-renamed");
+    // canonicalPath() is /news/dd/mm/yyyy/{id}/ (2026-07-18, id-only) — the redirect
+    // target never carries "-renamed" nor any slug.
+    expect($res->headers->get('Location'))->toContain($article->fresh()->canonicalPath());
 });
 
 it('redirect endpoint returns 404 for an unmapped path', function (): void {

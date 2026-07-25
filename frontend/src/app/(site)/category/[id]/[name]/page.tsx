@@ -10,7 +10,8 @@ import { env } from '@/lib/env';
 import { getCategoryById, getCategoryPage } from '@/lib/feed';
 import { buildMetadata } from '@/lib/seo';
 
-export const revalidate = 21600;
+// ISR = سقف أمان (10 ساعات)؛ التحديث الفعليّ حدثيّ عبر revalidateTag('category:{id}').
+export const revalidate = 36000;
 const PER_PAGE = 18;
 
 export async function generateMetadata({
@@ -50,7 +51,7 @@ export default async function CategoryPage({
   // If the requested slug name doesn't match the current database slug, redirect to correct one.
   const decodedName = name ? decodeURIComponent(name) : '';
   if (category.slug.normalize('NFC') !== decodedName.normalize('NFC')) {
-    permanentRedirect(`/category-${category.id}/${category.slug}`);
+    permanentRedirect(`/category-${category.id}/${encodeURIComponent(category.slug)}`);
   }
 
   const sp = await searchParams;

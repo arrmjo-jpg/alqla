@@ -66,7 +66,7 @@ class ListPublicArticlesAction
             $tags,
             CacheKeys::publicArticlesList($locale, $queryHash),
             CacheTtl::SHORT,
-            fn (): array => $this->build($locale, $request, $perPage, $cursorMode)
+            fn (): array => $this->build($locale, $request, $perPage, $cursorMode, $maxPage)
         );
 
         return ApiResponse::success(
@@ -76,7 +76,7 @@ class ListPublicArticlesAction
     }
 
     /** @return array<string,mixed> */
-    private function build(string $locale, Request $request, int $perPage, bool $cursorMode): array
+    private function build(string $locale, Request $request, int $perPage, bool $cursorMode, int $maxPage = 0): array
     {
         $term = trim((string) ($request->query('filter')['q'] ?? ''));
 
@@ -153,7 +153,7 @@ class ListPublicArticlesAction
                         'count' => $paginator->count(),
                         'per_page' => $paginator->perPage(),
                         'current_page' => $paginator->currentPage(),
-                        'total_pages' => $paginator->lastPage(),
+                        'total_pages' => $maxPage > 0 ? min($paginator->lastPage(), $maxPage) : $paginator->lastPage(),
                     ],
                 ];
             } catch (\Throwable $e) {
@@ -182,6 +182,7 @@ class ListPublicArticlesAction
             ->allowedFilters(
                 AllowedFilter::exact('type'),
                 AllowedFilter::exact('author_id'),
+                AllowedFilter::exact('is_featured'),
                 AllowedFilter::partial('title', 'title'),
                 // تصفية البحث التقليدي في قاعدة البيانات (Fallback)
                 AllowedFilter::callback('q', function ($q) use ($term): void {
@@ -195,10 +196,13 @@ class ListPublicArticlesAction
                     }
                 }),
                 AllowedFilter::callback('category', function ($q, $value) use ($locale): void {
-                    $category = Category::query()
-                        ->where('slug', (string) $value)
-                        ->where('locale', $locale)
-                        ->first();
+                    $value = (string) $value;
+                    // يقبل id مجرَّداً (ثابت عبر إعادة تسمية التصنيف) أو slug (توافقاً
+                    // مع أي مستهلك لا يزال يمرِّره) — id يمنع فقدان النتائج بعد
+                    // إعادة تسمية تصنيف، راجع Category::canonicalPath().
+                    $category = ctype_digit($value)
+                        ? Category::query()->where('id', (int) $value)->where('locale', $locale)->first()
+                        : Category::query()->where('slug', $value)->where('locale', $locale)->first();
                     if ($category === null) {
                         $q->whereRaw('1 = 0');
 
@@ -248,6 +252,7 @@ class ListPublicArticlesAction
             'filter.tag' => (string) ($request->query('filter')['tag'] ?? ''),
             'filter.q' => $term,
             'filter.author_id' => (string) ($request->query('filter')['author_id'] ?? ''),
+            'filter.is_featured' => (string) ($request->query('filter')['is_featured'] ?? ''),
         ];
         ksort($relevantFilters);
         $filterHash = substr(hash('xxh128', json_encode($relevantFilters)), 0, 16);
@@ -265,12 +270,15 @@ class ListPublicArticlesAction
             CacheTtl::MEDIUM,
             function () use ($query, $request, $locale) {
                 // إصلاح جذري لـ DEPENDENT SUBQUERY Stampede:
-                // إذا كان الطلب مفلتراً بتصنيف فقط (بدون بحث أو وسوم إضافية)،
-                // نستخدم UNION سريع (~145ms) بدلاً من OR EXISTS البطيء (~44,000ms).
+                // إذا كان الطلب مفلتراً بتصنيف فقط (بدون بحث أو وسوم أو is_featured إضافية)،
+                // نستخدم UNION سريع (~145ms) بدلاً من OR EXISTS البطيء (~44,000ms). أي مرشِّح
+                // آخر (يشمل is_featured) لا يدعمه الـUNION فيتراجع لـ getCountForPagination()
+                // أدناه — وإلا يُعِدّ (يتجاهل is_featured فيُخزَّن عدد القسم الكامل خطأً
+                // تحت مفتاح كاش مقيَّد بـis_featured، كما ظهر فعليًّا في اختبار شبكة "مميّزة").
                 $filters = $request->query('filter', []);
                 $catSlug = (string) ($filters['category'] ?? '');
 
-                if ($catSlug !== '' && empty($filters['q']) && empty($filters['tag']) && empty($filters['type'])) {
+                if ($catSlug !== '' && empty($filters['q']) && empty($filters['tag']) && empty($filters['type']) && empty($filters['is_featured'])) {
                     $category = Category::where('slug', $catSlug)->where('locale', $locale)->first();
                     if ($category) {
                         $now = now()->toDateTimeString();
@@ -325,7 +333,7 @@ class ListPublicArticlesAction
                 'count' => $paginator->count(),
                 'per_page' => $paginator->perPage(),
                 'current_page' => $paginator->currentPage(),
-                'total_pages' => $paginator->lastPage(),
+                'total_pages' => $maxPage > 0 ? min($paginator->lastPage(), $maxPage) : $paginator->lastPage(),
             ],
         ];
     }
@@ -343,6 +351,7 @@ class ListPublicArticlesAction
             'filter.tag' => (string) ($request->query('filter')['tag'] ?? ''),
             'filter.q' => (string) ($request->query('filter')['q'] ?? ''),
             'filter.author_id' => (string) ($request->query('filter')['author_id'] ?? ''),
+            'filter.is_featured' => (string) ($request->query('filter')['is_featured'] ?? ''),
         ];
         ksort($relevant);
 

@@ -809,6 +809,7 @@
     "by": "بواسطة",
     "clearBreaking": "إلغاء كافة العاجل",
     "clearPinned": "إلغاء كل المثبّت",
+    "pagination_out_of_range": "الصفحة المطلوبة غير متاحة، تم الانتقال لآخر صفحة مسموحة",
     "stats": {
       "total": "إجمالي الأخبار",
       "published": "منشورة",
@@ -1203,6 +1204,12 @@
       "active": "فعّال",
       "hidden": "مخفي"
     },
+    "layoutType": {
+      "default": "افتراضي",
+      "hero": "بارز (Hero)",
+      "magazine": "مجلة (Magazine)",
+      "featured": "مميّز (Featured)"
+    },
     "filter": {
       "search": "بحث بالاسم أو المعرّف…",
       "localeAll": "كل اللغات",
@@ -1267,6 +1274,27 @@
       "show_in_footer": "في الفوتر",
       "validation": {
         "nameRequired": "اسم القسم مطلوب (حدّ أدنى حرفان)."
+      },
+      "design": {
+        "title": "تصميم القسم",
+        "banner": {
+          "label": "بانر القسم",
+          "hint": "يظهر أعلى صفحة القسم في الموقع. المقاس المقترح: 1920×500."
+        },
+        "showTitle": "إظهار عنوان القسم",
+        "layoutType": "نمط العرض",
+        "border": {
+          "enabled": "تفعيل حدّ للبانر",
+          "width": "سماكة الحدّ (px)",
+          "radius": "استدارة الحواف (px)",
+          "color": "لون الحدّ"
+        }
+      },
+      "sport": {
+        "title": "ربط الرياضة",
+        "provider": "المزوّد",
+        "providerNone": "بلا مزوّد",
+        "externalId": "المعرّف لدى المزوّد"
       }
     }
   },

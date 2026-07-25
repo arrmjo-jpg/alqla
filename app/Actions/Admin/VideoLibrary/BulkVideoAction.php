@@ -51,6 +51,7 @@ final class BulkVideoAction
         $processed = 0;
         $skipped = [];
         $tags = [];
+        $frontendDetailTags = [];
 
         // قائمة التشغيل (مرّة واحدة) لعملية الإضافة.
         $playlist = $action === 'add_to_playlist'
@@ -63,7 +64,7 @@ final class BulkVideoAction
 
         DB::transaction(function () use (
             $action, $ids, $videos, $validated, $actor, $playlist, &$playlistExisting,
-            &$playlistPosition, &$processed, &$skipped, &$tags
+            &$playlistPosition, &$processed, &$skipped, &$tags, &$frontendDetailTags
         ): void {
             foreach ($ids as $id) {
                 $video = $videos->get($id);
@@ -86,6 +87,7 @@ final class BulkVideoAction
                 if ($result === 'ok') {
                     $processed++;
                     $tags = array_merge($tags, VideoCacheTags::invalidationTags($video, categorySlug: $video->category?->slug));
+                    $frontendDetailTags[] = FrontendCacheTags::videoDetail($video);
                 } else {
                     $skipped[] = ['id' => $id, 'reason' => substr($result, 5)]; // "skip:<reason>"
                 }
@@ -98,7 +100,10 @@ final class BulkVideoAction
         if ($tags !== []) {
             $tags = array_values(array_unique($tags));
             Cache::tags($tags)->flush();
-            FrontendRevalidate::tags(FrontendCacheTags::fromVideoTags($tags));
+            FrontendRevalidate::tags([
+                ...FrontendCacheTags::fromVideoTags($tags),
+                ...array_unique($frontendDetailTags),
+            ]);
         }
 
         return ApiResponse::success(

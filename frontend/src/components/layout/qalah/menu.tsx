@@ -19,7 +19,6 @@ import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/com
 
 import { SECTIONS_NAV } from '../nav-data';
 import { socialEntries } from '../social-map';
-import { DesktopViewToggle } from '@/components/layout/desktop-view-toggle';
 
 export type QalahMenuPage = { id: number; title: string; href: string };
 export type QalahMenuCategory = { id?: number | null; name: string; slug: string };
@@ -161,11 +160,6 @@ export function QalahMenu({
             </>
           )}
         </nav>
-
-        {/* Toggle Desktop View */}
-        <div className="shrink-0 border-t border-border px-5 py-4 flex justify-center bg-surface-2/40">
-          <DesktopViewToggle className="w-full" />
-        </div>
 
         {/* تذييل: تابعنا (روابط السوشال) */}
         {socials.length > 0 && (

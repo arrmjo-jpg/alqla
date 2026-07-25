@@ -22,14 +22,18 @@ use App\Http\Controllers\Api\V1\Public\Content\LiveUpdateController;
 use App\Http\Controllers\Api\V1\Public\Content\PageController;
 use App\Http\Controllers\Api\V1\Public\Content\ReelController;
 use App\Http\Controllers\Api\V1\Public\Content\WriterArticleController;
+use App\Http\Controllers\Api\V1\Public\Content\WriterArticlesController;
 use App\Http\Controllers\Api\V1\Public\Content\WriterProfileController;
 use App\Http\Controllers\Api\V1\Public\Content\WriterReelController;
 use App\Http\Controllers\Api\V1\Public\Content\WriterVideoController;
 use App\Http\Controllers\Api\V1\Public\Follow\FollowController;
+use App\Http\Controllers\Api\V1\Public\MatchBarController;
+use App\Http\Controllers\Api\V1\Public\SportsHomeBarController;
 use App\Http\Controllers\Api\V1\Public\Media\WriterMediaController;
 use App\Http\Controllers\Api\V1\Public\NotificationController;
 use App\Http\Controllers\Api\V1\Public\Polls\PollController;
 use App\Http\Controllers\Api\V1\Public\SiteController;
+use App\Http\Controllers\Api\V1\Public\SportMenuController;
 use App\Http\Controllers\Api\V1\Public\Team\TeamMemberController;
 use App\Http\Controllers\Api\V1\Public\VideoLibrary\PlaylistController;
 use App\Http\Controllers\Api\V1\Public\VideoLibrary\VideoController;
@@ -52,19 +56,28 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['public.cache', 'throttle:public.read'])
     ->get('/site', [SiteController::class, 'settings']);
 
+// ─── قائمة "أقسام الرياضة" العامّة (Header 1 Sections dropdown) — قراءة فقط، مفعَّلة+بلغة الطلب
+// فقط عبر ?locale=، نفس نمط /site تمامًا (لا بادئة {locale} في المسار). راجع
+// ListPublicSportMenuAction لسبب فصلها عن نظيرتها الإداريّة.
+Route::middleware(['public.cache', 'throttle:public.read'])
+    ->get('/sport-menu', [SportMenuController::class, 'index']);
+
 // ─── Guest — قراءة عامة بادئة {locale} للتوجيه ومفاتيح الكاش الموحّدة ──
 // throttle:public.read — حارس إساءة/DoS لكل عميل/دقيقة على كامل سطح القراءة العام.
 Route::middleware(['public.cache', 'throttle:public.read'])
     ->where(['locale' => 'ar|en'])
     ->prefix('{locale}')
     ->group(function (): void {
-        // التصنيفات: شجرة كاملة + تفاصيل تصنيف بالـ slug
+        // التصنيفات: شجرة كاملة + تفاصيل تصنيف بمسار مفرد أو متداخل (2026-07-18: {path}
+        // يقبل «/» عبر where('.*') — /news/category/{...} الجديد قد يُمرِّر عدّة مقاطع).
         Route::get('/categories', [CategoryController::class, 'index']);
-        Route::get('/categories/{slug}', [CategoryController::class, 'show']);
+        Route::get('/categories/{path}', [CategoryController::class, 'show'])->where('path', '.*');
 
         // دليل الكتّاب (Writers Directory) + بروفيل كاتب عامّ بالـ id. {id} رقميّ فلا يتقاطع.
         Route::get('/writers', [WriterProfileController::class, 'index']);
         Route::get('/writers/{id}', [WriterProfileController::class, 'show'])->whereNumber('id');
+        // مقالات كاتب منشورة — Wrapper رقيق فوق ListPublicArticlesAction (لا استعلام مكرَّر).
+        Route::get('/writers/{id}/articles', [WriterArticlesController::class, 'index'])->whereNumber('id');
 
         // المقالات: قائمة (filter/sort/pagination) + المسار السريع للعاجل + تفاصيل بالـ slug.
         // المسار الثابت breaking قبل {slug} لتفادي التقاطه كـ slug.
@@ -122,6 +135,7 @@ Route::middleware('throttle:public.read')
         // مُحلِّل إعادة التوجيه 301 للمسارات القانونية القديمة (SEO/هجرة) — خارج
         // public.cache: استجابة 301 خاصّة لا تُخزَّن كمحتوى.
         Route::get('/redirects/articles', [ArticleController::class, 'redirect']);
+        Route::get('/redirects/categories', [CategoryController::class, 'redirect']);
         Route::get('/redirects/pages', [PageController::class, 'redirect']);
         Route::get('/redirects/reels', [ReelController::class, 'redirect']);
         Route::get('/redirects/videos', [VideoController::class, 'redirect']);
@@ -177,6 +191,16 @@ Route::middleware(['public.cache', 'throttle:public.read'])
 // locale وخارج public.cache: استجابة 301 خاصّة لا تُخزَّن كمحتوى.
 Route::middleware('throttle:public.read')
     ->get('/redirects/team', [TeamMemberController::class, 'redirect']);
+
+// ─── شريط المباريات (عام) — نطاق مستقل عربي فقط: لا بادئة {locale}، مثل team/broadcasts.
+// منظر مُصفّى فوق بيانات مُزامَنة أصلًا (Competition::is_tracked) — راجع BuildCompetitionBarAction.
+Route::middleware(['public.cache', 'throttle:public.read'])
+    ->get('/match-bar', [MatchBarController::class, 'show']);
+
+// ─── شريط الصفحة الرئيسية للرياضة (عام) — ميزة مستقلّة تمامًا عن شريط المباريات أعلاه، تشترك
+// معه فقط بجدول Competition كمصدر بطولات واحد ونفس BuildCompetitionBarAction بأعمدة مختلفة.
+Route::middleware(['public.cache', 'throttle:public.read'])
+    ->get('/sports-home-bar', [SportsHomeBarController::class, 'show']);
 
 // ─── البثّ العام (B4) — نطاق مستقل عربي فقط: لا بادئة {locale} ────────────
 // النوع قطعةُ مسارٍ محصورة بـ where (live|tv|radio) فلا تُلتقط كـ slug ولا تتقاطع

@@ -5,44 +5,56 @@ declare(strict_types=1);
 namespace App\Support\Frontend;
 
 use App\Models\Article;
+use App\Models\Broadcast;
 use App\Models\Category;
+use App\Models\Epaper;
 use App\Models\Page;
 use App\Models\Reel;
+use App\Models\Video;
 use App\Models\VideoCategory;
 
 /**
  * يبني وسوم الكاش التي يجب إبطالها في الواجهة الأمامية (Next) عند كتابة محتوى.
  *
  * تطابق هذه الوسوم **حرفيّاً** وسوم fetch في الواجهة الفعليّة: frontend/src/lib/*.ts
- * (feed.ts: feed:hero/header/latest/most_read · articles.ts: article:{slug} · feed.ts: category:{slug}).
+ * (feed.ts: feed:hero/header/latest/most_read · articles.ts: article:{id} · feed.ts: category:{id}).
  * **بلا بادئة لغة** (روابط الواجهة العامّة locale-less). أي تغيير في وسوم lib يجب أن يُعكَس هنا —
  * يستقبلها POST /api/revalidate في الواجهة ويربطها بـrevalidateTag().
+ *
+ * قاعدة صارمة (Cache Invalidation Audit 2026-07-24): وسوم الكيان (article/category/video/reel)
+ * تُبنى من الـid الثابت حصراً — أبداً من slug/name (يتغيّران بإعادة التسمية فيُفلت المحتوى القديم/الجديد
+ * من الإبطال). الـid لا يتغيّر ⇒ لا حاجة لتتبّع "قديم" عند تغيّر السلَغ لهذه الوسوم.
  */
 final class FrontendCacheTags
 {
     /**
-     * وسوم المقال: الخلاصات المتأثّرة فعلاً + صفحة المقال + تصنيفاته (+ سلَغ قديم عند التغيير).
+     * وسوم المقال: الخلاصات المتأثّرة فعلاً + صفحة المقال + تصنيفاته.
      *
      * إبطال محلّيّ (لا زائد): hero/header يُطلقان فقط إن كان المقال ضمن الكتلة (أو خرج منها
      * للتوّ — wasChanged بعد الحفظ)؛ تعديل مقال عاديّ لا يعيد بناء كتلتي الهوم هاتين.
      * latest/most_read دائمان (كلّ مقال منشور مرشّح فيهما).
      *
+     * وسم صفحة المقال (article:{id}) صار مبنيّاً من id المقال حصراً (2026-07-18،
+     * إصلاح جذريّ لتضارب الكاش — راجع docs/architecture/CACHE-INVALIDATION.md §11).
+     * الـ id ثابت لا يتغيّر أبداً، فلا حاجة لتتبّع "قديم" كما كان الحال مع الـ slug
+     * (الذي بات زخرفياً بالكامل في الرابط العامّ الجديد /news/dd/mm/yyyy/{id}/).
+     *
      * @return array<int,string>
      */
     public static function article(
         Article $article,
-        ?string $oldSlug = null,
-        array $oldCategorySlugs = [],
+        array $oldCategoryIds = [],
         array $oldTags = [],
         ?int $oldAuthorId = null,
     ): array {
-        $slug = (string) $article->slug;
-
         $tags = [
             'homepage',        // getHomepageFeed (Hero, Latest, Breaking, Editors Pick)
             'feed:latest',     // getLatestFeed (قسم /latest + الشريط الإخباري)
             'feed:most_read',  // getMostReadFeed («الأكثر قراءة» + /trending)
-            "article:{$slug}", // getArticle (صفحة تفاصيل المقال)
+            "article:{$article->id}", // getArticle (صفحة تفاصيل المقال) — بالـ id فقط
+            // P0 (Cache Invalidation Audit): searchArticles() تستخدم هذا الوسم لكنه لم يكن
+            // يُبطَل إطلاقًا — نتيجة بحث لمقال جديد/محذوف كانت تنتظر سقف revalidate=60 فقط.
+            'search',
         ];
 
         // 1. Editors Pick, Hero, Header transitions
@@ -55,27 +67,28 @@ final class FrontendCacheTags
         if ($article->is_editor_pick || $article->wasChanged('is_editor_pick')) {
             $tags[] = 'feed:editors_pick';
         }
-
-        // 2. Slug transition
-        if ($oldSlug !== null && $oldSlug !== '' && $oldSlug !== $slug) {
-            $tags[] = "article:{$oldSlug}";
+        // P0 (Cache Invalidation Audit): كانت feed:breaking تُستخدَم في الواجهة
+        // (getBreakingFeed) بلا أي إبطال خلفي مطلقًا — لم تكن is_breaking مُعالَجة هنا إطلاقًا.
+        if ($article->is_breaking || $article->wasChanged('is_breaking')) {
+            $tags[] = 'feed:breaking';
         }
 
-        // 3. Category transitions
-        $article->loadMissing(['primaryCategory:id,slug', 'categories:id,slug']);
-        $categorySlugs = collect([$article->primaryCategory])
+        // 2. Category transitions — بالـid الثابت (2026-07-24: كان بالـslug، عرضة لكسر الإبطال
+        // عند إعادة تسمية القسم). $oldCategoryIds تغطّي حالة نقل المقال بين تصنيفات (لا إعادة تسمية).
+        $article->loadMissing(['primaryCategory:id', 'categories:id']);
+        $categoryIds = collect([$article->primaryCategory])
             ->merge($article->categories)
             ->filter()
-            ->map(fn ($category): ?string => $category->slug)
-            ->merge($oldCategorySlugs) // Append old categories!
+            ->map(fn ($category): ?int => $category->id)
+            ->merge($oldCategoryIds) // Append old categories (moved-away-from)!
             ->filter()
             ->unique();
 
-        foreach ($categorySlugs as $categorySlug) {
-            $tags[] = "category:{$categorySlug}";
+        foreach ($categoryIds as $categoryId) {
+            $tags[] = "category:{$categoryId}";
         }
 
-        // 4. Author transitions
+        // 3. Author transitions
         $authorId = $article->author_id;
         if ($authorId) {
             $tags[] = "author_articles:{$authorId}";
@@ -84,7 +97,7 @@ final class FrontendCacheTags
             $tags[] = "author_articles:{$oldAuthorId}";
         }
 
-        // 5. Tag transitions
+        // 4. Tag transitions
         $article->loadMissing('tags');
         $currentTags = $article->tags->pluck('name')->all();
         $allTags = collect($currentTags)->merge($oldTags)->filter()->unique();
@@ -119,47 +132,30 @@ final class FrontendCacheTags
     }
 
     /**
-     * وسوم الريل: خلاصة الريلز + صفحة الريل (+ سلَغ قديم عند التغيير). مستقلّة عن تصنيفات الأخبار.
+     * وسوم الريل: خلاصة الريلز + صفحة الريل. بالـid الثابت (2026-07-24) — لا حاجة لتتبّع سلَغ
+     * قديم بعد الآن (الـid لا يتغيّر بإعادة التسمية). مستقلّة عن تصنيفات الأخبار.
      *
      * @return array<int,string>
      */
-    public static function reel(Reel $reel, ?string $oldSlug = null): array
+    public static function reel(Reel $reel): array
     {
-        $locale = $reel->locale;
-        $slug = (string) $reel->slug;
-
-        $tags = [
-            "reel-feed:{$locale}",
-            "reel:{$locale}:{$slug}",
+        return [
+            "reel-feed:{$reel->locale}",
+            "reel:{$reel->id}",
         ];
-
-        if ($oldSlug !== null && $oldSlug !== '' && $oldSlug !== $slug) {
-            $tags[] = "reel:{$locale}:{$oldSlug}";
-        }
-
-        return $tags;
     }
 
     /**
      * وسوم التصنيف: شجرة الأقسام (categories — تستهلكها بلوكات الهوم عبر getCategoryById)
-     * + تنقّل الهيدر (site-settings — nav_categories ضمن /site) + قوائم قسمه. عند تغيّر
-     * السلَغ: وسم القديم + مظلّة `articles` (روابط القسم/الـbreadcrumbs داخل صفحات المقالات
-     * المُكاشة) — الاستخدام المشروع الوحيد للمظلّة.
+     * + تنقّل الهيدر (site-settings — nav_categories ضمن /site) + قائمة/صفحة القسم بالـid
+     * الثابت (2026-07-24). الـid لا يتغيّر بإعادة تسمية السلَغ ⇒ لا حاجة لتتبّع "قديم" ولا
+     * لمظلّة `articles` بعد الآن (كانتا ضروريّتين فقط حين كان الوسم slug-based).
      *
      * @return array<int,string>
      */
-    public static function category(Category $category, ?string $oldSlug = null): array
+    public static function category(Category $category): array
     {
-        $slug = (string) $category->slug;
-
-        $tags = ['categories', 'site-settings', "category:{$slug}"];
-
-        if ($oldSlug !== null && $oldSlug !== '' && $oldSlug !== $slug) {
-            $tags[] = "category:{$oldSlug}";
-            $tags[] = 'articles';
-        }
-
-        return $tags;
+        return ['categories', 'site-settings', "category:{$category->id}"];
     }
 
     /**
@@ -174,16 +170,85 @@ final class FrontendCacheTags
     }
 
     /**
+     * وسوم التغطية المباشرة لمقال — يُبطلها إنشاء/تعديل/حذف/نقل أي تحديث خط (P0 Cache
+     * Invalidation Audit: كانت هذه العمليات تُفرِّغ Cache::tags(['live_updates']) الخلفي
+     * فقط دون إخطار الواجهة، فتبقى صفحة "مباشر" على حالها حتى انقضاء revalidate=1800).
+     *
+     * @return array<int,string>
+     */
+    public static function liveUpdates(Article $article): array
+    {
+        return ['live_updates', "live:{$article->slug}"];
+    }
+
+    /**
+     * وسوم البثّ — تُبنى مباشرة (وليس بالترجمة من BroadcastCacheTags الخلفي، الذي لا
+     * يُضمِّن kind في وسم التفاصيل بينما الواجهة تحتاجه: lib/broadcast.ts يستهلك
+     * broadcast:{kind}:{slug} — ترجمة ساذجة كانت ستُنتج سلسلة لا تطابق شيئًا).
+     *
+     * @return array<int,string>
+     */
+    public static function broadcast(Broadcast $broadcast, ?string $oldKind = null, ?string $oldSlug = null): array
+    {
+        $kind = $broadcast->kind->value;
+        $slug = (string) $broadcast->slug;
+
+        $tags = ["broadcast-feed:{$kind}", "broadcast:{$kind}:{$slug}"];
+
+        if ($oldKind !== null && $oldKind !== $kind) {
+            $tags[] = "broadcast-feed:{$oldKind}";
+        }
+        if ($oldSlug !== null && $oldSlug !== '' && $oldSlug !== $slug) {
+            $tags[] = 'broadcast:'.($oldKind ?? $kind).":{$oldSlug}";
+        }
+
+        return $tags;
+    }
+
+    /**
+     * وسوم كل خلاصات البثّ الثلاث — تُستخدَم عند تغيير تصنيف بثّ (لا وسم فرونت إند
+     * خاصّ بتصنيف البثّ اليوم، خلافًا للفيديو؛ التصنيفات تُعرَض ضمن نفس خلاصات الأنواع).
+     *
+     * @return array<int,string>
+     */
+    public static function broadcastCategoryChange(): array
+    {
+        return array_map(fn (string $kind): string => "broadcast-feed:{$kind}", \App\Enums\BroadcastKind::values());
+    }
+
+    /**
+     * وسم خلاصة الجريدة الرقمية — الواجهة (lib/epaper.ts) لا تملك وسم تفاصيل عدد
+     * منفصل؛ صفحة القارئ نفسها تقرأ من نفس getEpapers() المُوسَّم بهذا فقط.
+     *
+     * @return array<int,string>
+     */
+    public static function epaper(Epaper $epaper, ?string $oldLocale = null): array
+    {
+        $tags = ["epaper-feed:{$epaper->locale}"];
+
+        if ($oldLocale !== null && $oldLocale !== $epaper->locale) {
+            $tags[] = "epaper-feed:{$oldLocale}";
+        }
+
+        return $tags;
+    }
+
+    /**
      * يترجم وسوم كاش الفيديو الخلفية (VideoCacheTags) إلى وسوم الواجهة المقابلة. يُستفاد
      * من أن أفعال الفيديو/قائمة التشغيل تحسب أصلاً مجموعة الإبطال الصحيحة (شاملةً القديم
      * عند تغيّر slug/locale)، فنترجمها بدل إعادة اشتقاقها:
      *
      *   videos:feed:{L}            → video-feed:{L}        (مكتبة + مميّز + رائج + ذو صلة + قوائم)
-     *   videos:detail:{L}:{slug}   → video:{L}:{slug}      (صفحة المشاهدة)
      *   videos:category:{L}:{slug} → video-category:{L}:{slug}
      *   videos:playlist:{L}:{slug} → playlist:{L}:{slug}   (صفحة قائمة التشغيل)
      *
      * تُهمَل المظلّة (videos) ووسم الخرائط (videos:sitemap) — لا مقابل لهما في الواجهة.
+     *
+     * ملاحظة (2026-07-24، Cache Invalidation Audit): `videos:detail:{L}:{slug}` **لم يعد**
+     * يُترجَم هنا — كان يُنتج وسم واجهة slug-based (`video:{L}:{slug}`) يخالف قاعدة الـid
+     * الثابتة. صفحة تفاصيل الفيديو تُبطَل الآن حصراً عبر {@see videoDetail()} المُستدعاة
+     * صراحةً من كل Action يملك كائن Video (Create/Update/Delete/ForceDelete/Restore/
+     * PublishDue/BulkVideoAction/RevalidateVideoFrontendOnStatusChanged).
      *
      * @param  array<int,string>  $backendTags
      * @return array<int,string>
@@ -192,7 +257,6 @@ final class FrontendCacheTags
     {
         $map = [
             'videos:feed:' => 'video-feed:',
-            'videos:detail:' => 'video:',
             'videos:category:' => 'video-category:',
             'videos:playlist:' => 'playlist:',
         ];
@@ -209,6 +273,16 @@ final class FrontendCacheTags
         }
 
         return array_values(array_unique($out));
+    }
+
+    /**
+     * وسم صفحة تفاصيل الفيديو — بالـid الثابت (مطابق لِـarticle/category/reel). يُستدعى
+     * صراحةً (بدل الترجمة من VideoCacheTags، الذي يبقى slug-based داخليًّا لكاش Laravel
+     * نفسه) من كل Action يملك كائن Video عند إنشاء/تعديل/حذف/نشر فيديو.
+     */
+    public static function videoDetail(Video $video): string
+    {
+        return "video:{$video->id}";
     }
 
     /**

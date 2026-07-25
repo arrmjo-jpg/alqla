@@ -24,7 +24,15 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Wave C2: لا انتقالات حالة (status/published_at غير مقبولة).
- * يلتقط تاريخ المسار القانوني (ADR A4) عند تغيّر slug أو التصنيف الرئيسي.
+ *
+ * يلتقط تاريخ المسار القانوني (ADR A4) عند تغيّره فعلياً — منطق دفاعيّ عامّ لا
+ * يفترض أيّ حقل بعينه. **ملاحظة صدق (2026-07-18)**: منذ تحوّل canonicalPath() إلى
+ * /news/dd/mm/yyyy/{id}/ (id + published_at فقط، بلا slug/locale)، لا حقل يقبله
+ * هذا الأكشن (slug/locale/primary_category_id) يُغيِّر المسار القانوني عملياً بعد
+ * الآن — status/published_at غير مقبولين هنا أصلاً (أعلاه). فالكتلة أدناه تبقى صحيحة
+ * ومُفعَّلة لكنها لا تُنتج سجلّ تاريخ جديد من هذا الأكشن تحديداً؛ التغيير الوحيد الذي
+ * يُحرِّك canonicalPath() اليوم هو published_at عبر TransitionArticleStatusAction
+ * (مُعالَج بنفس النمط هناك).
  */
 class UpdateArticleAction
 {
@@ -59,10 +67,15 @@ class UpdateArticleAction
         $oldAuthorId = $article->author_id;
         $oldTags = $article->tags->pluck('name')->all();
 
-        // slugs التصنيفات قبل التعديل — للإبطال الحبيبي الدقيق عند تغيّر العضوية.
+        // slugs التصنيفات قبل التعديل — لكاش الباك إند الداخليّ (ArticleCacheTags، لا يزال slug-based).
         $oldCategorySlugs = collect([$article->primaryCategory])
             ->merge($article->categories)
             ->filter()->map(fn ($c): ?string => $c->slug)->filter()->unique()->values()->all();
+        // ids التصنيفات قبل التعديل — لإبطال الواجهة (FrontendCacheTags::article، id-based) عند
+        // نقل المقال بين تصنيفات (لا حاجة لهذا عند إعادة تسمية تصنيف فقط — الـid ثابت).
+        $oldCategoryIds = collect([$article->primaryCategory])
+            ->merge($article->categories)
+            ->filter()->map(fn ($c): ?int => $c->id)->filter()->unique()->values()->all();
 
         $article = DB::transaction(function () use (
             $article, $validated, $actor, $primaryId, $secondaryProvided, $secondary, $oldPath, $oldLocale
@@ -135,7 +148,7 @@ class UpdateArticleAction
         Cache::tags(
             ArticleCacheTags::writeTags($article->fresh(), $oldLocale, $oldSlug, $oldCategorySlugs)
         )->flush();
-        ArticleCdnPurge::purge($article, $oldPath, $oldCategorySlugs, $oldTags, $oldAuthorId);
+        ArticleCdnPurge::purge($article, $oldPath, $oldCategoryIds, $oldTags, $oldAuthorId);
 
         return ApiResponse::success(
             __('article.updated'),

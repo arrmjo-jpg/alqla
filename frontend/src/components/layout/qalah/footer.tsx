@@ -7,7 +7,6 @@ import { getStaticPages } from '@/lib/static-pages';
 import { PLATFORM_LINKS } from '../nav-data';
 import { socialEntries } from '../social-map';
 import { QalahScrollTop } from './scroll-top';
-import { DesktopViewToggle } from '@/components/layout/desktop-view-toggle';
 
 function PhoneIcon({ className }: { className?: string }) {
   return (
@@ -149,10 +148,6 @@ export async function QalahFooter() {
             </Link>
           ))}
         </nav>
-
-        <div className="mt-4 flex justify-center w-full px-4">
-          <DesktopViewToggle className="w-full max-w-[280px]" />
-        </div>
       </div>
 
       <div className="footer-bottom">

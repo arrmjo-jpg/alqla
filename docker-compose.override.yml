@@ -7,14 +7,16 @@
 # (/data/uploads, /data/storage-public) that only exist on the production server. This file
 # replaces them for local dev with:
 #   - storage/app/public -> a RELATIVE bind mount into the repo checkout (./storage/app/public).
-#     Works unmodified on Windows/macOS/Linux; Compose resolves it against the project directory.
-#   - public/uploads -> the Docker-managed `uploads_data` NAMED VOLUME (not a bind mount). It's
-#     seeded once from ./public/uploads via the `seed-uploads` service below, then the stack runs
-#     entirely off that volume - no host media path is needed once seeded. See seed-uploads's own
-#     comment for the one-time copy step and its idempotency guarantee.
+#   - public/uploads -> a RELATIVE bind mount into the repo checkout (./public/uploads), same
+#     pattern as storage/app/public. Files stay on the host exactly where they are (192k existing
+#     assets) - the container reads/writes them in place, nothing is copied or moved anywhere.
+#     (An earlier revision of this file copied uploads into a separate Docker-managed named volume
+#     instead - reverted per explicit instruction: keep the files in their original location.)
+#   Both work unmodified on Windows/macOS/Linux; Compose resolves relative paths against the
+#   project directory.
 #
-# Result: storage/app/public changes on the host appear in the container instantly (bind mount);
-# public/uploads is fully Docker-managed after the one-time seed (named volume).
+# Result: both storage/app/public and public/uploads changes on the host appear in the container
+# instantly (bind mount) - no seeding step, no separate volume to keep in sync.
 #
 # Note on merge semantics: Compose merges `volumes:` entries by target container path (the part
 # after the colon) — a mount defined here for the same target REPLACES the one in
@@ -50,38 +52,6 @@ x-dev-container-network: &dev-container-network
     - "host.docker.internal:host-gateway"
 
 services:
-  # ── One-time media seed: public/uploads -> the `uploads_data` named volume (local dev only) ───
-  # Copies your existing public/uploads/assets (91,580 files) into a Docker-managed named volume
-  # ONE TIME, so the stack no longer depends on a host bind mount for media at all after that.
-  # The host directory is mounted `:ro` here - this container only ever READS from it; your
-  # original files are never modified, moved, or deleted.
-  #
-  # Not part of the default `docker compose up` (profiles: ["seed"]) - it only runs when you
-  # explicitly ask for it, and running it again is a safe no-op: it checks whether the volume
-  # already has files before copying anything.
-  #
-  # Run once:  docker compose --profile seed run --rm seed-uploads
-  seed-uploads:
-    image: alpine:3.20
-    profiles: ["seed"]
-    volumes:
-      - ./public/uploads:/source:ro
-      - uploads_data:/dest
-    entrypoint: ["sh", "-c"]
-    # command as a single-element list (not a plain scalar): Compose shell-word-splits a plain
-    # string `command:` value (like Dockerfile CMD shell form), which mangles a multi-line script
-    # with quotes/brackets in it. Wrapping the whole script as ONE list item keeps it as one
-    # literal argv token, so `sh -c` receives it intact.
-    command:
-      - |
-        if [ -n "$$(ls -A /dest 2>/dev/null)" ]; then
-          echo "uploads_data already has files - skipping copy (safe no-op)"
-        else
-          echo "Seeding uploads_data from host public/uploads (one-time copy)..."
-          cp -a /source/. /dest/
-          echo "Done: copied $$(find /dest -type f | wc -l) files into uploads_data"
-        fi
-
   # ── Verification-only stand-in for the app's OWN database (local dev only) ────────────────────
   # Purpose: .env points the app at DB_HOST=127.0.0.1, DB_PORT=3306, DB_DATABASE (currently `gasem`),
   # DB_USERNAME=root, DB_PASSWORD=(empty) - but nothing is actually listening on 127.0.0.1:3306 on
@@ -138,9 +108,7 @@ services:
     <<: *dev-container-network
     volumes:
       - ./storage/app/public:/var/www/html/storage/app/public:rw
-      # Docker-managed named volume, not a host bind mount - see seed-uploads above for the
-      # one-time copy step. The stack no longer needs ./public/uploads present on the host to run.
-      - uploads_data:/var/www/html/public/uploads:rw
+      - ./public/uploads:/var/www/html/public/uploads:rw
     ports:
       - "8080:80"
 
@@ -148,18 +116,18 @@ services:
     <<: *dev-container-network
     volumes:
       - ./storage/app/public:/var/www/html/storage/app/public:rw
-      - uploads_data:/var/www/html/public/uploads:rw
+      - ./public/uploads:/var/www/html/public/uploads:rw
 
   worker-media:
     <<: *dev-container-network
-    # ROOT CAUSE FIX: this service's own `volumes:` here used to omit uploads_data, so it never
-    # saw public/uploads at all despite backend having it - GenerateMediaAssetConversionsJob
+    # ROOT CAUSE FIX: this service's own `volumes:` here used to omit the uploads mount, so it
+    # never saw public/uploads at all despite backend having it - GenerateMediaAssetConversionsJob
     # (queue=media, runs here) silently early-returned in MediaConversions::generate() on
     # Storage::disk('uploads')->exists()===false, marking 91.4% of the library 'failed' with no
     # exception ever thrown. Same class of bug as the production docker-compose.yml anchor gap.
     volumes:
       - ./storage/app/public:/var/www/html/storage/app/public:rw
-      - uploads_data:/var/www/html/public/uploads:rw
+      - ./public/uploads:/var/www/html/public/uploads:rw
 
   # ── Local-dev-only worker for the WP Migration queue ───────────────────────────────────────────
   # ROOT CAUSE FIX (discovered running the full migration): DispatchMigrationChunkJob and
@@ -169,9 +137,9 @@ services:
   # listens on a DIFFERENT connection (redis-media, queue=media) entirely. Nothing was ever wired
   # up to process this queue, in this compose file or production's. This service fills that gap
   # for local dev. Same image, same network/env as worker/worker-media - and critically the SAME
-  # uploads_data volume, since ImportWpPostAction writes rehosted media to the 'uploads' disk and
+  # uploads bind mount, since ImportWpPostAction writes rehosted media to the 'uploads' disk and
   # a worker without this mount would write to its own container-local filesystem instead of the
-  # shared volume the backend/host actually serve from.
+  # shared host directory backend/host actually serve from.
   worker-migration:
     <<: *dev-container-network
     image: alphacms-backend:latest
@@ -188,7 +156,7 @@ services:
     user: www-data
     volumes:
       - ./storage/app/public:/var/www/html/storage/app/public:rw
-      - uploads_data:/var/www/html/public/uploads:rw
+      - ./public/uploads:/var/www/html/public/uploads:rw
 
   scheduler:
     <<: *dev-container-network
@@ -199,7 +167,7 @@ services:
     # succeeding. media:sync:remote (also scheduled here) needs local file read access too.
     volumes:
       - ./storage/app/public:/var/www/html/storage/app/public:rw
-      - uploads_data:/var/www/html/public/uploads:rw
+      - ./public/uploads:/var/www/html/public/uploads:rw
 
   frontend:
     ports:
@@ -223,6 +191,5 @@ services:
       - "7700:7700"
 
 volumes:
-  uploads_data:
   app_db_data:
   redis_app_data:

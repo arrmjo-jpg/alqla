@@ -43,6 +43,18 @@ it('enforces maximum page limit for offset pagination', function () {
         ->assertJsonFragment(['success' => false]);
 });
 
+it('caps reported total_pages at max_page instead of the real last page', function () {
+    Config::set('performance.pagination.max_page', 2);
+    $cat = createTestCategory('cap-cat');
+    for ($i = 0; $i < 5; $i++) {
+        createTestArticle($cat->id);
+    }
+
+    $response = $this->getJson('/api/v1/ar/articles?per_page=1&filter[category]=cap-cat')->assertOk();
+
+    expect($response->json('meta.pagination.total_pages'))->toBe(2);
+});
+
 it('allows deep scrolling when using cursor pagination', function () {
     Config::set('performance.pagination.max_page', 2);
     $cat = createTestCategory('cursor-cat');

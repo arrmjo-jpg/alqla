@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
@@ -30,6 +30,7 @@ import { ErrorState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { paths } from '@/router/paths';
+import { articlesService } from '@/services/articles.service';
 import {
   useArticleStats,
   useArticles,
@@ -52,6 +53,7 @@ import type {
   ArticlesListParams,
   ContentLocale,
 } from '@/types/content.types';
+import type { NormalizedError } from '@/types/api';
 
 const PER_PAGE = 15;
 
@@ -82,7 +84,7 @@ export default function ArticlesPage() {
   const { t, i18n } = useTranslation('content');
   const navigate = useNavigate();
   const { hasPermission } = useAuth();
-  const { confirm } = useToast();
+  const { confirm, error: showError } = useToast();
 
   const canCreate = hasPermission('articles.create');
   const canEdit = hasPermission('articles.edit');
@@ -182,6 +184,31 @@ export default function ArticlesPage() {
     },
     [setSearchParams]
   );
+
+  // صفحة مطلوبة يدوياً (رابط قديم/مُعدَّل) تتجاوز حد الـ Backend (404) — نجلب
+  // صفحة 1 بنفس الفلاتر لمعرفة meta.total_pages الفعلي (المُقيَّد بـ maxPage
+  // في الـ Backend) وننتقل إليها مباشرة، بدل تخمين رقم ثابت في الواجهة قد
+  // ينحرف عن قيمة الـ Backend الحقيقية، وبدل إرجاع المستخدم لصفحة 1 بلا داعٍ.
+  useEffect(() => {
+    const err = q.error as NormalizedError | null;
+    if (!q.isError || err?.status !== 404 || params.page <= 1) return;
+
+    let cancelled = false;
+    articlesService
+      .list({ ...params, page: 1 })
+      .then((res) => {
+        if (cancelled) return;
+        showError(t('articles.pagination_out_of_range'));
+        patch({ page: res.pagination.total_pages || 1 });
+      })
+      .catch(() => {
+        if (!cancelled) patch({ page: 1 });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [q.isError, q.error, params, patch, showError, t]);
 
   const fmtDate = (v: string | null) =>
     v

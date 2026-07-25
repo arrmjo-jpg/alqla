@@ -37,5 +37,17 @@ return [
         'fetch_retries' => (int) env('WP_MIGRATION_FETCH_RETRIES', 2),
         'fetch_max_redirects' => (int) env('WP_MIGRATION_FETCH_MAX_REDIRECTS', 2),
         'allowed_mimes' => ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'],
+        // محاولات دفتر الوسائط (wp_migration_media) قبل وسم عنصر فاشلاً نهائياً (dead-letter) -
+        // منفصل عن item_tries (مستوى المنشور) لأن إعادة محاولة صورة واحدة أرخص من إعادة منشور كامل.
+        'max_attempts' => (int) env('WP_MIGRATION_MEDIA_MAX_ATTEMPTS', 3),
     ],
+
+    // إيقاف افتراضي عمداً: عندما لا يُعثَر على ملف محلياً داخل uploads_path لمرجع
+    // /wp-content/uploads/، السلوك الافتراضي (WpMediaResolver) هو ترك المرجع دون
+    // حلّ — لا جلب شبكي تلقائي. هذا العلم صريح الاشتراك (opt-in) يُفعِّل بديلاً
+    // محكوماً: جلب الرابط الأصلي عبر مسار WpMediaImporter::importExternal() الآمن
+    // من SSRF نفسه (بلا تغيير في تلك الضوابط) بدل ترك المرجع معلّقاً. أُضيف بموافقة
+    // صريحة لاختبار استيراد وسائط شاب.جو عن بُعد بعد تأكّد عدم وجود نسخة محلية من
+    // wp-content/uploads على هذه الآلة.
+    'allow_remote_media_fallback' => (bool) env('WP_MIGRATION_ALLOW_REMOTE_FALLBACK', false),
 ];

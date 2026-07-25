@@ -11,8 +11,8 @@ import { enCategoryUrl } from '@/lib/en';
 import { getCategoryById, getCategoryFeed, getHomepageFeed, getLatestFeed, getMostReadFeed } from '@/lib/feed';
 
 // English News homepage. Reuses the locale-aware feed layer (locale='en') — no
-// backend changes. ISR = 300s safety ceiling; event-driven refresh via tags.
-export const revalidate = 300;
+// backend changes. ISR = 36000s (10h) safety ceiling; event-driven refresh via tags.
+export const revalidate = 36000;
 
 export default async function EnHome() {
   const [homepageData, mostRead, latestNews, articlesCategory] = await Promise.all([

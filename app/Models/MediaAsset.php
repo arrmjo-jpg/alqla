@@ -167,6 +167,24 @@ class MediaAsset extends Model
         return $this->hasMany(EpaperVersion::class, 'media_asset_id');
     }
 
+    /** أغلفة التصنيفات — categories.banner_media_id. */
+    public function categories(): HasMany
+    {
+        return $this->hasMany(Category::class, 'banner_media_id');
+    }
+
+    /** صور أعضاء الفريق — team_members.avatar_asset_id. */
+    public function teamMembers(): HasMany
+    {
+        return $this->hasMany(TeamMember::class, 'avatar_asset_id');
+    }
+
+    /** إبداعات الإعلانات — ad_creatives.media_asset_id. */
+    public function adCreatives(): HasMany
+    {
+        return $this->hasMany(AdCreative::class, 'media_asset_id');
+    }
+
     /**
      * نطاق أصول المكتبة القابلة للإسناد/الإدارة: ملفات assets/ + الفيديو الخارجي.
      * يستثني أصول الإعدادات (branding/...).

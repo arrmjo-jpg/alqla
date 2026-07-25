@@ -36,7 +36,8 @@ import { getTtsConfig } from '@/lib/tts';
 // same 3-col grid (share rail / main / sidebar), same ad zones, same sidebar news widget, same
 // feed sections (related / same-category / most-read), same comments/subscribe placement. Arabic
 // is the functional reference; only the visual identity (typeface/colors/copy) changes here.
-export const revalidate = 21600;
+// ISR = 36000s (10h) safety ceiling; event-driven refresh via revalidateTag('article:{id}').
+export const revalidate = 36000;
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;

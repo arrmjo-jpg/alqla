@@ -924,27 +924,6 @@ a.en-opinion-photo__name:hover { color: rgba(255,255,255,.8); }
 .en-topnews-dot { height: 8px; width: 8px; border-radius: 9999px; background: var(--en-surface-3); border: 0; cursor: pointer; transition: var(--transition-smooth); }
 .en-topnews-dot--active { width: 20px; background: #C9A227; }
 
-/* Desktop-view toggle — fork of components/layout/desktop-view-toggle.tsx, English labels.
-   MobileTopToggleBanner's desktop-mode values are the same ~3.41x scale compensation as AR's
-   version (1280px forced viewport / 375px reference mobile width). */
-/* Hardcoded hex, not var(--en-*): also rendered inside EnMenu's portaled SheetContent (outside
-   .en-skin's DOM subtree), where .en-skin-scoped custom properties don't resolve. */
-.en-desktop-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid #e0e3e6; background: #eceef0; padding: 10px 16px; font-family: var(--font-inter), system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 0.85rem; font-weight: 800; color: #171717; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-.en-desktop-toggle:hover { background: #e0e3e6; border-color: #b90000; }
-.en-desktop-toggle__icon { color: #b90000; flex-shrink: 0; }
-
-.en-mobile-toggle-banner { width: 100%; display: flex; align-items: center; justify-content: center; background: var(--en-surface-2); border-bottom: 1px solid var(--en-surface-3); padding: 10px 16px; }
-.en-mobile-toggle-banner--desktop { border-bottom-width: 3.75px; padding: 34px 51px; }
-.en-mobile-toggle-banner__btn { width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-align: center; border-radius: 0; border: 1px solid var(--en-surface-3); background: var(--en-paper); padding: 10px 16px; font-family: var(--en-font); font-size: 0.85rem; font-weight: 800; color: var(--en-ink); cursor: pointer; transition: var(--transition-smooth); }
-.en-mobile-toggle-banner__btn:hover { background: var(--en-surface-3); border-color: var(--en-primary); }
-.en-mobile-toggle-banner__btn--desktop { padding: 34px 51px; font-size: 47px; line-height: 1; gap: 26px; border-width: 3.75px; }
-.en-mobile-toggle-banner__icon, .en-mobile-toggle-banner__icon--desktop { color: var(--en-primary); flex-shrink: 0; }
-
-/* Footer placement (mirrors AR's footer-mobile toggle wrapper) — self-hides on desktop via
-   the component's own showToggle gate, so no media query needed here. */
-.en-footer-toggle-wrap { margin-top: 1.75rem; display: flex; justify-content: center; }
-.en-footer-toggle-btn { width: 100%; max-width: 280px; }
-
 /* Fixed mobile bottom nav — fork of components/layout/mobile-bottom-nav.tsx (Home/Reels/Videos/
    Sports/Weather). Hidden ≥1024px, matching AR's lg:hidden. */
 .en-mobile-bottom-nav { position: fixed; inset-inline: 0; bottom: 0; z-index: 40; border-top: 1px solid rgba(255,255,255,.15); background: var(--en-primary); color: #fff; }

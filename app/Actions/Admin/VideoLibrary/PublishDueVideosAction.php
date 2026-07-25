@@ -83,15 +83,20 @@ final class PublishDueVideosAction
 
         if ($published > 0) {
             $tags = [];
+            $frontendDetailTags = [];
             foreach ($purgeQueue as $video) {
                 $tags = array_merge($tags, VideoCacheTags::invalidationTags(
                     $video,
                     categorySlug: $video->category?->slug,
                 ));
+                $frontendDetailTags[] = FrontendCacheTags::videoDetail($video);
             }
             $tags = array_values(array_unique($tags));
             Cache::tags($tags)->flush();
-            FrontendRevalidate::tags(FrontendCacheTags::fromVideoTags($tags));
+            FrontendRevalidate::tags([
+                ...FrontendCacheTags::fromVideoTags($tags),
+                ...array_unique($frontendDetailTags),
+            ]);
         }
 
         return $published;

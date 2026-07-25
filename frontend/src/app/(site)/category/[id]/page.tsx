@@ -15,5 +15,5 @@ export default async function OldCategoryRedirectPage({ params }: { params: Prom
   const category = await getCategoryBySlug(decoded, 'ar');
   if (!category) notFound();
 
-  permanentRedirect(`/category-${category.id}/${category.slug}`);
+  permanentRedirect(`/category-${category.id}/${encodeURIComponent(category.slug)}`);
 }

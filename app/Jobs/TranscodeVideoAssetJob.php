@@ -6,6 +6,7 @@ namespace App\Jobs;
 
 use App\Enums\MediaProcessingProfile;
 use App\Models\MediaAsset;
+use App\Support\Cache\MediaCacheInvalidator;
 use App\Support\Media\RemoteStorage;
 use App\Support\Media\VideoTranscoder;
 use Illuminate\Bus\Queueable;
@@ -160,6 +161,9 @@ class TranscodeVideoAssetJob implements ShouldBeUnique, ShouldQueue
                 'metadata' => $meta,
                 'processing_status' => 'ready',
             ])->save();
+
+            // HLS/رينديشنز صارت جاهزة فعلياً الآن — أبطِل كاش كل مالك (Reel/Video) يعرضها.
+            MediaCacheInvalidator::invalidate($asset->fresh());
 
             // التخزين الهجين: انسخ كل المشتقّات إلى المرآة البعيدة (إن فُعّلت).
             if (RemoteStorage::enabled()) {

@@ -1,0 +1,165 @@
+{
+  "competitions": {
+    "title": "Competitions",
+    "subtitle": "Sync coverage (what the system keeps fresh) and Match Bar flags (what visitors see) — fully independent.",
+    "new": "New competition",
+    "error": "Failed to load competitions.",
+    "retry": "Retry",
+    "empty": { "title": "No competitions yet", "description": "Add a competition using its provider ID to get started." },
+    "searchPlaceholder": "Search by name or provider…",
+    "searchEmpty": "No competitions match your search.",
+    "clearSearch": "Clear search",
+    "section": { "enabled": "Enabled", "disabled": "Disabled" },
+    "picker": {
+      "searchPlaceholder": "Search by name…",
+      "empty": "No competitions yet. Add one from the Competitions page first.",
+      "fixtureCount_one": "{{count}} fixture",
+      "fixtureCount_other": "{{count}} fixtures"
+    },
+    "stats": {
+      "total": "Total competitions",
+      "inMatchBar": "Match Bar competitions",
+      "totalFixtures": "Total fixtures",
+      "withoutFixtures": "Competitions without fixtures"
+    },
+    "status": {
+      "ready": "Ready",
+      "selected": "Selected",
+      "disabled": "Not enabled"
+    },
+    "col": {
+      "name": "Competition",
+      "provider": "Provider",
+      "coverage": "Coverage",
+      "lastSynced": "Last synced",
+      "featured": "Featured competition",
+      "featuredUntil": "Featured until",
+      "inMatchBar": "In Match Bar",
+      "sortOrder": "Order",
+      "matches": "Matches",
+      "status": "Status"
+    },
+    "matches": { "none": "0 fixtures" },
+    "coverage": { "tracked": "Tracked", "untracked": "Not tracked", "never": "Never synced" },
+    "form": {
+      "createTitle": "New competition",
+      "provider": "Provider",
+      "providerId": "Provider competition ID",
+      "providerIdHint": "The competition's numeric ID at the provider (e.g. 365Scores).",
+      "name": "Name",
+      "logoUrl": "Logo URL",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel"
+    },
+    "confirm": {
+      "deleteTitle": "Delete competition?",
+      "deleteText": "This will delete “{{name}}” and its synced fixtures. This cannot be undone.",
+      "yes": "Delete"
+    },
+    "noPermission": "You don't have permission to manage competitions."
+  },
+  "matchBarSettings": {
+    "title": "Match Bar",
+    "desc": "Enable or disable the homepage Match Bar. Which fixtures appear is controlled from the Competitions page (competitions flagged “In Match Bar”).",
+    "enable": "Enable Match Bar",
+    "enableDesc": "Show the bar to visitors at the top of the site.",
+    "emptyWarning": "Heads up: the bar is enabled but no competitions currently qualify — it won't appear to visitors until at least one competition is flagged accordingly on the Competitions page.",
+    "eligibleCount": "Currently eligible competitions: {{count}}",
+    "noPermission": "You don't have permission to edit settings.",
+    "saved": "Match Bar settings saved.",
+    "competitions": {
+      "title": "Match Bar Competitions",
+      "desc": "Manually choose which competitions appear in the bar. A selected competition stays enabled even with zero current fixtures, and appears automatically once fixtures arrive."
+    }
+  },
+  "sportsHomeBarSettings": {
+    "title": "Sports Home Bar",
+    "desc": "Enable or disable the competitions bar at the top of the Sports homepage. Fully independent from the Match Bar — its own selected competitions.",
+    "enable": "Enable Sports Home Bar",
+    "enableDesc": "Show the bar to visitors at the top of the Sports homepage.",
+    "emptyWarning": "Heads up: the bar is enabled but no competitions currently qualify — it won't appear to visitors until at least one is flagged accordingly.",
+    "eligibleCount": "Currently eligible competitions: {{count}}",
+    "noPermission": "You don't have permission to edit settings.",
+    "saved": "Sports Home Bar settings saved.",
+    "competitions": {
+      "title": "Sports Home Bar Competitions",
+      "desc": "Manually choose which competitions appear in this bar — fully independent from the Match Bar selection, even for the same competition."
+    }
+  },
+  "sportMenu": {
+    "title": "Sport Menu",
+    "subtitle": "Sport section menu items — editorial category links or functional sections (matches/results/competitions...), freely ordered as a one-level-deep tree.",
+    "new": "New item",
+    "addChild": "Add child item",
+    "empty": { "title": "No items yet", "description": "Add an item to start building the Sport section menu." },
+    "status": { "enabled": "Enabled", "disabled": "Disabled" },
+    "form": {
+      "createTitle": "New menu item",
+      "editTitle": "Edit menu item",
+      "locale": "Locale",
+      "localeAr": "Arabic",
+      "localeEn": "English",
+      "type": "Type",
+      "typeSection": "Functional section",
+      "typeCategory": "Editorial category",
+      "title": "Title",
+      "category": "Category",
+      "categoryNone": "Choose a category…",
+      "sectionKey": "Section key",
+      "sectionKeyNone": "Choose a key…",
+      "sectionKeyHint": "A system-recognized value — doesn't necessarily mean a real page exists for it yet.",
+      "sectionKeyOptions": {
+        "matches": "Matches",
+        "results": "Results",
+        "competitions": "Competitions",
+        "teams": "Teams",
+        "players": "Players",
+        "predictions": "Predictions"
+      },
+      "parent": "Parent",
+      "parentNone": "No parent (root item)",
+      "icon": "Icon",
+      "enabled": "Enabled",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel"
+    },
+    "confirm": {
+      "deleteTitle": "Delete menu item?",
+      "deleteText": "This will delete “{{title}}”. This cannot be undone.",
+      "yes": "Delete"
+    },
+    "noPermission": "You don't have permission to manage the Sport menu."
+  },
+  "sportSettings": {
+    "theme": {
+      "title": "Appearance",
+      "desc": "Colors and default theme for the Sport section — independent from the rest of the site."
+    },
+    "defaultTheme": "Default theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "allowThemeSwitch": "Allow theme switching",
+    "primaryColor": "Primary color",
+    "secondaryColor": "Secondary color",
+    "themeCookie": "Theme cookie name",
+    "defaults": {
+      "title": "Defaults",
+      "desc": "Default sport, country, and competition when first entering the section."
+    },
+    "defaultSport": "Default sport",
+    "defaultCountry": "Default country",
+    "defaultCompetition": "Default competition",
+    "features": {
+      "title": "Features",
+      "desc": "Enable/disable Sport section features."
+    },
+    "predictionEnabled": "Enable Prediction Game",
+    "searchEnabled": "Enable Sport search",
+    "liveScoresEnabled": "Enable live scores",
+    "noPermission": "You don't have permission to edit settings.",
+    "saved": "Sport settings saved."
+  }
+}
