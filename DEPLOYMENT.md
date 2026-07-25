@@ -74,7 +74,12 @@ The entrypoint re-caches config/routes/views from runtime env on every container
 **Backend runtime (`.env`):** `APP_KEY`, DB creds, `REDIS_*`, `QUEUE_CONNECTION=redis`,
 `CACHE_STORE=redis`, `SESSION_DRIVER=database`, `CORS_ALLOWED_ORIGINS` (admin origin only — never `*`),
 `FRONTEND_REVALIDATE_URL` + `FRONTEND_REVALIDATE_SECRET` (**must equal** the frontend `REVALIDATE_SECRET`),
-`SCOUT_DRIVER`/`MEILISEARCH_*`, `BACKUP_*`, `HEALTH_*`, mail creds.
+`SCOUT_DRIVER`/`MEILISEARCH_*`, `BACKUP_*`, `HEALTH_*`, mail creds,
+**`IMAGE_DRIVER=imagick`** (required — `docker/php/Dockerfile` installs the `imagick` PHP extension
+specifically for shrink-on-load on large uploads and TIFF/HEIC/HEIF support, but
+`Spatie\Image\Image::useImageDriver()` reads this config value literally with no
+`class_exists(Imagick::class)` fallback; leaving the `.env.example` dev default of `gd` in production
+silently uses GD despite the extension being installed).
 **Compose interpolation:** `DB_ROOT_PASSWORD`, `DB_PASSWORD`, `MEILISEARCH_KEY`.
 
 Secrets (`APP_KEY`, DB/Redis passwords, `*_SECRET`, `BACKUP_ARCHIVE_PASSWORD`, mail creds, AWS keys)
@@ -281,3 +286,4 @@ Run against the **production** domains after deploy:
 | **Migrations run by multiple containers** | race/lock errors | migrate is a single explicit deploy step (not in entrypoint) |
 | **Large uploads exceed limits** | 413 errors | nginx `client_max_body_size 512M` + php `upload_max_filesize` aligned |
 | **Windows-only image-pipeline test failures** | none on Linux | Linux image ships ffmpeg + gd(WebP) + optimizers; tracked separately |
+| **`docker/php/Dockerfile` runtime stage masks a build-time failure** | `composer dump-autoload`/`php artisan package:discover` silently fail (no `composer` binary in the runtime stage since the two-stage split); shell `&&`/`||` precedence falls through to the `chown` step, so the RUN reports success. Laravel lazily regenerates `bootstrap/cache/packages.php` on first request instead — not currently deployment-breaking, but a real provider regression there would also be silently swallowed. | Pre-existing, not introduced by commit `462ae0868447e55cbbfa605b65930d923020d5ad`; not a release blocker. Track as a separate follow-up to fix the shell chaining and/or restore a runtime `composer` binary. |
