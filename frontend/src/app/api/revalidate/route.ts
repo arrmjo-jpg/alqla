@@ -29,6 +29,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       revalidatePath('/');
       revalidatePath('/en');
     }
+    // صفحات المصادقة الثلاث تجلب reCAPTCHA/الدخول الاجتماعيّ عبر هذين الوسمين تحديدًا — revalidateTag
+    // وحده لم يكن يكفي عمليًّا لإجبار تجديد صفحاتها المبنيّة Static (x-nextjs-cache بقي HIT)، فنجبر
+    // إبطال مسارها مباشرةً أيضًا (نفس نمط 'homepage' أعلاه).
+    if (tag === 'recaptcha-config' || tag === 'social-config') {
+      revalidatePath('/login');
+      revalidatePath('/register');
+      revalidatePath('/forgot-password');
+    }
+    // نفس السبب: صفحة الفيديو (فهرس + هيرو/كاروسيلات) بُنيت Static عند غياب اتصال الباك إند وقت
+    // البناء (next build مقصودًا بلا API_BASE_URL — راجع Dockerfile) فلم تُسجَّل أي علامة fetch على
+    // وسم video-feed أصلاً؛ revalidateTag وحده بلا أثر هنا، فنُجبر إبطال المسار مباشرةً.
+    if (tag === 'video-feed:ar' || tag === 'video-feed:en') {
+      revalidatePath('/videos');
+      revalidatePath('/en/videos');
+    }
   }
 
   return NextResponse.json({ revalidated: true, count: tags.length, tags });

@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { Container } from '@/components/layout/container';
 import { LivePulse } from '@/components/ui/live-pulse';
+import { TripleChevron } from '@/components/ui/section-more-link';
 import { getCategoryById, getCategoryFeed, getEditorsPickFeed, type FeedItem } from '@/lib/feed';
 
 // ودجت (بألوان الموقع): تريندينغ (يمين، ثلث) + قسمَا كُتّاب مكدّسان فوق بعض (يسار، ثلثان: تصنيف #20 ثمّ #57).
@@ -43,7 +44,7 @@ async function WritersRow({ categoryId, variant }: { categoryId: number; variant
     // 1) VIP Dark/Gold Design (لمقالات مختارة) - فخامة عالية جداً
     // -------------------------------------------------------------
     return (
-      <div className="flex min-w-0 flex-col rounded-[20px] bg-gradient-to-br from-zinc-900 via-zinc-950 to-black p-5 shadow-xl ring-1 ring-white/10">
+      <div className="flex min-w-0 flex-col rounded-[20px] bg-gradient-to-br from-[#242424] via-[#202020] to-[#1c1c1c] p-5 shadow-xl ring-1 ring-white/10">
         <div className="mb-4 flex items-center justify-between gap-3 border-b border-white/10 pb-4">
           <h2 className="flex items-center gap-2 font-heading text-lg font-extrabold text-[#d4af37]">
             {/* أيقونة نجمة ذهبية صغيرة بجانب العنوان تعطي طابع التميز */}
@@ -52,8 +53,12 @@ async function WritersRow({ categoryId, variant }: { categoryId: number; variant
             </svg>
             <span>{cat.name}</span>
           </h2>
-          <Link href={moreHref} className="text-xs font-bold text-white/50 transition-colors hover:text-[#d4af37]">
-            المزيد
+          <Link
+            href={moreHref}
+            className="group flex items-center gap-1 text-xs font-bold text-white/50 transition-[color,transform] hover:translate-x-1 hover:text-[#d4af37]"
+          >
+            <span>المزيد</span>
+            <TripleChevron className="size-3" />
           </Link>
         </div>
         
@@ -115,8 +120,12 @@ async function WritersRow({ categoryId, variant }: { categoryId: number; variant
         <h2 className="font-heading text-lg font-extrabold text-primary">
           {cat.name}
         </h2>
-        <Link href={moreHref} className="text-xs font-bold text-muted transition-colors hover:text-primary">
-          المزيد
+        <Link
+          href={moreHref}
+          className="group flex items-center gap-1 text-xs font-bold text-muted transition-[color,transform] hover:translate-x-1 hover:text-primary"
+        >
+          <span>المزيد</span>
+          <TripleChevron className="size-3" />
         </Link>
       </div>
       

@@ -80,8 +80,8 @@
 
 .en-skin *, .en-skin *::before, .en-skin *::after { box-sizing: border-box; }
 /* :where() keeps this reset's specificity at zero, so it never fights a component's own single-
-   class color rule (e.g. .en-secmore__btn's white-on-black) the way a plain ".en-skin a" selector
-   would — any link with its own color class wins automatically, no per-component override needed. */
+   class color rule (e.g. .en-sechead__more's muted-to-primary hover) the way a plain ".en-skin a"
+   selector would — any link with its own color class wins automatically, no per-component override needed. */
 :where(.en-skin a) { color: inherit; text-decoration: none; }
 
 .en-container { width: 100%; max-width: var(--en-container); margin-inline: auto; padding-inline: 24px; }
@@ -144,12 +144,12 @@
 .en-navbar-lang { grid-column: 3; justify-self: end; position: relative; z-index: 2; }
 .en-navbar-lang a {
   display: inline-block;
-  color: #C9A227;
+  color: #fff;
   font-size: 0.95rem;
   font-weight: 700;
   padding: 0.35rem 0.85rem;
   border-radius: 4px;
-  background-color: #000;
+  background-color: #C9A227;
   text-decoration: none;
   transition: opacity 0.2s;
 }
@@ -178,7 +178,7 @@
 /* Mobile search modal (fork of AR's .qn-search-*) — a plain conditional render, not a Radix
    portal, so var(--en-*) resolves normally here. */
 .en-qn-search-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 200; display: flex; align-items: flex-start; justify-content: center; padding: 5.5rem 1rem 1rem; }
-.en-qn-search-panel { position: relative; background: #fff; width: 100%; max-width: 560px; border-radius: 16px; padding: 1.25rem; box-shadow: 0 24px 60px rgba(0,0,0,.35); }
+.en-qn-search-panel { position: relative; background: var(--en-paper); width: 100%; max-width: 560px; border-radius: 16px; padding: 1.25rem; box-shadow: 0 24px 60px rgba(0,0,0,.35); }
 .en-qn-search-form { display: flex; gap: 0.5rem; align-items: center; }
 .en-qn-search-field { flex: 1; border: 1px solid rgba(0,0,0,.12); border-radius: 9999px; padding: 0.8rem 1.25rem; font-size: 1rem; outline: none; color: #111; font-family: var(--en-font); }
 .en-qn-search-field:focus { border-color: var(--en-primary); box-shadow: 0 0 0 3px rgba(185,0,0,.12); }
@@ -186,7 +186,7 @@
 .en-qn-search-submit:hover { background: var(--en-primary-hover); }
 .en-qn-search-close { position: absolute; top: -2.75rem; inset-inline-end: 0; background: rgba(255,255,255,.15); color: #fff; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1rem; }
 
-.en-header { background: #fff; border-bottom: 1px solid rgba(0, 0, 0, 0.08); padding: 0.5rem 0 0.9rem; }
+.en-header { background: var(--en-paper); border-bottom: 1px solid rgba(0, 0, 0, 0.08); padding: 0.5rem 0 0.9rem; }
 .en-header-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .en-header-logo-group { display: flex; align-items: center; gap: 12px; }
 .en-brand { display: inline-flex; align-items: center; gap: 12px; }
@@ -199,15 +199,15 @@
 @media (max-width: 640px) { .en-search { display: none; } .en-brand img { height: 52px; } .en-brand-name { font-size: 1.5rem; } }
 
 /* ============================================================================
-   SECTION HEADER — black headline + red rule accent, understated "View all"
-   link (deliberately not the Arabic site's solid red box + black pill motif)
+   SECTION HEADER — black headline + red rule accent, understated "More" link
+   (deliberately not the Arabic site's solid red box + black pill motif)
    ========================================================================== */
 .en-section { padding-block: 30px; }
 /* Special Coverage zone — subtle urgency treatment distinguishing it from ordinary sections */
 .en-section--live { background: #fff7f7; border-top: 1px solid rgba(255, 30, 30, 0.15); border-bottom: 1px solid rgba(255, 30, 30, 0.15); margin-inline: -24px; padding-inline: 24px; }
 .en-section--live .en-section-head { border-bottom-color: #ff1e1e; }
 .en-section--live .en-section-title::after { background: #ff1e1e; }
-.en-section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; border-bottom: 3px solid var(--en-ink); margin-bottom: 22px; padding-bottom: 10px; }
+.en-section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; border-bottom: 3px solid var(--en-primary); margin-bottom: 22px; padding-bottom: 10px; }
 .en-section-title {
   display: inline-block; position: relative; color: var(--en-ink);
   font-family: var(--en-font-display); font-weight: 700; font-size: 1.35rem; line-height: 1.15;
@@ -217,11 +217,12 @@
   content: ''; position: absolute; left: 0; bottom: 0; width: 42px; height: 3px; background: var(--en-primary);
 }
 .en-section-viewall {
-  display: inline-flex; align-items: center; gap: 5px;
+  display: inline-flex; align-items: center; gap: 6px;
   color: var(--en-primary); font-family: var(--en-font); font-size: 0.85rem; font-weight: 700;
-  padding-bottom: 12px; transition: var(--transition-smooth); white-space: nowrap;
+  padding-bottom: 12px; transition: color .15s ease, transform .15s ease, opacity .15s ease; white-space: nowrap;
 }
-.en-section-viewall:hover { color: var(--en-primary-hover); gap: 8px; }
+.en-section-viewall:hover { color: var(--en-primary-hover); transform: translateX(4px); opacity: .9; cursor: pointer; }
+.en-section-viewall__icon { width: 16px; height: 16px; flex-shrink: 0; }
 .en-section-viewall::after { content: '→'; font-weight: 400; }
 
 /* ============================================================================
@@ -466,15 +467,107 @@ a.en-hero-chip:hover { background: #b8911f; }
   .en-hero-desktop__grid { width: 50%; display: grid; grid-template-columns: repeat(2, 1fr); }
 }
 
-/* New gold-strip desktop carousel — 9+3 grid matching AR HeroDesktopCarousel layout */
+/* New gold-strip desktop carousel — 8+4 grid matching AR HeroDesktopCarousel layout
+   (carousel + "Latest Updates" list, was 9+3 carousel+ad) */
 .en-hero-desktop-new { display: none; }
 @media (min-width: 1024px) {
   .en-hero-desktop-new { display: block; }
   .en-hero-desktop-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
-  .en-hero-desktop-grid__carousel { grid-column: span 9; }
-  .en-hero-desktop-grid__ad { grid-column: span 3; display: flex; align-items: flex-start; justify-content: center; }
-  .en-hero-ad { width: 100%; }
+  .en-hero-desktop-grid__carousel { grid-column: span 8; }
+  .en-hero-desktop-grid__list { grid-column: span 4; min-width: 0; }
 }
+
+/* "Latest Updates" list beside the hero carousel — fork of AR's LatestHeaderList
+   ("Premium Light Design" card), same site-wide is_header pool, English labels. */
+.en-latest-header-list {
+  position: relative;
+  display: flex;
+  height: 100%;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 20px;
+  background: var(--en-paper);
+  padding: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+.en-latest-header-list__bar {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--en-primary), var(--en-primary-light));
+}
+.en-latest-header-list__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--en-line);
+  padding-block: 4px 16px;
+  margin-bottom: 16px;
+}
+.en-latest-header-list__title {
+  font-family: var(--en-font-display);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--en-primary);
+}
+.en-latest-header-list__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--en-muted);
+  text-decoration: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.en-latest-header-list__more:hover { color: var(--en-primary); transform: translateX(4px); }
+.en-latest-header-list__more-icon { width: 12px; height: 12px; flex-shrink: 0; }
+.en-latest-header-list__items { display: flex; flex: 1; flex-direction: column; overflow-y: auto; }
+.en-latest-header-list__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid var(--en-line);
+  padding-block: 14px;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+.en-latest-header-list__item:last-child { border-bottom: 0; }
+.en-latest-header-list__item:hover { background: var(--en-surface-2); }
+.en-latest-header-list__item-text { display: flex; min-width: 0; flex: 1; flex-direction: column; }
+.en-latest-header-list__item-title {
+  font-family: var(--en-font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--en-ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.en-latest-header-list__item:hover .en-latest-header-list__item-title { color: var(--en-primary); }
+.en-latest-header-list__item-cat {
+  margin-top: 6px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--en-primary);
+  opacity: 0.85;
+}
+.en-latest-header-list__item-photo {
+  position: relative;
+  height: 68px;
+  width: 90px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--en-surface-2);
+}
+.en-latest-header-list__item-photo img { height: 100%; width: 100%; object-fit: cover; }
+.en-latest-header-list__item-photo-empty { height: 100%; width: 100%; background: var(--en-surface-3); }
 .en-herocard { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; background: var(--en-surface-2); }
 @media (min-width: 1024px) {
   .en-herocard { aspect-ratio: auto; }
@@ -497,16 +590,17 @@ a.en-hero-chip:hover { background: #b8911f; }
 
 .en-hero-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border: 1px dashed var(--en-surface-3); background: var(--en-paper-2); padding: 80px 24px; text-align: center; border-radius: 15px; }
 
-/* Section header/footer — fork of AR's shared SectionHeader/SectionMore (red title box, black
-   "View all" button below). Used where a section is asked to match this specific AR treatment. */
-.en-sechead { margin-bottom: 24px; display: flex; border-bottom: 1px solid var(--en-line); }
+/* Section header — fork of AR's shared SectionHeader (red title box + "More" link on the opposite
+   side of the same row, red bottom rule). Used where a section is asked to match this specific AR
+   treatment. "More" moved into the header row (was a separate button below the section). */
+.en-sechead { margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--en-primary); }
 .en-sechead__title { background: var(--en-primary); padding: 8px 16px; font-family: var(--en-font-display); font-size: 1.15rem; font-weight: 800; line-height: 1.2; color: #fff; }
 .en-sechead__title a { color: #fff; transition: opacity .15s ease; }
 .en-sechead__title a:hover { opacity: .9; }
 @media (min-width: 640px) { .en-sechead__title { font-size: 1.3rem; } }
-.en-secmore { margin-top: 24px; display: flex; justify-content: flex-end; border-top: 1px solid var(--en-line); }
-.en-secmore__btn { margin-top: 24px; display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; background: #0d0d0d; padding: 8px 20px; font-family: var(--en-font); font-size: 0.88rem; font-weight: 700; color: #fff; transition: var(--transition-smooth); }
-.en-secmore__btn:hover { background: var(--en-primary); }
+.en-sechead__more { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; font-family: var(--en-font); font-size: 0.88rem; font-weight: 700; color: var(--en-muted); transition: color .15s ease, transform .15s ease, opacity .15s ease; }
+.en-sechead__more:hover { color: var(--en-primary); transform: translateX(4px); opacity: .9; cursor: pointer; }
+.en-sechead__more-icon { width: 16px; height: 16px; }
 
 /* Local News — fork of AR's LatestUpdates (categoryId-based lead+grid section) */
 .en-localnews { margin-top: 24px; }
@@ -612,7 +706,7 @@ a.en-localnews-item__cat:hover { text-decoration: underline; }
 /* News ticker — fork of AR's NewsTicker (site-wide, sits directly above the breaking bar).
    Typewriter effect onto a truncated headline; prev/pause/next controls. The AR original's
    border-r divider (visually on the buttons' leading edge, RTL) mirrors to border-left here. */
-.en-newsticker { display: flex; min-height: 50px; align-items: stretch; justify-content: space-between; border-block: 1px solid var(--en-line); background: #fff; user-select: none; }
+.en-newsticker { display: flex; min-height: 50px; align-items: stretch; justify-content: space-between; border-block: 1px solid var(--en-line); background: var(--en-paper); user-select: none; }
 .en-newsticker__text-wrap { display: flex; min-width: 0; flex: 1; align-items: stretch; gap: 12px; }
 .en-newsticker__badge { display: flex; flex-shrink: 0; align-items: center; justify-content: center; gap: 8px; background: var(--en-primary); padding-inline: 16px; font-family: var(--en-font); font-size: 0.8rem; font-weight: 800; color: #fff; align-self: stretch; }
 @media (min-width: 640px) { .en-newsticker__badge { padding-inline: 24px; } }
@@ -656,12 +750,13 @@ a.en-localnews-item__cat:hover { text-decoration: underline; }
 
 /* Editorial column — fork of WritersRow's "Premium Light Design" card: white rounded card, red
    top accent, title+"More" header, compact thumb+title+date rows. One shared shell per column. */
-.en-editorial-col { position: relative; display: flex; flex-direction: column; overflow: hidden; border-radius: 20px; background: #fff; box-shadow: 0 8px 30px rgba(0,0,0,.06); padding: 20px; }
+.en-editorial-col { position: relative; display: flex; flex-direction: column; overflow: hidden; border-radius: 20px; background: var(--en-paper); box-shadow: 0 8px 30px rgba(0,0,0,.06); padding: 20px; }
 .en-editorial-col::before { content: ''; position: absolute; inset-inline: 0; top: 0; height: 4px; background: linear-gradient(90deg, var(--en-primary), #e05a5a); }
 .en-editorial-col__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--en-line); padding-block: 4px 14px; margin-bottom: 6px; }
 .en-editorial-col__title { font-size: 1.05rem; font-weight: 800; color: var(--en-primary); }
-.en-editorial-col__more { font-family: var(--en-font); font-size: 0.75rem; font-weight: 700; color: var(--en-muted); transition: color .2s ease; }
-.en-editorial-col__more:hover { color: var(--en-primary); }
+.en-editorial-col__more { display: inline-flex; align-items: center; gap: 4px; font-family: var(--en-font); font-size: 0.75rem; font-weight: 700; color: var(--en-muted); transition: color .2s ease, transform .2s ease; }
+.en-editorial-col__more:hover { color: var(--en-primary); transform: translateX(4px); }
+.en-editorial-col__more-icon { width: 12px; height: 12px; flex-shrink: 0; }
 .en-editorial-col__list { display: flex; flex-direction: column; }
 .en-editorial-col__row { display: flex; align-items: center; gap: 14px; padding-block: 13px; border-bottom: 1px solid var(--en-line); transition: background .15s ease; }
 .en-editorial-col__row:last-child { border-bottom: none; }
@@ -872,7 +967,7 @@ a.en-opinion-photo__name:hover { color: rgba(255,255,255,.8); }
 .en-static-page__body { margin-top: 28px; }
 .en-static-page__faq { display: flex; flex-direction: column; gap: 10px; }
 .en-static-page__faq-item { border: 1px solid var(--en-line); background: var(--en-paper-2); padding: 14px 18px; border-radius: 8px; }
-.en-static-page__faq-item[open] { background: #fff; }
+.en-static-page__faq-item[open] { background: var(--en-paper); }
 .en-static-page__faq-question { display: flex; cursor: pointer; list-style: none; align-items: center; justify-content: space-between; gap: 12px; font-family: var(--en-font); font-weight: 700; color: var(--en-ink); }
 .en-static-page__faq-question::-webkit-details-marker { display: none; }
 .en-static-page__faq-chevron { flex-shrink: 0; color: var(--en-muted); transition: transform .2s ease; }
@@ -887,11 +982,13 @@ a.en-opinion-photo__name:hover { color: rgba(255,255,255,.8); }
 @media (max-width: 640px) { .en-share-buttons__btn--native { display: inline-flex; } }
 .en-share-buttons__copied { color: #1a7f37; }
 
-/* Top news carousel — redesigned (2026) to match components/home/top-news-carousel.tsx: white
-   bg, circular red-ringed photo cards, paginated arrows+dots, all is_squares items. Supersedes
-   the earlier "no heading, continuous scroll" EN-only variant now that AR moved to this design
-   too. LTR here, so scrollLeft uses the plain positive-going range (AR's version needs to negate
-   it — Chromium's RTL scrollLeft convention is 0..-(scrollWidth-clientWidth)). */
+/* Top news carousel ("is_squares" flag) — matches AR's own components/home/top-news-carousel.tsx:
+   white bg, circular photo cards, paginated arrows+dots. The caller (app/en/page.tsx) slices to
+   the first 5 items exactly like AR's caller (app/(site)/layout.tsx), which is what keeps this
+   static on desktop (cardsPerPage(desktop)=5 ⇒ 1 page ⇒ arrows/dots auto-hide) — mobile still gets
+   a 2-per-page swipeable strip, same as AR. LTR here, so scrollLeft uses the plain positive-going
+   range (AR's version needs to negate it — Chromium's RTL scrollLeft convention is
+   0..-(scrollWidth-clientWidth)). */
 .en-topnews-section { margin-block: 5px; padding-block: 1.5rem; border-block: 1px solid var(--en-line); }
 
 .en-topnews-viewport { position: relative; }
@@ -907,7 +1004,7 @@ a.en-opinion-photo__name:hover { color: rgba(255,255,255,.8); }
 @media (min-width: 640px) { .en-topnews-slide { width: 33.333%; padding-inline: 8px; } }
 @media (min-width: 1024px) { .en-topnews-slide { width: 20%; } }
 
-.en-topnews-card { display: flex; height: 100%; min-width: 0; flex-direction: column; border-radius: 12px; border: 1px solid var(--en-line); background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.04); transition: box-shadow .2s ease; }
+.en-topnews-card { display: flex; height: 100%; min-width: 0; flex-direction: column; border-radius: 12px; border: 1px solid var(--en-line); background: var(--en-paper); box-shadow: 0 1px 2px rgba(0,0,0,.04); transition: box-shadow .2s ease; }
 .en-topnews-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,.08); }
 .en-topnews-card__link { display: block; flex: 1; text-decoration: none; }
 .en-topnews-card__photo { position: relative; margin: 20px auto 0; width: 80px; height: 80px; overflow: hidden; border-radius: 9999px; border: 2px solid #C9A227; background: var(--en-surface-2); }
@@ -918,7 +1015,7 @@ a.en-opinion-photo__name:hover { color: rgba(255,255,255,.8); }
 .en-topnews-card:hover .en-topnews-card__title { color: var(--en-primary); }
 .en-topnews-card__author { margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 6px; border-top: 1px solid var(--en-line); padding: 8px; }
 .en-topnews-card__author img { width: 20px; height: 20px; flex-shrink: 0; border-radius: 9999px; object-fit: cover; }
-.en-topnews-card__author span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--en-font); font-size: 0.7rem; font-weight: 700; color: var(--en-muted); }
+.en-topnews-card__author span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--en-font); font-size: 0.7rem; font-weight: 700; color: var(--en-primary); }
 
 .en-topnews-dots { margin-top: 1.25rem; display: flex; justify-content: center; gap: 8px; }
 .en-topnews-dot { height: 8px; width: 8px; border-radius: 9999px; background: var(--en-surface-3); border: 0; cursor: pointer; transition: var(--transition-smooth); }

@@ -6,7 +6,7 @@ import { getCategoryById, getCategoryFeed, type FeedItem } from '@/lib/feed';
 import { formatRelativeTime } from '@/lib/format';
 
 import { CategoryChip, FeedBadge } from './featured-hero';
-import { SectionHeader, SectionMore } from './section-header';
+import { SectionHeader } from './section-header';
 
 // كتلة «أخبار محلية» (تصنيف بالـID الثابت): كرت رئيسيّ بتراكب صورة + شبكة كروت بيضاء.
 // **التصنيف بالـID** (مقاوم لإعادة التسمية، ويطابق الأخبار متعدّدة الأقسام رئيسيًّا أو ثانويًّا في الباك)؛
@@ -49,9 +49,6 @@ export async function LatestUpdates({
             </ul>
           )}
         </div>
-
-        {/* «عرض الكل» أسفل القسم (نُقِل من أعلاه). */}
-        <SectionMore href={moreHref} />
       </Container>
     </section>
   );

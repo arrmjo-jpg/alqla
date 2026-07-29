@@ -1,8 +1,9 @@
-import { ChevronLeft, Clock, Trophy } from 'lucide-react';
+import { Clock, Trophy } from 'lucide-react';
 import Link from 'next/link';
 
 import { FeedBadge } from '@/components/home/featured-hero';
 import { Container } from '@/components/layout/container';
+import { TripleChevron } from '@/components/ui/section-more-link';
 import { getCategoryById, getCategoryFeed, type FeedItem } from '@/lib/feed';
 import { formatRelativeTime } from '@/lib/format';
 import { getMatchesByCompetition } from '@/lib/sport/games';
@@ -80,11 +81,11 @@ export async function SportsShowcase() {
           </h2>
           <Link
             href={moreHref}
-            className="flex shrink-0 items-center gap-1 border border-white/40 px-3 py-1.5 text-sm font-bold transition hover:bg-white/10"
+            className="group flex shrink-0 items-center gap-1.5 border border-white/40 px-3 py-1.5 text-sm font-bold transition-[background-color,transform] hover:translate-x-1 hover:bg-white/10"
             style={{ borderRadius: '9999px' }}
           >
-            المزيد
-            <ChevronLeft className="size-4" aria-hidden />
+            <span>المزيد</span>
+            <TripleChevron className="size-4" />
           </Link>
         </Container>
       </div>

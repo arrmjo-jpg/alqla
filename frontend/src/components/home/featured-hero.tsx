@@ -21,8 +21,10 @@ export function FeaturedHero({ items, headerItems = [] }: { items: FeedItem[]; h
       {/* الجوّال: كاروسيل عصريّ بملء العرض قابل للسحب + نقاط ترقيم — بدل الشبكة المزدحمة. */}
       <HeroMobileCarousel items={items.slice(0, 5)} />
 
-      {/* سطح المكتب (≥1024px): 8 أعمدة كاروسيل + 4 أعمدة «آخر المستجدات» (كانت 9/3 — كاروسيل أصغر شوي لصالح القائمة). */}
-      <div className="hidden lg:grid lg:grid-cols-12 lg:gap-4">
+      {/* سطح المكتب (≥1024px): 8 أعمدة كاروسيل + 4 أعمدة «آخر المستجدات» (كانت 9/3 — كاروسيل أصغر شوي لصالح القائمة).
+          items-stretch (افتراضيّ الشبكة أصلًا) ⇒ كلا العمودين بنفس ارتفاع الصفّ؛ الكاروسيل h-full يملأ الارتفاع
+          فتتساوى ترويسة الهيرو مع «آخر المستجدات» مهما اختلف عدد عناصر القائمة. */}
+      <div className="hidden lg:grid lg:grid-cols-12 lg:items-stretch lg:gap-4">
         <div className="lg:col-span-8">
           <HeroDesktopCarousel items={items.slice(0, 5)} />
         </div>

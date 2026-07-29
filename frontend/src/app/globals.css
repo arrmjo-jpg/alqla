@@ -557,7 +557,7 @@
 
 /* Global font-family override */
 *, ::before, ::after {
-  font-family: Alilato-Medium, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif !important;
+  font-family: var(--font-awsat), -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif !important;
 }
 
 /* Force article body paragraphs and excerpt lead to always be justified */

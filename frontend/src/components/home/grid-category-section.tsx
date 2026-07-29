@@ -1,7 +1,7 @@
-import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 
 import { Container } from '@/components/layout/container';
+import { SectionMoreLink } from '@/components/ui/section-more-link';
 import { getCategoryById, getCategoryFeed, type FeedItem } from '@/lib/feed';
 import { formatRelativeTime } from '@/lib/format';
 
@@ -30,7 +30,7 @@ export async function GridCategorySection({
     <section className="mt-6 bg-white sm:mt-8" dir="rtl" aria-labelledby={headingId}>
       <Container className="py-8 sm:py-10">
         {/* الترويسة — متّسقة مع بقيّة أقسام الهوم */}
-        <div className="mb-6 flex items-center justify-between gap-4 border-b border-border pb-4">
+        <div className="mb-6 flex items-center justify-between gap-4 border-b border-primary pb-4">
           <div className="flex items-center gap-3">
             <span className="h-7 w-1.5 shrink-0 bg-primary" aria-hidden />
             <h2 id={headingId} className="text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">
@@ -39,13 +39,7 @@ export async function GridCategorySection({
               </Link>
             </h2>
           </div>
-          <Link
-            href={moreHref}
-            className="flex shrink-0 items-center gap-1 text-sm font-bold text-muted transition-colors hover:text-primary"
-          >
-            عرض الكل
-            <ChevronLeft className="size-4" aria-hidden />
-          </Link>
+          <SectionMoreLink href={moreHref} />
         </div>
 
         {/* شبكة بطاقات موحّدة — عمود ثمّ عمودان ثمّ ٣ أعمدة (٦ بطاقات = صفّان) */}

@@ -31,10 +31,3 @@ export const editorialTypography = {
   aside: 'font-sans text-[10px] sm:text-xs font-extrabold text-muted uppercase tracking-wider',
 };
 
-export const editorialSpacing = {
-  // Vertical spacing rhythm between elements
-  section: 'mt-12 sm:mt-16 lg:mt-20',
-  
-  // Constrained text column width to prevent scan eye fatigue
-  readingColumn: 'max-w-[680px] mx-auto w-full',
-};

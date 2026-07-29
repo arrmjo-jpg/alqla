@@ -5,6 +5,10 @@ import { Container } from '@/components/layout/container';
 import { getRecaptchaConfig } from '@/lib/recaptcha';
 import { buildMetadata } from '@/lib/seo';
 
+// راجع login/page.tsx للسبب: بلا هذا التصريح تتجمّد الصفحة Static للأبد بإعداد reCAPTCHA فارغ
+// (بُنيت وقت لا يوجد API_BASE_URL). 300 يطابق revalidate الفيتش الداخليّ في getRecaptchaConfig.
+export const revalidate = 300;
+
 export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata({ title: 'استعادة كلمة المرور', path: '/forgot-password' });
 }

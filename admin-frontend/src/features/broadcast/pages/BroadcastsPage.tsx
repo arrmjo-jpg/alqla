@@ -339,7 +339,7 @@ export default function BroadcastsPage() {
       render: (b) => (
         <span className="flex items-center justify-center gap-1 text-xs tabular-nums text-muted-foreground">
           <Eye className="h-3.5 w-3.5" />
-          {b.viewer_count.toLocaleString(i18n.language)}
+          {(b.viewer_count ?? 0).toLocaleString(i18n.language)}
         </span>
       ),
     },

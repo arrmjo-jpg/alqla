@@ -1,7 +1,7 @@
-import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 
 import { Container } from '@/components/layout/container';
+import { TripleChevron } from '@/components/ui/section-more-link';
 import { getAseTicker } from '@/lib/ase-market';
 import { getCategoryById, getCategoryFeed, type FeedItem } from '@/lib/feed';
 import { getLatestGold } from '@/lib/gold';
@@ -69,11 +69,11 @@ export async function EconomySection() {
 
           <Link
             href="/economy"
-            className="flex w-fit items-center gap-1 border border-white/40 px-4 py-2 text-sm font-bold transition hover:bg-white/10"
+            className="group flex w-fit items-center gap-1.5 border border-white/40 px-4 py-2 text-sm font-bold transition-[background-color,transform] hover:translate-x-1 hover:bg-white/10"
             style={{ borderRadius: '9999px' }}
           >
-            عرض الكل
-            <ChevronLeft className="size-4" aria-hidden />
+            <span>المزيد</span>
+            <TripleChevron className="size-4" />
           </Link>
         </div>
 

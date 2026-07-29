@@ -1,7 +1,8 @@
-import { ChevronLeft, Film } from 'lucide-react';
+import { Film } from 'lucide-react';
 import Link from 'next/link';
 
 import { Container } from '@/components/layout/container';
+import { SectionMoreLink } from '@/components/ui/section-more-link';
 import { VideoLibrary } from '@/components/videos/video-library';
 import { getLatestVideos } from '@/lib/videos';
 
@@ -15,7 +16,7 @@ export async function VideoSection() {
   return (
     <section className="bg-white" dir="rtl" aria-labelledby="videos-heading">
       <Container className="pb-8 pt-2 sm:pb-10 sm:pt-3">
-        <div className="mb-6 flex items-center justify-between gap-4 border-b border-border pb-4">
+        <div className="mb-6 flex items-center justify-between gap-4 border-b border-primary pb-4">
           <div className="flex items-center gap-3">
             <span className="h-7 w-1.5 shrink-0 bg-primary" aria-hidden />
             <h2 id="videos-heading" className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">
@@ -25,13 +26,7 @@ export async function VideoSection() {
               </Link>
             </h2>
           </div>
-          <Link
-            href="/videos"
-            className="flex shrink-0 items-center gap-1 text-sm font-bold text-muted transition-colors hover:text-primary"
-          >
-            عرض الكل
-            <ChevronLeft className="size-4" aria-hidden />
-          </Link>
+          <SectionMoreLink href="/videos" />
         </div>
 
         <VideoLibrary videos={videos} />

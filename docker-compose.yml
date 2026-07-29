@@ -165,8 +165,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        CLIENT: ${CLIENT:-shaabjo}
-    image: alphacms-frontend:${CLIENT:-shaabjo}
+        CLIENT: ${CLIENT:-alqlahnews}
+        NEXT_CONFIG_API_BASE_URL: ${API_BASE_URL:?API_BASE_URL is required — set it in .env (see .env.example)}
+    image: alphacms-frontend:${CLIENT:-alqlahnews}
     restart: unless-stopped
     environment:
       # :? بدل قيمة افتراضية فارغة صامتة — كانت هذه بالضبط سلاسل التحذير الثلاث التي ظهرت

@@ -42,9 +42,14 @@ export function EnHeroDesktopCarousel({ items }: { items: FeedItem[] }) {
   const current = items[active];
 
   return (
-    <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
-      {/* Main image — no large border-radius, matches reference design */}
-      <div className="group relative aspect-video w-full overflow-hidden bg-[var(--en-surface-2)]">
+    <div className="flex h-full flex-col" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      {/* Main image — aspect-video stays the natural/floor size (this is what keeps EN's hero the
+          same size as AR's, regardless of how many "Latest Updates" items either locale has —
+          flex-1 alone, with no aspect-ratio, was the bug: it drops the hero's own contribution to
+          the row-height measurement, so the hero inherits its height entirely from the sidebar
+          list next to it, collapsing when that list is short (fewer EN articles than AR)). flex-1
+          on top just lets it grow past that floor when the list is taller (AR's original case). */}
+      <div className="group relative aspect-video min-h-0 w-full flex-1 overflow-hidden bg-[var(--en-surface-2)]">
         <Link href={enUrl(current.href)} className="absolute inset-0 z-10" aria-label={current.title} />
 
         <OptimizedImage
@@ -121,9 +126,11 @@ export function EnHeroDesktopCarousel({ items }: { items: FeedItem[] }) {
         )}
       </div>
 
-      {/* Thumbnail strip — gold background for active, dark for inactive */}
+      {/* Thumbnail strip — gold background for active, dark for inactive. shrink-0 (won't get
+          squeezed inside the parent flex-col) + slightly taller thumbnails (4:3 vs 16:9), matching
+          AR — brings the carousel's total height closer to the "Latest Updates" column. */}
       {items.length > 1 && (
-        <div className="mt-0 grid grid-cols-5 gap-[2px]">
+        <div className="mt-0 grid shrink-0 grid-cols-5 gap-[2px]">
           {items.map((item, i) => (
             <button
               key={item.id}
@@ -137,7 +144,7 @@ export function EnHeroDesktopCarousel({ items }: { items: FeedItem[] }) {
               aria-current={i === active}
             >
               {/* Thumbnail image */}
-              <div className="relative aspect-video w-full overflow-hidden">
+              <div className="relative aspect-[4/3] w-full overflow-hidden">
                 <OptimizedImage
                   cover={item.cover}
                   src={item.image}
@@ -150,7 +157,7 @@ export function EnHeroDesktopCarousel({ items }: { items: FeedItem[] }) {
               <div
                 className="w-full px-2 py-2 flex items-start"
                 style={{
-                  minHeight: 52,
+                  minHeight: 58,
                   background: i === active ? GOLD : '#1a1a1a',
                   transition: 'background 0.2s',
                 }}

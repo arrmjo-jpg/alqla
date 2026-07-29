@@ -67,6 +67,8 @@ export {
   InstagramIcon,
   YoutubeIcon,
   WhatsappIcon,
+  TelegramIcon,
+  TiktokIcon,
   NabdIcon,
   type SocialIconProps,
 } from './social';

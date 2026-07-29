@@ -5,7 +5,7 @@ import { enUrl } from '@/lib/en';
 import { getCategoryById, getCategoryFeed, type FeedItem } from '@/lib/feed';
 
 import { EnFeedBadge } from './en-feed-badge';
-import { EnSectionHeader, EnSectionMore } from './en-section-header';
+import { EnSectionHeader } from './en-section-header';
 
 // Fork of components/home/latest-updates.tsx (categoryId-driven lead+grid section, e.g. AR's
 // "Local News" at categoryId=2) — identical category-by-id lookup + lead/grid split, English
@@ -46,8 +46,6 @@ export async function EnLatestUpdates({ categoryId, fallbackTitle }: { categoryI
             </ul>
           )}
         </div>
-
-        <EnSectionMore href={moreHref} />
       </div>
     </section>
   );

@@ -6,10 +6,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { enUrl } from '@/lib/en';
 import type { FeedItem } from '@/lib/feed';
 
-// Fork of components/home/top-news-carousel.tsx's redesign (circular cards, white bg, paginated
-// arrows+dots, all is_squares items) — this used to be a deliberate departure from AR (no title,
-// continuous scroll); that's superseded now that AR itself moved to this shared design. LTR here,
-// so — unlike AR's RTL version — scrollLeft uses the standard positive-going range, no negation.
+// Fork of components/home/top-news-carousel.tsx (circular cards, white bg, paginated
+// arrows+dots, is_squares items). AR's caller slices to the first 5 items (see
+// app/(site)/layout.tsx), which is what keeps desktop static (cardsPerPage(desktop)=5 ⇒
+// pageCount=1 ⇒ arrows/dots auto-hide) — mobile still shows a 2-per-page swipeable strip.
+// EN's caller (app/en/page.tsx) now slices the same way, so this stays a straight fork of
+// AR's own behavior rather than a bespoke EN-only design. LTR here, so scrollLeft uses the
+// standard positive-going range (AR's version needs to negate it — Chromium's RTL scrollLeft
+// convention is 0..-(scrollWidth-clientWidth)).
 function cardsPerPage(width: number): number {
   if (width >= 1024) return 5;
   if (width >= 640) return 3;

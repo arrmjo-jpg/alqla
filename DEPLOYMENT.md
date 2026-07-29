@@ -243,7 +243,7 @@ webhook that triggers it never arrives.
 
 Run against the **production** domains after deploy:
 
-- [ ] **Homepage** `/` renders (hero + sections + chrome), correct client brand/colors (shaabjo).
+- [ ] **Homepage** `/` renders (hero + sections + chrome), correct client brand/colors (alqlahnews).
 - [ ] **Article publish** in admin → article page reachable; appears in latest/category.
 - [ ] **Revalidation** — publish/edit an article → page refreshes within seconds (not just TTL);
       check `worker` logs for `RevalidateFrontendCacheJob` → `200` from `/api/revalidate`.

@@ -45,38 +45,27 @@ export function ArticleBreadcrumb({ category, title, articleUrl }: BreadcrumbPro
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
       />
-      <nav aria-label="مسار التنقّل" className="mb-1 flex flex-wrap items-center text-xs text-muted sm:text-sm print:hidden">
-        <ol itemScope itemType="https://schema.org/BreadcrumbList" className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-          <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem" className="flex items-center">
-            <Link itemProp="item" href="/" className="transition-colors hover:text-primary font-medium">
-              <span itemProp="name">الرئيسية</span>
+      <nav aria-label="مسار التنقّل" className="mb-1 flex flex-wrap items-center text-sm text-muted sm:text-base print:hidden">
+        <ol className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <li className="flex items-center">
+            <Link href="/" className="transition-colors hover:text-primary font-medium">
+              الرئيسية
             </Link>
-            <meta itemProp="position" content="1" />
           </li>
-          
+
           {category && (
             <>
               <span aria-hidden className="text-muted/60 select-none">/</span>
-              <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem" className="flex items-center">
+              <li className="flex items-center">
                 <Link
-                  itemProp="item"
                   href={`/category-${category.id}/${encodeURIComponent(category.slug)}`}
                   className="transition-colors hover:text-primary font-medium"
                 >
-                  <span itemProp="name">{category.name}</span>
+                  {category.name}
                 </Link>
-                <meta itemProp="position" content="2" />
               </li>
             </>
           )}
-          
-          <span aria-hidden className="text-muted/60 select-none">/</span>
-          <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem" className="flex items-center">
-            <span itemProp="name" className="line-clamp-1 text-fg font-semibold">
-              {title}
-            </span>
-            <meta itemProp="position" content={category ? '3' : '2'} />
-          </li>
         </ol>
       </nav>
     </>

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { TripleChevron } from '@/components/ui/section-more-link';
 import type { FeedItem } from '@/lib/feed';
 
 // قائمة «آخر المستجدات» (علم is_header، من كلّ الموقع) — تحلّ محلّ الإعلان بجانب الهيرو (٣ أعمدة).
@@ -14,8 +15,12 @@ export function LatestHeaderList({ items }: { items: FeedItem[] }) {
 
       <div className="mb-4 flex items-center justify-between gap-3 border-b border-border/50 pb-4 pt-1">
         <h2 className="font-heading text-lg font-extrabold text-primary">آخر المستجدات</h2>
-        <Link href="/latest" className="text-xs font-bold text-muted transition-colors hover:text-primary">
-          المزيد
+        <Link
+          href="/latest"
+          className="group flex items-center gap-1 text-xs font-bold text-muted transition-[color,transform] hover:translate-x-1 hover:text-primary"
+        >
+          <span>المزيد</span>
+          <TripleChevron className="size-3" />
         </Link>
       </div>
 

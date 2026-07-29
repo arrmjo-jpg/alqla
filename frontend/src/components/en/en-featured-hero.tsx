@@ -1,13 +1,14 @@
-import { AdZone } from '@/components/ads/ad-zone';
 import type { FeedItem } from '@/lib/feed';
 
 import { EnHeroDesktopCarousel } from './en-hero-desktop-carousel';
 import { EnHeroMobileCarousel } from './en-hero-mobile-carousel';
+import { EnLatestHeaderList } from './en-latest-header-list';
 
-// Fork of components/home/featured-hero.tsx — identical 9+3 grid layout:
+// Fork of components/home/featured-hero.tsx — same 8+4 grid layout (was 9+3 ad-beside-hero;
+// AR replaced that ad with the "Latest Updates" list, so this mirrors that):
 // Mobile: swipe carousel (EnHeroMobileCarousel, below 1024px).
-// Desktop: 9 cols carousel + 3 cols ad (≥1024px), matching AR exactly.
-export function EnFeaturedHero({ items }: { items: FeedItem[] }) {
+// Desktop: 8 cols carousel + 4 cols "Latest Updates" list (≥1024px), matching AR exactly.
+export function EnFeaturedHero({ items, headerItems = [] }: { items: FeedItem[]; headerItems?: FeedItem[] }) {
   if (items.length === 0) return <EnFeaturedHeroEmpty />;
 
   return (
@@ -15,14 +16,14 @@ export function EnFeaturedHero({ items }: { items: FeedItem[] }) {
       {/* Mobile: swipe carousel */}
       <EnHeroMobileCarousel items={items.slice(0, 5)} />
 
-      {/* Desktop (≥1024px): 9 cols carousel + 3 cols ad — same as AR */}
+      {/* Desktop (≥1024px): 8 cols carousel + 4 cols "Latest Updates" list — same as AR */}
       <div className="en-hero-desktop-new">
         <div className="en-hero-desktop-grid">
           <div className="en-hero-desktop-grid__carousel">
             <EnHeroDesktopCarousel items={items.slice(0, 5)} />
           </div>
-          <div className="en-hero-desktop-grid__ad">
-            <AdZone zone="aalan_kbyr_asfl_alhyrw_1410" className="en-hero-ad" />
+          <div className="en-hero-desktop-grid__list">
+            <EnLatestHeaderList items={headerItems} />
           </div>
         </div>
       </div>

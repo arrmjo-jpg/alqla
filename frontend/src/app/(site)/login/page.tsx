@@ -8,6 +8,14 @@ import { getRecaptchaConfig } from '@/lib/recaptcha';
 import { buildMetadata } from '@/lib/seo';
 import { cn } from '@/lib/utils';
 
+// بلا هذا التصريح كانت الصفحة تُبنى Static بلا إعادة تحقّق (initialRevalidateSeconds: false) —
+// وقت بناء Docker يكون API_BASE_URL فارغاً عمداً (راجع next.config.ts)، فتتجمّد الصفحة للأبد
+// بإعدادَي reCAPTCHA/الدخول الاجتماعيّ الفارغَين (getRecaptchaConfig/getSocialAuthConfig يرجعان
+// null/[] بلا apiBaseUrl) — لا تُصلَح تلقائيًّا أبداً إلا بإعادة تحقّق يدويّة (على عكس الفيتش
+// الداخليّ الذي يحمل revalidate:300 خاصّته لكنه بلا تأثير إن كانت الصفحة نفسها متجمّدة). 300 هنا
+// يطابق ذاك الفيتش فتتحقّق الصفحة كلّ 5 دق فعليًّا.
+export const revalidate = 300;
+
 export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata({ title: 'تسجيل الدخول', path: '/login' });
 }

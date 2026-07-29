@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { EngagementBar } from '@/components/engagement/engagement-bar';
 import { Container } from '@/components/layout/container';
+import { TripleChevron } from '@/components/ui/section-more-link';
 import { getArticleMetrics } from '@/lib/engagement';
 import type { FeedItem } from '@/lib/feed';
 import { formatRelativeTime } from '@/lib/format';
@@ -24,7 +25,7 @@ export async function TrendingSection({ items }: { items: FeedItem[] }) {
     >
       <Container>
         {/* ترويسة القسم: شارة حمراء عموديّة + العنوان + «المزيد» → /trending */}
-        <div className="mb-6 flex items-center justify-between gap-4 border-b border-border pb-4">
+        <div className="mb-6 flex items-center justify-between gap-4 border-b border-primary pb-4">
           <div className="flex items-center gap-3">
             <span className="h-7 w-1 shrink-0 bg-primary" style={{ borderRadius: '9999px' }} aria-hidden />
             <h2 id="trending-heading" className="font-heading text-xl font-extrabold text-fg sm:text-2xl">
@@ -33,10 +34,10 @@ export async function TrendingSection({ items }: { items: FeedItem[] }) {
           </div>
           <Link
             href="/trending"
-            className="flex items-center gap-1 text-sm font-semibold text-muted transition-colors hover:text-primary"
+            className="group flex items-center gap-1.5 text-sm font-semibold text-muted transition-[color,transform] hover:translate-x-1 hover:text-primary"
           >
             <span>المزيد</span>
-            <ChevronStart className="size-4" />
+            <TripleChevron className="size-4" />
           </Link>
         </div>
 
@@ -101,23 +102,5 @@ function TrendingCard({
         className="mt-auto border-t border-border px-3 py-1.5"
       />
     </div>
-  );
-}
-
-// شيفرون يشير لجهة القراءة-للأمام (يسار في RTL) — أيقونة مضمّنة (لا تبعيّة).
-function ChevronStart({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M15 19l-7-7 7-7" />
-    </svg>
   );
 }

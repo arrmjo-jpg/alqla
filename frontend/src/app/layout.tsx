@@ -5,6 +5,7 @@ import localFont from 'next/font/local';
 import './globals.css';
 import './qalah-skin.css';
 import { Analytics } from '@/components/seo/analytics';
+import { CopyAttribution } from '@/components/seo/copy-attribution';
 import { JsonLd } from '@/components/seo/json-ld';
 import { ResourceHints } from '@/components/seo/resource-hints';
 import { buildMetadata } from '@/lib/seo';
@@ -24,6 +25,17 @@ const cairo = Cairo({
   subsets: ['arabic', 'latin'],
   weight: ['300', '400', '500', '600', '700', '800'],
   variable: '--font-cairo',
+  display: 'swap',
+});
+
+// خطّ الموقع — Awsat Digital (Regular 400 + Bold 700 + Black 900)، مستخدم فقط داخل كسوة .qalah-skin عبر --font-awsat.
+const awsatDigital = localFont({
+  src: [
+    { path: './fonts/AwsatDigital-Regular.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/AwsatDigital-Bold.woff2', weight: '700', style: 'normal' },
+    { path: './fonts/AwsatDigital-Black.woff2', weight: '900', style: 'normal' },
+  ],
+  variable: '--font-awsat',
   display: 'swap',
 });
 
@@ -67,7 +79,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html
       lang="ar"
       dir="rtl"
-      className={`${aljazeera.variable} ${cairo.variable} ${notoArabic.variable} ${sourceSerif.variable} ${inter.variable} antialiased`}
+      className={`${aljazeera.variable} ${cairo.variable} ${awsatDigital.variable} ${notoArabic.variable} ${sourceSerif.variable} ${inter.variable} antialiased`}
       suppressHydrationWarning
     >
       <head>
@@ -88,6 +100,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         {children}
         <JsonLd />
         <Analytics />
+        <CopyAttribution />
       </body>
     </html>
   );

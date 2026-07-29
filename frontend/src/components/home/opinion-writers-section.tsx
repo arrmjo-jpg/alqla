@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { Container } from '@/components/layout/container';
 import { FeedBadge } from '@/components/home/featured-hero';
-import { SectionHeader, SectionMore } from '@/components/home/section-header';
+import { SectionHeader } from '@/components/home/section-header';
 import { getCategoryById, getCategoryFeed, type FeedItem } from '@/lib/feed';
 
 // قسم مقالات الرأي (أفقي، أسفل نبض الشارع) — شبكة بطاقات: صورة جانبية + عنوان المقال + اسم الكاتب.
@@ -43,9 +43,6 @@ export async function OpinionWritersSection({
             <WriterCard key={item.id} item={item} />
           ))}
         </div>
-
-        {/* «عرض الكل» أسفل القسم (نُقِل من أعلاه). */}
-        <SectionMore href={moreHref} />
       </Container>
     </section>
   );

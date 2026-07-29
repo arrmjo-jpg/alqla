@@ -6,7 +6,7 @@ import { ReelCard } from '@/components/reels/reel-card';
 import type { ReelItem } from '@/lib/reels';
 
 import { ReelsModal } from './reels-modal';
-import { SectionHeader, SectionMore } from './section-header';
+import { SectionHeader } from './section-header';
 
 // كروسل الريلز في الرئيسية (أسفل آخر المستجدات): بطاقات 9:16 تشتغل عند المرور بالموس،
 // والنقر يفتح موديل داخل الصفحة (تنقّل بالسكرول/الأسهم/المفاتيح/اللمس). تمرير أفقيّ RTL.
@@ -64,9 +64,6 @@ export function ReelsCarousel({
             ))}
           </div>
         </div>
-
-        {/* «عرض الكل» أسفل القسم (كباقي الأقسام). */}
-        <SectionMore href="/reels" />
       </div>
 
       {openIndex !== null && (

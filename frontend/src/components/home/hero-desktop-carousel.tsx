@@ -42,9 +42,13 @@ export function HeroDesktopCarousel({ items }: { items: FeedItem[] }) {
   const current = items[active];
 
   return (
-    <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
-      {/* الصورة الرئيسية — بلا حواف مدوّرة كبيرة كما في التصميم المرجعيّ */}
-      <div className="group relative aspect-video w-full overflow-hidden bg-surface-2">
+    <div className="flex h-full flex-col" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      {/* الصورة الرئيسية — aspect-video يبقى الحجم الطبيعيّ/الأدنى (بلا تفاوت حجم الهيرو بين اللغات
+          حسب عدد عناصر «آخر المستجدات» — كان هذا خطأ النسخة السابقة: flex-1 وحده بلا aspect-video
+          يُلغي مساهمة الهيرو بحساب ارتفاع الصفّ، فيرث ارتفاعه بالكامل من القائمة المجاورة، وإن كانت
+          قصيرة (كما في الإنجليزي، عناصر أقلّ) ينكمش الهيرو معها). flex-1 إضافيًّا فقط لينمو فوق
+          الحدّ الطبيعيّ إن كانت القائمة أطول (حالة العربي الأصليّة). */}
+      <div className="group relative aspect-video min-h-0 w-full flex-1 overflow-hidden bg-surface-2">
         <Link href={current.href} className="absolute inset-0 z-10" aria-label={current.title} />
 
         <OptimizedImage
@@ -118,9 +122,11 @@ export function HeroDesktopCarousel({ items }: { items: FeedItem[] }) {
         )}
       </div>
 
-      {/* شريط الصور المصغّرة — خلفية ذهبيّة + عنوان تحت الصورة، بلا حواف مدوّرة */}
+      {/* شريط الصور المصغّرة — خلفية ذهبيّة + عنوان تحت الصورة، بلا حواف مدوّرة. shrink-0 (لا يضيق
+          داخل flex-col الأب) + مصغّرات أكبر شوي (4:3 بدل 16:9) ⇒ يقرّب ارتفاع الهيرو الكامل من
+          ارتفاع «آخر المستجدات» المجاورة. */}
       {items.length > 1 && (
-        <div className="mt-0 grid grid-cols-5 gap-[2px]">
+        <div className="mt-0 grid shrink-0 grid-cols-5 gap-[2px]">
           {items.map((item, i) => (
             <button
               key={item.id}
@@ -134,7 +140,7 @@ export function HeroDesktopCarousel({ items }: { items: FeedItem[] }) {
               aria-current={i === active}
             >
               {/* صورة المصغّرة */}
-              <div className="relative aspect-video w-full overflow-hidden">
+              <div className="relative aspect-[4/3] w-full overflow-hidden">
                 <OptimizedImage
                   cover={item.cover}
                   src={item.image}
@@ -145,7 +151,7 @@ export function HeroDesktopCarousel({ items }: { items: FeedItem[] }) {
               </div>
               {/* العنوان على خلفية ذهبيّة */}
               <div
-                className="w-full px-2 py-2 min-h-[52px] flex items-start"
+                className="w-full px-2 py-2 min-h-[58px] flex items-start"
                 style={{
                   background: i === active ? GOLD : '#1a1a1a',
                   transition: 'background 0.2s',

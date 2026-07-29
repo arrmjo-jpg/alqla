@@ -1,6 +1,7 @@
-import { ChevronLeft, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import Link from 'next/link';
 
+import { SectionMoreLink } from '@/components/ui/section-more-link';
 import { getCategoryById, getCategoryFeed, type FeedItem } from '@/lib/feed';
 import { formatRelativeTime } from '@/lib/format';
 
@@ -18,20 +19,14 @@ export async function SportNews({ headingId = 'sport-news-heading' }: { headingI
 
   return (
     <section dir="rtl" aria-labelledby={headingId}>
-      <div className="mb-4 flex items-center justify-between gap-3 border-b border-border pb-3">
+      <div className="mb-4 flex items-center justify-between gap-3 border-b border-primary pb-3">
         <div className="flex items-center gap-3">
           <span className="h-6 w-1.5 shrink-0 bg-primary" aria-hidden />
           <h2 id={headingId} className="text-lg font-extrabold text-fg sm:text-xl">
             أخبار رياضية
           </h2>
         </div>
-        <Link
-          href={moreHref}
-          className="flex shrink-0 items-center gap-1 text-sm font-bold text-muted transition-colors hover:text-primary"
-        >
-          عرض الكل
-          <ChevronLeft className="size-4" aria-hidden />
-        </Link>
+        <SectionMoreLink href={moreHref} />
       </div>
 
       <div className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">

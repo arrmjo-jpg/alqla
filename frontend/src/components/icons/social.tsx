@@ -75,6 +75,14 @@ export function LinkedinIcon({ size = 20, ...props }: SocialIconProps) {
   );
 }
 
+export function TiktokIcon({ size = 20, ...props }: SocialIconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false" {...props}>
+      <path d="M16.6 2h-3.3v13.6a3.1 3.1 0 1 1-2.2-2.97V9.3a6.3 6.3 0 1 0 5.5 6.25V8.6a7.7 7.7 0 0 0 4.4 1.38V6.7a4.4 4.4 0 0 1-4.4-4.4z" />
+    </svg>
+  );
+}
+
 // نبض (Nabd) — مُجمِّع أخبار عربيّ. رمز «نبضة» (خطّ النبض) دلاليّاً — يرث اللون عبر currentColor.
 export function NabdIcon({ size = 20, ...props }: SocialIconProps) {
   return (

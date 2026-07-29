@@ -2,7 +2,7 @@ import { Clock } from 'lucide-react';
 import Link from 'next/link';
 
 import { FeedBadge } from '@/components/home/featured-hero';
-import { SectionHeader, SectionMore } from '@/components/home/section-header';
+import { SectionHeader } from '@/components/home/section-header';
 import { getCategoryById, getCategoryFeed, type FeedItem } from '@/lib/feed';
 import { formatRelativeTime } from '@/lib/format';
 
@@ -38,42 +38,50 @@ export async function CategoryFeatureQuad({
 
   return (
     <section
-      className={`relative z-0 mt-6 sm:mt-8 overflow-hidden ${
-        bgImage ? 'py-8 sm:py-10 border-y border-border' : ''
-      }`}
+      className={`relative z-0 mt-6 sm:mt-8 overflow-hidden ${bgImage ? 'border-y border-border' : ''}`}
       aria-labelledby={headingId}
     >
-      {bgImage && (
-        <div
-          className="absolute inset-0 -z-10 bg-cover bg-center pointer-events-none"
-          style={{ backgroundImage: `url(${bgImage})`, opacity: 0.15 }}
-        />
-      )}
-      <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6">
-        {/* الترويسة الموحّدة: اسم القسم بخلفيّة حمراء + خطّ أبيض (بلا شحطة، بلا رابط علويّ). */}
+      <div
+        className={`mx-auto w-full max-w-[1200px] px-4 sm:px-6 ${
+          bgImage ? 'pt-8 sm:pt-10 [&>div]:mb-0' : ''
+        }`}
+      >
+        {/* الترويسة الموحّدة: اسم القسم بخلفيّة حمراء + خطّ أبيض (بلا شحطة، بلا رابط علويّ).
+            [&>div]:mb-0 يلغي مسافة SectionHeader السفليّة الافتراضيّة (mb-6) هنا فقط، كي تلتصق
+            صورة الخلفية بأسفل اسم القسم مباشرةً بلا فراغ. */}
         <SectionHeader title={title} headingId={headingId} href={moreHref} />
+      </div>
 
-        {/* الجوّال/اللوحيّ: الأوّل كبير + 3 صغار (مكدّس، بلا سكرول أفقيّ). */}
-        <div className="grid grid-cols-1 gap-6 lg:hidden">
-          {feature && <FeatureCard item={feature} />}
-          {list.length > 0 && (
-            <ul className="divide-y divide-border">
-              {list.map((item) => (
-                <SmallItem key={item.id} item={item} />
-              ))}
-            </ul>
-          )}
+      {/* صورة الخلفية تبدأ ملاصقة لأسفل الترويسة مباشرةً (لا تمتدّ خلف اسم القسم نفسه) — حاوية
+          منفصلة relative تلي الترويسة فورًا، بلا فراغ (راجع mb-0 أعلاه). pt-6 داخليًّا يعيد مسافة
+          التنفّس البصريّ قبل البطاقات فقط، والصورة تظهر خلالها أيضًا (تمتدّ عبر الحاوية كاملةً). */}
+      <div className={`relative ${bgImage ? 'pb-8 sm:pb-10' : ''}`}>
+        {bgImage && (
+          <div
+            className="absolute inset-0 -z-10 bg-cover bg-center pointer-events-none"
+            style={{ backgroundImage: `url(${bgImage})`, opacity: 0.15 }}
+          />
+        )}
+        <div className={`mx-auto w-full max-w-[1200px] px-4 sm:px-6 ${bgImage ? 'pt-6' : ''}`}>
+          {/* الجوّال/اللوحيّ: الأوّل كبير + 3 صغار (مكدّس، بلا سكرول أفقيّ). */}
+          <div className="grid grid-cols-1 gap-6 lg:hidden">
+            {feature && <FeatureCard item={feature} />}
+            {list.length > 0 && (
+              <ul className="divide-y divide-border">
+                {list.map((item) => (
+                  <SmallItem key={item.id} item={item} />
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* الديسكتوب (≥1024px): بطاقات متساوية جنبًا إلى جنب (عمود لكلّ خبر). */}
+          <div className={`hidden gap-5 lg:grid ${desktopColsClass}`}>
+            {items.slice(0, count).map((item) => (
+              <GridCard key={item.id} item={item} />
+            ))}
+          </div>
         </div>
-
-        {/* الديسكتوب (≥1024px): بطاقات متساوية جنبًا إلى جنب (عمود لكلّ خبر). */}
-        <div className={`hidden gap-5 lg:grid ${desktopColsClass}`}>
-          {items.slice(0, count).map((item) => (
-            <GridCard key={item.id} item={item} />
-          ))}
-        </div>
-
-        {/* «عرض الكل» أسفل القسم (نُقِل من أعلاه). */}
-        <SectionMore href={moreHref} />
       </div>
     </section>
   );

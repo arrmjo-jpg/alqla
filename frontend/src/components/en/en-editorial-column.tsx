@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { OptimizedImage } from '@/components/ui/optimized-image';
+import { TripleChevron } from '@/components/ui/section-more-link';
 import { enRelative, enUrl } from '@/lib/en';
 import type { FeedItem } from '@/lib/feed';
 
@@ -27,7 +28,8 @@ export function EnEditorialColumn({
         <h2 className="en-editorial-col__title">{title}</h2>
         {viewAllHref && (
           <Link href={viewAllHref} className="en-editorial-col__more">
-            More
+            <span>More</span>
+            <TripleChevron className="en-editorial-col__more-icon" />
           </Link>
         )}
       </div>

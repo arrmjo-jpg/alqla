@@ -27,6 +27,7 @@ export default async function EnHome() {
   ]);
 
   const heroItems = homepageData.hero;
+  const headerItems = homepageData.header;
   const latest = homepageData.latest;
   const editorsPick = homepageData.editors_pick;
   const latestNewsGrid = latestNews.slice(0, 6);
@@ -42,18 +43,21 @@ export default async function EnHome() {
   const specialCoverage = [...latest, ...editorsPick].filter((it) => it.badge?.kind === 'live').slice(0, 4);
 
   const nothing = heroItems.length === 0 && latest.length === 0;
-  // Same is_squares flag AR's TopNewsCarousel uses, off data already fetched above — every
-  // matching item, paginated by the carousel itself rather than truncated to a fixed count.
-  const topNews = latest.filter((it) => it.is_squares);
+  // Same is_squares flag + same slice(0, 5) AR's TopNewsCarousel caller uses (app/(site)/layout.tsx)
+  // — keeps desktop static (cardsPerPage(desktop)=5 ⇒ 1 page ⇒ no arrows/dots), matching AR exactly.
+  const topNews = latest.filter((it) => it.is_squares).slice(0, 5);
 
   return (
     <div>
       <EnTopNewsCarousel items={topNews} />
 
-      <EnFeaturedHero items={heroItems} />
+      <EnFeaturedHero items={heroItems} headerItems={headerItems} />
 
-      {/* Ad zones — two pairs framing the categoryId-based sections below.
-          aalan_kbyr_asfl_alhyrw_1410 moved inside EnFeaturedHero (3-col aside). */}
+      {/* Ad that used to sit beside the desktop hero (3-col aside) now lives here mobile-only —
+          desktop replaced it with the "Latest Updates" list inside EnFeaturedHero, matching AR. */}
+      <AdZone zone="aalan_kbyr_asfl_alhyrw_1410" className="mt-2 flex justify-center px-4 lg:hidden" />
+
+      {/* Ad zones — two pairs framing the categoryId-based sections below. */}
       <div className="en-container en-adzone-row">
         <AdZone zone="aalan_asfl_alslaydr_mbarshraymyn" className="en-adzone-row__item" />
         <AdZone zone="aalan_asfl_alslaydr_mbarshra_shmal" className="en-adzone-row__item" />

@@ -1,10 +1,11 @@
-import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { TripleChevron } from '@/components/ui/section-more-link';
+
 // ترويسة قسم مُعاد الاستخدام — `eyebrow` اختياريّ (تمييز نوع القسم، مثل «قائمة تشغيل») + شريط أحمر (أو `leading`
-// بديل) + عنوان + سطر ميتا (عدد/مدّة) + «عرض الكل». مُقدِّميّة بحتة (كلّ النصوص/الروابط props — لا hardcoding).
-// مربّعة، tokens، أدوات لوجيّة، RTL/LTR.
+// بديل) + عنوان + سطر ميتا (عدد/مدّة) + «المزيد». مُقدِّميّة بحتة (كلّ النصوص/الروابط props — لا hardcoding).
+// مربّعة، tokens، أدوات لوجيّة، RTL/LTR. الخطّ الفاصل أسفل الترويسة أحمر (لون الموقع الأساسيّ).
 export function SectionHeader({
   title,
   id,
@@ -14,7 +15,7 @@ export function SectionHeader({
   leading,
   icon,
   viewAllHref,
-  viewAllLabel = 'عرض الكل',
+  viewAllLabel = 'المزيد',
 }: {
   title: string;
   id?: string;
@@ -27,7 +28,7 @@ export function SectionHeader({
   viewAllLabel?: string;
 }) {
   return (
-    <div className="mb-5 flex items-end justify-between gap-4 border-b border-border pb-4">
+    <div className="mb-5 flex items-end justify-between gap-4 border-b border-primary pb-4">
       <div className="flex min-w-0 items-center gap-3">
         {leading ?? <span className="h-7 w-1.5 shrink-0 bg-primary" aria-hidden />}
         <div className="min-w-0">
@@ -52,10 +53,10 @@ export function SectionHeader({
       {viewAllHref && (
         <Link
           href={viewAllHref}
-          className="flex shrink-0 items-center gap-1 text-sm font-bold text-muted transition-colors hover:text-primary"
+          className="group flex shrink-0 items-center gap-1.5 text-sm font-bold text-muted transition-[color,transform] hover:translate-x-1 hover:text-primary"
         >
-          {viewAllLabel}
-          <ChevronLeft className="size-4" aria-hidden />
+          <span>{viewAllLabel}</span>
+          <TripleChevron className="size-4" />
         </Link>
       )}
     </div>

@@ -4,6 +4,8 @@ import {
   FacebookIcon,
   InstagramIcon,
   NabdIcon,
+  TelegramIcon,
+  TiktokIcon,
   WhatsappIcon,
   XIcon,
   YoutubeIcon,
@@ -26,6 +28,8 @@ const SOCIAL: Record<string, { Icon: ComponentType<SocialIconProps>; label: stri
   instagram: { Icon: InstagramIcon, label: 'إنستغرام' },
   youtube: { Icon: YoutubeIcon, label: 'يوتيوب' },
   whatsapp: { Icon: WhatsappIcon, label: 'واتساب' },
+  telegram: { Icon: TelegramIcon, label: 'تلغرام' },
+  tiktok: { Icon: TiktokIcon, label: 'تيك توك' },
   nabd: { Icon: NabdIcon, label: 'نبض' },
 };
 

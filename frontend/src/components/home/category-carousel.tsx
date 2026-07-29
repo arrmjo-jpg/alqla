@@ -1,7 +1,7 @@
 import { getCategoryById, getCategoryFeed } from '@/lib/feed';
 
 import { CategoryCarouselStrip } from './category-carousel-strip';
-import { SectionHeader, SectionMore } from './section-header';
+import { SectionHeader } from './section-header';
 
 // قسم تصنيف على شكل شبكة ثابتة (4 أخبار، بلا كورسل) — **بالـID الثابت**: getCategoryById يحلّ الاسم/slug
 // الحاليّين (مقاوم لإعادة التسمية)، والأخبار بمعرّفاتها في المسار (لا اختلاط). العنوان = اسم القسم،
@@ -29,9 +29,6 @@ export async function CategoryCarousel({
         <SectionHeader title={title} headingId={headingId} href={moreHref} />
 
         <CategoryCarouselStrip items={items} />
-
-        {/* «عرض الكل» أسفل القسم (نُقِل من أعلاه). */}
-        <SectionMore href={moreHref} />
       </div>
     </section>
   );

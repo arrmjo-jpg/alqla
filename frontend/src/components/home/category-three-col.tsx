@@ -2,7 +2,7 @@
 import Link from 'next/link';
 
 import { FeedBadge } from '@/components/home/featured-hero';
-import { SectionHeader, SectionMore } from '@/components/home/section-header';
+import { SectionHeader } from '@/components/home/section-header';
 import { getCategoryById, getCategoryFeed, type FeedItem } from '@/lib/feed';
 
 // قسم مخصص لتصميم 3 أعمدة (صورة رئيسية كبيرة في الوسط، وبطاقات على الأطراف)
@@ -87,8 +87,6 @@ export async function CategoryThreeCol({
             ))}
           </div>
         )}
-
-        <SectionMore href={moreHref} />
       </div>
     </section>
   );

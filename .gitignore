@@ -41,5 +41,9 @@ rr
 /public/storage
 /storage/logs
 /public/uploads
+uploads/
+uploads.tar.gz
+gasem
+gasem-journal
 
 

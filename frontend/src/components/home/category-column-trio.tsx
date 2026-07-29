@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 import { FeedBadge } from '@/components/home/featured-hero';
 import { Container } from '@/components/layout/container';
-import { SectionHeader, SectionMore } from '@/components/home/section-header';
+import { SectionHeader } from '@/components/home/section-header';
 import { getCategoryById, getCategoryFeed, type CategoryRef, type FeedItem } from '@/lib/feed';
 import { formatRelativeTime } from '@/lib/format';
 
@@ -79,9 +79,6 @@ function CategoryColumn({
           </ul>
         )}
       </div>
-
-      {/* «عرض الكل» أسفل العمود. */}
-      <SectionMore href={moreHref} />
     </div>
   );
 }

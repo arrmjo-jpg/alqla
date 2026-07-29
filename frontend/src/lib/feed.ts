@@ -73,10 +73,10 @@ type Item = z.infer<typeof ItemSchema>;
 
 const EnvelopeSchema = z.object({ data: z.array(ItemSchema).nullish() }).passthrough();
 
-// نزع بادئة اللغة من canonical_path (الواجهة العامة بلا /ar|/en) → /articles/{id}-{slug}.
-function localeless(path: string | null | undefined): string {
-  if (!path) return '#';
-  return path.replace(/^\/[a-z]{2}(?=\/)/, '') || '#';
+// رابط الخبر النهائيّ ثابت دائماً /article/{id} — بلا slug (لا يمرّ عبر إعادة توجيه
+// /articles/{id}-{slug} → /article/{id}). enUrl() يضيف بادئة /en عند الاستهلاك بالنسخة الإنجليزية.
+function articleHref(id: number): string {
+  return `/article/${id}`;
 }
 
 // شارة الكرت من أعلام حقيقية فقط: تغطية مباشرة (live) تسبق عاجل (breaking)؛ غير ذلك ⇒ بلا شارة.
@@ -94,7 +94,7 @@ export function mapItem(it: Item): FeedItem {
     title: it.title,
     subtitle: it.subtitle || null,
     excerpt: (it.excerpt ?? it.subtitle ?? '').trim() || null,
-    href: localeless(it.canonical_path),
+    href: articleHref(it.id),
     image: it.cover?.medium ?? it.cover?.url ?? null,
     imageAlt: it.cover?.alt ?? it.title,
     category: cat?.name ?? null,
@@ -221,6 +221,25 @@ export const getMostReadFeed = cache(async (limit = 6, locale = 'ar', days = 0):
     const res = await fetch(
       `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles/most-read?${qs}`,
       { headers: env.internalHeaders, next: { revalidate: 36000, tags: ['articles', 'feed:most_read'] } },
+    );
+    if (!res.ok) return [];
+    const parsed = EnvelopeSchema.safeParse(await res.json());
+    if (!parsed.success) return [];
+    return (parsed.data.data ?? []).map(mapItem);
+  } catch {
+    return [];
+  }
+});
+
+// «الرائج» الحقيقيّ (خوارزميّة تفاعل الباك إند /articles/trending، لا مجرّد أكثر قراءة) — نافذته
+// 7 أيام (قد يرجع [] إن لم يوجد محتوى حديث كافٍ ضمنها، وهذا سلوك متوقَّع لا خطأ). ISR = سقف أمان
+// 36000s؛ أي فشل ⇒ [] (عزل الكتلة).
+export const getTrendingFeed = cache(async (limit = 5, locale = 'ar'): Promise<FeedItem[]> => {
+  if (!env.apiBaseUrl) return [];
+  try {
+    const res = await fetch(
+      `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles/trending?per_page=${limit}`,
+      { headers: env.internalHeaders, next: { revalidate: 36000, tags: ['articles', 'feed:trending'] } },
     );
     if (!res.ok) return [];
     const parsed = EnvelopeSchema.safeParse(await res.json());

@@ -5,7 +5,11 @@ import type { NextConfig } from "next";
 
 // Pin the file-tracing root to this app so Next does not infer a parent workspace
 // when sibling lockfiles exist.
-const API = (process.env.API_BASE_URL ?? "").replace(/\/$/, "");
+// NEXT_CONFIG_API_BASE_URL (build-time-only) takes priority: this file's rewrites() runs
+// at `next build` and gets baked into routes-manifest.json, so it needs a value even inside
+// the isolated Docker build stage where the real API_BASE_URL is deliberately left unset
+// (see Dockerfile) to keep page-level data fetching from hanging on an unreachable backend.
+const API = (process.env.NEXT_CONFIG_API_BASE_URL ?? process.env.API_BASE_URL ?? "").replace(/\/$/, "");
 const BACKEND_URL = API.replace(/\/api\/v1$/, "").replace(/\/v1$/, "");
 
 const nextConfig: NextConfig = {

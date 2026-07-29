@@ -16,7 +16,7 @@ import { ArticleHero } from './blocks/hero-image';
 import { ArticleBody } from './blocks/article-body';
 import { ArticleCard } from '@/components/articles/article-card';
 import { TableOfContents } from '@/components/reading/table-of-contents';
-import { editorialTypography, editorialSpacing } from '@/lib/design-tokens';
+import { editorialTypography } from '@/lib/design-tokens';
 
 import { ArticleLiveUpdates } from './article-live-updates';
 
@@ -121,7 +121,7 @@ export function ArticleDetailView({
               ttsEnabled={ttsEnabled}
             />
 
-            <div className={`${editorialSpacing.readingColumn} block overflow-hidden`}>
+            <div className="w-full block overflow-hidden">
               {/* الحاوية العائمة على اليسار (الصورة + شريط الكاتب) */}
               <div className="float-none mx-auto w-full max-w-[320px] mb-8 sm:float-left sm:ml-0 sm:mr-8 sm:mb-6 flex flex-col">
                 

@@ -51,7 +51,9 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
       <NewsTicker items={latest.slice(0, 10).map((i) => ({ id: i.id, title: i.title, href: i.href }))} />
 
       {/* شريط الأخبار العاجلة (يظهر تحت الشريط الإخباري في حال وجود عاجل) */}
-      <BreakingNewsBar items={breaking.slice(0, 5).map((i) => ({ id: i.id, title: i.title, href: i.href }))} />
+      <BreakingNewsBar
+        items={breaking.slice(0, 5).map((i) => ({ id: i.id, title: i.title, href: i.href, isLive: i.badge?.kind === 'live' }))}
+      />
 
       {/* إعلان كبير (leaderboard) أسفل الهيدر مباشرة — صفّ كامل بعرض الحاوية. */}
       <AdZone

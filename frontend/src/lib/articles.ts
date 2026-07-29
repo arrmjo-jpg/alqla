@@ -38,7 +38,7 @@ export interface ArticleDetail {
   subtitle: string | null;
   excerpt: string | null;
   contentHtml: string;
-  href: string; // canonical_path بلا بادئة لغة → /articles/{id}-{slug}
+  href: string; // ثابت دائماً /article/{id} — بلا slug، راجع feed.ts::articleHref
   publishedAt: string | null;
   viewsCount: number;
   readingTime: number;
@@ -198,11 +198,6 @@ const ArticleSchema = z
 type RawArticle = z.infer<typeof ArticleSchema>;
 const ArticleEnvelope = z.object({ data: ArticleSchema.nullish() }).passthrough();
 
-function localeless(path: string | null | undefined): string {
-  if (!path) return '#';
-  return path.replace(/^\/[a-z]{2}(?=\/)/, '') || '#';
-}
-
 function mapImage(i: z.infer<typeof ImageSchema> | null | undefined): ArticleImage | null {
   if (!i?.url) return null;
   return {
@@ -226,7 +221,7 @@ function mapArticle(a: RawArticle): ArticleDetail {
     subtitle: a.subtitle ?? null,
     excerpt: a.excerpt ?? null,
     contentHtml: a.content_html ?? '',
-    href: localeless(a.canonical_path),
+    href: `/article/${a.id}`,
     publishedAt: a.published_at ?? null,
     viewsCount: a.views_count ?? 0,
     readingTime: a.reading_time ?? readingMinutes(a.content_html ?? ''),
