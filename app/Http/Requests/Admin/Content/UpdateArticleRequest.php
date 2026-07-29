@@ -31,6 +31,8 @@ class UpdateArticleRequest extends BaseFormRequest
             'type' => ['sometimes', Rule::in(ArticleType::values())],
             'event_status' => ['sometimes', 'nullable', Rule::in(LiveEventStatus::values())],
             'primary_category_id' => ['sometimes', 'integer', 'exists:categories,id'],
+            // إعادة إسناد الكاتب — تحريريّ فقط (الدور يُفرَض بالـ Action، مطابقةً لـviews_count أدناه).
+            'author_id' => ['sometimes', 'nullable', 'integer', 'exists:users,id'],
             // اختيار متعدّد بلا حدّ أقصى (نموذج الأقسام الموحّد).
             'secondary_category_ids' => ['sometimes', 'array'],
             'secondary_category_ids.*' => ['integer', 'distinct', 'exists:categories,id'],

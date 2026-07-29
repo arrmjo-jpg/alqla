@@ -189,8 +189,12 @@ function Tag({ badge }: { badge: FeedItem['badge'] }) {
 }
 
 // صندوق «تريندينغ» — أحمر الموقع، عنوان + 5 صفوف: عنوان (يمين) + صورة بزاوية رقم (يسار).
-function TrendingBox({ items }: { items: FeedItem[] }) {
+// مُصدَّر أيضاً لإعادة الاستخدام بالشريط الجانبيّ (sidebar-trending.tsx) — نفس المظهر بالضبط، بس
+// compact=true يصغّر الصورة (العمود الجانبيّ أضيق بكثير من عمود الرئيسية فكانت الصورة تاخذ عرض
+// مبالغ فيه من عرض الصندوق الضيّق) — الرئيسية بلا تغيير (compact افتراضيًّا false).
+export function TrendingBox({ items, compact = false }: { items: FeedItem[]; compact?: boolean }) {
   if (items.length === 0) return null;
+  const thumbSize = compact ? { height: 48, width: 72 } : { height: 64, width: 112 };
   return (
     <div
       className="flex h-full flex-col overflow-hidden text-white shadow-md"
@@ -214,7 +218,10 @@ function TrendingBox({ items }: { items: FeedItem[] }) {
               <h3 className="line-clamp-2 text-sm font-bold leading-snug">{item.title}</h3>
             </div>
             <div className="relative order-2 shrink-0">
-              <div className="h-[64px] w-[112px] overflow-hidden bg-white/10" style={{ borderRadius: '8px' }}>
+              <div
+                className="overflow-hidden bg-white/10"
+                style={{ height: thumbSize.height, width: thumbSize.width, borderRadius: '8px' }}
+              >
                 {item.image ? (
                   // eslint-disable-next-line @next/next/no-img-element -- <img> مقصود: حارس أداء الهوم
                   <img

@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
 export function FontSizeControls() {
-  const [, setFontSize] = useState(19);
+  const [, setFontSize] = useState(20);
 
   useEffect(() => {
     const saved = localStorage.getItem('article-font-size');
     if (saved) {
       const parsed = parseInt(saved, 10);
-      if (!isNaN(parsed) && parsed >= 15 && parsed <= 27) {
+      if (!isNaN(parsed) && parsed >= 12 && parsed <= 36) {
         setFontSize(parsed);
         document.documentElement.style.setProperty('--article-font-size', `${parsed}px`);
       }
@@ -19,7 +19,8 @@ export function FontSizeControls() {
 
   const changeFontSize = (delta: number) => {
     setFontSize((prev) => {
-      const next = Math.min(27, Math.max(15, prev + delta));
+      // افتراضيّ 20px — 4 درجات تصغير (حتى 12px) و8 درجات تكبير (حتى 36px)، كلّ درجة 2px.
+      const next = Math.min(36, Math.max(12, prev + delta));
       localStorage.setItem('article-font-size', String(next));
       document.documentElement.style.setProperty('--article-font-size', `${next}px`);
       return next;
@@ -27,9 +28,9 @@ export function FontSizeControls() {
   };
 
   const resetFontSize = () => {
-    setFontSize(19);
-    localStorage.setItem('article-font-size', '19');
-    document.documentElement.style.setProperty('--article-font-size', '19px');
+    setFontSize(20);
+    localStorage.setItem('article-font-size', '20');
+    document.documentElement.style.setProperty('--article-font-size', '20px');
   };
 
   return (

@@ -148,7 +148,13 @@ return [
             // فهرس المقالات — بحث عربي/إنجليزي بترتيب صلة + تصفية + ترتيب.
             'articles_index' => [
                 'searchableAttributes' => ['title', 'subtitle', 'excerpt', 'body', 'category', 'tags'],
-                'filterableAttributes' => ['locale', 'type', 'status', 'author_id', 'category_ids', 'tag_names'],
+                'filterableAttributes' => [
+                    'locale', 'type', 'status', 'author_id', 'category_ids', 'tag_names',
+                    // أعلام «مكان العرض» (مميّزة/عاجل/مثبّت/بالهيدر/مختارات المحرّر/مربّعات) — لازمة
+                    // لفلتر "placement" بلوحة الإدارة عند وجود نصّ بحث (مسار Meilisearch)، وإلا
+                    // يُتجاهَل الفلتر بصمت (كان يعمل فقط عبر QueryBuilder بلا نصّ بحث).
+                    'is_featured', 'is_breaking', 'is_pinned', 'is_header', 'is_editor_pick', 'is_squares',
+                ],
                 'sortableAttributes' => ['published_at', 'created_at'],
                 // تسامح الأخطاء الإملائية مفعّل افتراضياً في Meilisearch.
                 'rankingRules' => ['words', 'typo', 'proximity', 'attribute', 'sort', 'exactness'],

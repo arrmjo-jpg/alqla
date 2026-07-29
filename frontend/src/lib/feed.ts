@@ -231,25 +231,6 @@ export const getMostReadFeed = cache(async (limit = 6, locale = 'ar', days = 0):
   }
 });
 
-// «الرائج» الحقيقيّ (خوارزميّة تفاعل الباك إند /articles/trending، لا مجرّد أكثر قراءة) — نافذته
-// 7 أيام (قد يرجع [] إن لم يوجد محتوى حديث كافٍ ضمنها، وهذا سلوك متوقَّع لا خطأ). ISR = سقف أمان
-// 36000s؛ أي فشل ⇒ [] (عزل الكتلة).
-export const getTrendingFeed = cache(async (limit = 5, locale = 'ar'): Promise<FeedItem[]> => {
-  if (!env.apiBaseUrl) return [];
-  try {
-    const res = await fetch(
-      `${env.apiBaseUrl}/api/v1/${encodeURIComponent(locale)}/articles/trending?per_page=${limit}`,
-      { headers: env.internalHeaders, next: { revalidate: 36000, tags: ['articles', 'feed:trending'] } },
-    );
-    if (!res.ok) return [];
-    const parsed = EnvelopeSchema.safeParse(await res.json());
-    if (!parsed.success) return [];
-    return (parsed.data.data ?? []).map(mapItem);
-  } catch {
-    return [];
-  }
-});
-
 // تصنيف بالـ**ID الثابت** — الـslug والاسم الحاليّان. الـID لا يتغيّر؛ الـslug يتغيّر بإعادة التسمية من
 // الإدارة ⇒ مرجعة الأقسام بالـID تمنع كسر الرئيسيّة (نبض الشارع→نبض البلد). الباك إند لا يدعم
 // `/categories/{id}` ولا `filter[category_id]` (slug فقط)، فنفهرس شجرة `/categories` مرّةً (مُكاش، ISR

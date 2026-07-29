@@ -54,7 +54,8 @@ export function BreakingNewsBar({ items }: { items: BreakingItem[] }) {
           if (cancelled || !json?.data) return;
           const breakingUpdates = json.data
             .filter((u) => u.is_breaking && u.title)
-            .map((u) => ({ id: u.id, title: u.title as string }));
+            .map((u) => ({ id: u.id, title: u.title as string }))
+            .slice(0, 10);
           if (breakingUpdates.length > 0) {
             setSubUpdates((prev) => ({ ...prev, [it.id]: breakingUpdates }));
           }

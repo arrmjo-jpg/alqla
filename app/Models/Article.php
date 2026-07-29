@@ -269,6 +269,13 @@ class Article extends Model
             'tag_names' => $this->tags->pluck('name')->all(),
             'published_at' => $this->published_at?->getTimestamp(),
             'created_at' => $this->created_at?->getTimestamp(),
+            // أعلام «مكان العرض» — لازمة لفلتر placement بلوحة الإدارة (راجع config/scout.php).
+            'is_featured' => (bool) $this->is_featured,
+            'is_breaking' => (bool) $this->is_breaking,
+            'is_pinned' => (bool) $this->is_pinned,
+            'is_header' => (bool) $this->is_header,
+            'is_editor_pick' => (bool) $this->is_editor_pick,
+            'is_squares' => (bool) $this->is_squares,
         ];
     }
 

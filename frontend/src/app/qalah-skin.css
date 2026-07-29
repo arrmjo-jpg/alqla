@@ -1025,7 +1025,7 @@
   font-size: 0.75rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  color: rgba(255, 255, 255, 0.5);
+  color: #fff;
   padding-top: 0.2rem;
 }
 .qalah-skin .breaking-list__item-text {
@@ -1060,14 +1060,14 @@
   gap: 0.4rem;
   font-size: 0.85rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.78);
+  color: #C9A227;
   white-space: nowrap;
   overflow: hidden;
   transition: color 0.2s ease;
 }
 .qalah-skin .breaking-sublist__arrow {
   flex-shrink: 0;
-  color: rgba(255, 255, 255, 0.5);
+  color: #fff;
   font-size: 0.9rem;
 }
 .qalah-skin .breaking-sublist__link span:last-child {

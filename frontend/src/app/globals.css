@@ -172,7 +172,7 @@
 .tiptap-content {
   min-height: 16rem;
   font-family: var(--font-body), system-ui, sans-serif !important;
-  font-size: var(--article-font-size, 1.1875rem); /* 19px */
+  font-size: var(--article-font-size, 1.25rem); /* 20px */
   line-height: 1.9;
   color: var(--color-fg);
 }

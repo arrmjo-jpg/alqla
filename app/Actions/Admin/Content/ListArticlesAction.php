@@ -60,6 +60,14 @@ class ListArticlesAction
                 if (request()->filled('filter.primary_category_id')) {
                     $search->where('category_ids', (int) request()->input('filter.primary_category_id'));
                 }
+                // أعلام «مكان العرض» (فلتر placement بالواجهة يرسل filter[is_*]=1) — كانت مفقودة هنا
+                // تمامًا، فيُتجاهَل فلتر المكان بصمت كلّما وُجد نصّ بحث معه (مطابقة لمسار QueryBuilder
+                // أدناه بلا نصّ بحث).
+                foreach (['is_featured', 'is_breaking', 'is_pinned', 'is_header', 'is_editor_pick', 'is_squares'] as $flag) {
+                    if (request()->filled("filter.{$flag}")) {
+                        $search->where($flag, (bool) request()->input("filter.{$flag}"));
+                    }
+                }
 
                 // التعامل مع المحذوفات في Scout
                 $trashed = (string) request()->query('trashed', '');

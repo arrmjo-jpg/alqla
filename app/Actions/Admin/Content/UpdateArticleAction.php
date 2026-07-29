@@ -97,6 +97,14 @@ class UpdateArticleAction
                 $article->views_count = (int) $validated['views_count'];
             }
 
+            // إعادة إسناد الكاتب — تحريريّ فقط (مطابقةً للواجهة). كان مفقودًا تمامًا من التحديث سابقًا:
+            // $oldAuthorId أعلاه يُحسب فقط لتنظيف كاش CDN، فبلا هذا السطر لا يتغيّر author_id أبدًا
+            // بعد الإنشاء بغضّ النظر عمّا يرسله المستخدم.
+            if (array_key_exists('author_id', $validated)
+                && ArticleAuthorizationGuard::isEditorial($actor)) {
+                $article->author_id = $validated['author_id'];
+            }
+
             // P4-D1: content_json هو المصدر؛ content عرض مشتقّ مُعقَّم
             if (array_key_exists('content_json', $validated)) {
                 $clean = TipTapSanitizer::clean($validated['content_json']);
