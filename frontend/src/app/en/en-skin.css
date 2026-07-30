@@ -719,8 +719,8 @@ a.en-localnews-item__cat:hover { text-decoration: underline; }
 .en-newsticker__controls { display: flex; flex-shrink: 0; align-items: center; gap: 6px; border-left: 1px solid var(--en-line); padding-inline: 16px; }
 @media (min-width: 640px) { .en-newsticker__controls { padding-inline-end: 24px; } }
 @media (min-width: 768px) { .en-newsticker__controls { padding-inline-end: 32px; } }
-.en-newsticker__btn { display: flex; height: 28px; width: 28px; align-items: center; justify-content: center; border: 0; background: #C9A227; color: #fff; cursor: pointer; transition: background .2s ease; }
-.en-newsticker__btn:hover { background: #000; }
+.en-newsticker__btn { display: flex; height: 28px; width: 28px; align-items: center; justify-content: center; border: 0; background: #000; color: #fff; cursor: pointer; transition: background .2s ease; }
+.en-newsticker__btn:hover { background: #C9A227; }
 
 /* Continuous marquee of every headline — mobile only. The typewriter headline + controls get
    squeezed to near-zero width on small screens (same bug as AR), so mobile swaps to this instead. */
@@ -1007,7 +1007,7 @@ a.en-opinion-photo__name:hover { color: rgba(255,255,255,.8); }
 .en-topnews-card { display: flex; height: 100%; min-width: 0; flex-direction: column; border-radius: 12px; border: 1px solid var(--en-line); background: var(--en-paper); box-shadow: 0 1px 2px rgba(0,0,0,.04); transition: box-shadow .2s ease; }
 .en-topnews-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,.08); }
 .en-topnews-card__link { display: block; flex: 1; text-decoration: none; }
-.en-topnews-card__photo { position: relative; margin: 20px auto 0; width: 80px; height: 80px; overflow: hidden; border-radius: 9999px; border: 2px solid #C9A227; background: var(--en-surface-2); }
+.en-topnews-card__photo { position: relative; margin: 20px auto 0; width: 80px; height: 80px; overflow: hidden; border-radius: 9999px; border: 2px solid var(--en-primary); background: var(--en-surface-2); }
 @media (min-width: 640px) { .en-topnews-card__photo { width: 120px; height: 120px; } }
 .en-topnews-card__photo img { width: 100%; height: 100%; object-fit: cover; }
 .en-topnews-card__photo-empty { width: 100%; height: 100%; background: var(--en-surface-3); }

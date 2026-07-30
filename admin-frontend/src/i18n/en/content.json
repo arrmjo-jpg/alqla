@@ -595,6 +595,9 @@
       "coverHint": "Pick an image from the gallery and set it as cover via the star button.",
       "setCover": "Set as cover",
       "unsetCover": "Unset cover",
+      "caption": "Image caption",
+      "captionPlaceholder": "e.g. photographer name, event location...",
+      "captionSaved": "Caption saved",
       "gallery": "Gallery",
       "galleryHint": "Drag and drop to reorder",
       "empty": "No images yet"

@@ -37,6 +37,8 @@ export interface MediaStaging {
   remove: (assetId: number) => void;
   reorderGallery: (orderedAssetIds: number[]) => void;
   updateItem: (asset: MediaAssetData) => void;
+  /** وصف الصورة (كابشن) — PATCH فوريّ على مكتبة الوسائط (لا ينتظر حفظ المقال). */
+  updateCaption: (assetId: number, caption: string) => Promise<void>;
   reset: (items: StagedMediaItem[]) => void;
   toPayload: () => ArticleMediaAttachment[];
 }
@@ -56,6 +58,7 @@ function assetToStaged(
     isImage: asset.is_image,
     mime: asset.mime_type,
     name: asset.original_name,
+    caption: asset.caption,
     external: asset.is_external,
     provider: asset.provider,
     embedUrl: asset.embed_url,
@@ -93,6 +96,7 @@ export function stagedFromMedia(media: NonNullable<ArticleData['media']>): Stage
   if (media.cover) {
     out.push({
       assetId: media.cover.id,
+      uuid: media.cover.uuid ?? null,
       collection: 'cover',
       position: 0,
       url: media.cover.url,
@@ -100,11 +104,13 @@ export function stagedFromMedia(media: NonNullable<ArticleData['media']>): Stage
       isImage: true,
       mime: null,
       name: media.cover.name ?? null,
+      caption: media.cover.caption ?? null,
     });
   }
   media.gallery.forEach((g, i) =>
     out.push({
       assetId: g.id,
+      uuid: g.uuid ?? null,
       collection: 'gallery',
       position: i,
       url: g.url,
@@ -112,6 +118,7 @@ export function stagedFromMedia(media: NonNullable<ArticleData['media']>): Stage
       isImage: true,
       mime: null,
       name: g.name ?? null,
+      caption: g.caption ?? null,
     }),
   );
   media.video.forEach((v, i) =>
@@ -263,6 +270,24 @@ export function useMediaStaging(initial: StagedMediaItem[] = []): MediaStaging {
     );
   }, []);
 
+  // وصف الصورة (كابشن) — PATCH فوريّ على المعرّف (uuid) عبر API مكتبة الوسائط الموجود أصلاً
+  // (نفس ما تستخدمه لوحة تفاصيل الوسائط)، بلا انتظار حفظ المقال. تفاؤليّ محليًّا مع تراجع عند الفشل.
+  const updateCaption = useCallback(
+    async (assetId: number, caption: string) => {
+      const target = items.find((i) => i.assetId === assetId);
+      if (!target?.uuid) return;
+      const previous = target.caption ?? null;
+      setItems((prev) => prev.map((i) => (i.assetId === assetId ? { ...i, caption } : i)));
+      try {
+        await mediaLibraryService.update(target.uuid, { caption });
+      } catch (e) {
+        setItems((prev) => prev.map((i) => (i.assetId === assetId ? { ...i, caption: previous } : i)));
+        error((e as NormalizedError)?.message ?? 'Failed to save caption');
+      }
+    },
+    [items, error],
+  );
+
   const reset = useCallback((next: StagedMediaItem[]) => {
     // Seeded covers count as the established choice; new uploads still auto-cover
     // only when none exists.
@@ -312,6 +337,7 @@ export function useMediaStaging(initial: StagedMediaItem[] = []): MediaStaging {
     remove,
     reorderGallery,
     updateItem,
+    updateCaption,
     reset,
     toPayload,
   };

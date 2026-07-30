@@ -39,33 +39,41 @@ export function BreakingNewsBar({ items }: { items: BreakingItem[] }) {
     setOrigin(window.location.origin);
   }, [items]);
 
-  // الأفرع العاجلة: نداء خفيف عبر BFF القائم (/api/live-updates، لا توكن داخليّ) لكلّ خبر عاجل
-  // نوعه تغطية حيّة — الرئيسية فقط، وبعد الرسم (لا يؤخّر أول عرض ولا يُطلق على بقيّة صفحات الموقع).
+  // الأفرع العاجلة: نداء خفيف عبر BFF القائم (/api/live-updates، بلا كاش — no-store، لا توكن
+  // داخليّ) لكلّ خبر عاجل نوعه تغطية حيّة — الرئيسية فقط (لا يُطلق على بقيّة صفحات الموقع).
+  // استطلاع دوريّ كل 15 ثانية (لا مرّة وحدة عند الرسم فقط) — وإلا يبقى تبويب مفتوح لا يرى أي فرع
+  // عاجل يُنشَر بعد التحميل الأوّل إلا بإعادة تحميل الصفحة يدويًّا. الباك إند خفيف هنا أصلاً (بصمة
+  // count+updated_at تُبطل الكاش الداخلي تلقائيًّا عند أي تغيير، فلا تأخير خادميّ حقيقي).
   useEffect(() => {
     if (pathname !== '/') return;
     const liveItems = items.filter((it) => it.isLive);
     if (liveItems.length === 0) return;
 
     let cancelled = false;
-    for (const it of liveItems) {
-      fetch(`/api/live-updates?slug=${encodeURIComponent(String(it.id))}`)
-        .then((res) => (res.ok ? res.json() : null))
-        .then((json: { data?: Array<{ id: number; title?: string | null; is_breaking?: boolean }> } | null) => {
-          if (cancelled || !json?.data) return;
-          const breakingUpdates = json.data
-            .filter((u) => u.is_breaking && u.title)
-            .map((u) => ({ id: u.id, title: u.title as string }))
-            .slice(0, 10);
-          if (breakingUpdates.length > 0) {
-            setSubUpdates((prev) => ({ ...prev, [it.id]: breakingUpdates }));
-          }
-        })
-        .catch(() => {
-          // تجاهل — الشريط الأساسي يبقى شغّالاً بلا الأفرع
-        });
-    }
+
+    const fetchSubUpdates = () => {
+      for (const it of liveItems) {
+        fetch(`/api/live-updates?slug=${encodeURIComponent(String(it.id))}`)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((json: { data?: Array<{ id: number; title?: string | null; is_breaking?: boolean }> } | null) => {
+            if (cancelled || !json?.data) return;
+            const breakingUpdates = json.data
+              .filter((u) => u.is_breaking && u.title)
+              .map((u) => ({ id: u.id, title: u.title as string }))
+              .slice(0, 10);
+            setSubUpdates((prev) => (breakingUpdates.length > 0 ? { ...prev, [it.id]: breakingUpdates } : prev));
+          })
+          .catch(() => {
+            // تجاهل — الشريط الأساسي يبقى شغّالاً بلا الأفرع
+          });
+      }
+    };
+
+    fetchSubUpdates();
+    const interval = window.setInterval(fetchSubUpdates, 15000);
     return () => {
       cancelled = true;
+      window.clearInterval(interval);
     };
   }, [pathname, items]);
 

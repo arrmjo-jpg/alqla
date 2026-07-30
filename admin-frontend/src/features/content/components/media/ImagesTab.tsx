@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Star, Trash2, ImageOff } from 'lucide-react';
 import { UploadProgress } from './UploadButton';
@@ -45,14 +45,24 @@ export function ImagesTab({ staging }: Props) {
           {t('mediaStudio.images.cover')}
         </p>
         {staging.cover ? (
-          <Tile
-            item={staging.cover}
-            isCover
-            onUnsetCover={staging.unsetCover}
-            onRemove={() => staging.remove(staging.cover!.assetId)}
-            removeLabel={t('mediaStudio.common.remove')}
-            unsetLabel={t('mediaStudio.images.unsetCover')}
-          />
+          <>
+            <Tile
+              item={staging.cover}
+              isCover
+              onUnsetCover={staging.unsetCover}
+              onRemove={() => staging.remove(staging.cover!.assetId)}
+              removeLabel={t('mediaStudio.common.remove')}
+              unsetLabel={t('mediaStudio.images.unsetCover')}
+            />
+            <CaptionField
+              key={staging.cover.assetId}
+              value={staging.cover.caption ?? ''}
+              disabled={!staging.cover.uuid}
+              label={t('mediaStudio.images.caption')}
+              placeholder={t('mediaStudio.images.captionPlaceholder')}
+              onSave={(caption) => staging.updateCaption(staging.cover!.assetId, caption)}
+            />
+          </>
         ) : (
           <p className="text-xs text-muted-foreground">{t('mediaStudio.images.coverHint')}</p>
         )}
@@ -177,5 +187,43 @@ function Tile({
         </button>
       </div>
     </figure>
+  );
+}
+
+/** حقل وصف الصورة (كابشن) — حفظ فوريّ عند فقدان التركيز (blur)، لا حاجة لزر حفظ منفصل. */
+function CaptionField({
+  value,
+  disabled,
+  label,
+  placeholder,
+  onSave,
+}: {
+  value: string;
+  disabled?: boolean;
+  label: string;
+  placeholder: string;
+  onSave: (caption: string) => void;
+}) {
+  const [draft, setDraft] = useState(value);
+
+  useEffect(() => {
+    setDraft(value);
+  }, [value]);
+
+  return (
+    <label className="mt-2 block">
+      <span className="mb-1 block text-xs font-bold text-muted-foreground">{label}</span>
+      <input
+        type="text"
+        value={draft}
+        disabled={disabled}
+        placeholder={placeholder}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => {
+          if (draft !== value) onSave(draft);
+        }}
+        className="w-full border border-border bg-background px-2 py-1.5 text-sm disabled:opacity-50"
+      />
+    </label>
   );
 }

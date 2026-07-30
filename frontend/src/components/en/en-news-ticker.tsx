@@ -87,7 +87,7 @@ export function EnNewsTicker({ items }: { items: EnTickerItem[] }) {
       >
         <span
           className="en-newsticker__badge"
-          style={{ background: '#C9A227', color: '#fff', position: 'relative', overflow: 'hidden' }}
+          style={{ background: '#000', color: '#fff', position: 'relative', overflow: 'hidden' }}
         >
           <span
             style={{

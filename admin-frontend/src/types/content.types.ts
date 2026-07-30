@@ -41,11 +41,13 @@ export interface ArticleCategoryRef {
 
 export interface ArticleMediaItem {
   id: number;
+  uuid?: string | null;
   url: string;
   thumb?: string;
   medium?: string;
   name?: string;
   alt?: string | null;
+  caption?: string | null;
 }
 
 export interface ArticleSeo {
@@ -666,6 +668,8 @@ export interface StagedMediaItem {
   isImage: boolean;
   mime: string | null;
   name: string | null;
+  /** وصف الصورة (كابشن) — يُحرَّر مباشرة من استوديو الوسائط (تحديث فوريّ عبر media library API). */
+  caption?: string | null;
   /** External video metadata (provider-backed assets). */
   external?: boolean;
   provider?: VideoProvider | null;

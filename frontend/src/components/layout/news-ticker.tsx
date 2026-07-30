@@ -82,10 +82,10 @@ export function NewsTicker({ items }: { items: TickerItem[] }) {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {/* شارة آخر الأخبار — خلفية ذهبية + نص أبيض + فلاش متكرر */}
+        {/* شارة آخر الأخبار — خلفية سوداء + نص أبيض + فلاش متكرر */}
         <span
           className="relative overflow-hidden flex shrink-0 items-center justify-center gap-2 px-4 sm:px-6 text-[13px] font-extrabold self-stretch select-none"
-          style={{ background: '#C9A227', color: '#fff' }}
+          style={{ background: '#000', color: '#fff' }}
         >
           <span
             className="pointer-events-none absolute inset-0"
@@ -145,7 +145,7 @@ export function NewsTicker({ items }: { items: TickerItem[] }) {
         {/* زر السابق */}
         <button
           onClick={handlePrev}
-          className="flex size-7 items-center justify-center bg-[#C9A227] text-white transition-colors hover:bg-black cursor-pointer border-0"
+          className="flex size-7 items-center justify-center bg-black text-white transition-colors hover:bg-[#C9A227] cursor-pointer border-0"
           title="السابق"
           aria-label="السابق"
         >
@@ -155,7 +155,7 @@ export function NewsTicker({ items }: { items: TickerItem[] }) {
         {/* زر التشغيل / الإيقاف المؤقت */}
         <button
           onClick={togglePlay}
-          className="flex size-7 items-center justify-center bg-[#C9A227] text-white transition-colors hover:bg-black cursor-pointer border-0"
+          className="flex size-7 items-center justify-center bg-black text-white transition-colors hover:bg-[#C9A227] cursor-pointer border-0"
           title={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
           aria-label={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
         >
@@ -165,7 +165,7 @@ export function NewsTicker({ items }: { items: TickerItem[] }) {
         {/* زر التالي */}
         <button
           onClick={handleNext}
-          className="flex size-7 items-center justify-center bg-[#C9A227] text-white transition-colors hover:bg-black cursor-pointer border-0"
+          className="flex size-7 items-center justify-center bg-black text-white transition-colors hover:bg-[#C9A227] cursor-pointer border-0"
           title="التالي"
           aria-label="التالي"
         >
