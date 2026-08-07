@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { MediaVideo } from './media-video';
 
 interface Props {
   hls: string | null;
@@ -76,16 +77,8 @@ export function VideoPlayer({ hls, mp4, youtubeId, poster, title, autoPlay }: Pr
   }, [hls, mp4, youtubeId, autoPlay]);
 
   if (youtubeId) {
-    return (
-      <iframe
-        className="size-full"
-        src={`https://www.youtube-nocookie.com/embed/${youtubeId}?rel=0&playsinline=1${autoPlay ? '&autoplay=1' : ''}`}
-        title={title}
-        loading="lazy"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowFullScreen
-      />
-    );
+    const embedUrl = `https://www.youtube-nocookie.com/embed/${youtubeId}?rel=0&playsinline=1${autoPlay ? '&autoplay=1' : ''}`;
+    return <MediaVideo kind="external" embedUrl={embedUrl} title={title} className="size-full" />;
   }
 
   return (

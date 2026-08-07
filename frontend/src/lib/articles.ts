@@ -63,7 +63,7 @@ export interface ArticleDetail {
   tags: string[];
   seo: ArticleSeo | null;
   hasVideo: boolean;
-  video: { url: string; mime: string }[];
+  video: { url: string; mime: string; kind: string | null; provider: string | null; embedUrl: string | null }[];
 }
 
 // ─── Zod (مطابقة PublicArticleResource) ───
@@ -187,7 +187,17 @@ const ArticleSchema = z
       .object({
         cover: ImageSchema.nullish(),
         gallery: looseArray(ImageSchema),
-        video: looseArray(z.object({ url: z.string().nullish(), mime: z.string().nullish() }).passthrough()),
+        video: looseArray(
+          z
+            .object({
+              url: z.string().nullish(),
+              mime: z.string().nullish(),
+              kind: z.string().nullish(),
+              provider: z.string().nullish(),
+              embed_url: z.string().nullish(),
+            })
+            .passthrough(),
+        ),
       })
       .passthrough()
       .nullish(),
@@ -258,8 +268,14 @@ function mapArticle(a: RawArticle): ArticleDetail {
     seo: a.seo ?? null,
     hasVideo: (a.media?.video ?? []).length > 0 || /<iframe|<video/i.test(a.content_html ?? ''),
     video: (a.media?.video ?? [])
-      .filter((v): v is { url: string | null; mime: string | null } => Boolean(v?.url) && Boolean(v?.mime))
-      .map((v) => ({ url: v.url!, mime: v.mime! })),
+      .filter((v): v is NonNullable<typeof v> & { url: string; mime: string } => Boolean(v?.url) && Boolean(v?.mime))
+      .map((v) => ({
+        url: v.url,
+        mime: v.mime,
+        kind: v.kind ?? null,
+        provider: v.provider ?? null,
+        embedUrl: v.embed_url ?? null,
+      })),
   };
 }
 

@@ -231,6 +231,8 @@ export function ArticleDetailView({
                   featured={article.flags.featured}
                   hasVideo={article.hasVideo}
                   videoUrl={article.video[0]?.url}
+                  videoKind={article.video[0]?.kind}
+                  videoEmbedUrl={article.video[0]?.embedUrl}
                 />
               ) : (
                 /* Badges above the body if there is no cover image */

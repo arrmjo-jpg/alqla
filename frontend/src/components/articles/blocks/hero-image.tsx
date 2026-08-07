@@ -5,6 +5,7 @@ import type { ArticleImage } from '@/lib/articles';
 import { editorialTypography } from '@/lib/design-tokens';
 import { LivePulse } from '@/components/ui/live-pulse';
 import { Play } from 'lucide-react';
+import { MediaVideo } from '@/components/videos/media-video';
 
 interface HeroImageProps {
   cover: ArticleImage | null;
@@ -15,6 +16,8 @@ interface HeroImageProps {
   featured?: boolean;
   hasVideo?: boolean;
   videoUrl?: string;
+  videoKind?: string | null;
+  videoEmbedUrl?: string | null;
 }
 
 export function ArticleHero({
@@ -26,6 +29,8 @@ export function ArticleHero({
   featured = false,
   hasVideo = false,
   videoUrl = '',
+  videoKind = null,
+  videoEmbedUrl = null,
 }: HeroImageProps) {
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -61,10 +66,13 @@ export function ArticleHero({
         style={{ paddingBottom: `${padPercentage}%` }}
       >
         {isPlaying && videoUrl ? (
-          <video
+          <MediaVideo
+            kind={videoKind}
             src={videoUrl}
-            controls
+            embedUrl={videoEmbedUrl}
+            title={defaultTitle}
             autoPlay
+            controls
             className="absolute inset-0 w-full h-full object-contain bg-black z-20"
           />
         ) : (

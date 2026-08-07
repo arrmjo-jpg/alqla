@@ -82,6 +82,9 @@ class PublicArticleResource extends JsonResource
                     ->sortBy('pivot.position')
                     ->map(fn (MediaAsset $a): array => [
                         'url' => $a->url(),
+                        'kind' => $a->kind,
+                        'provider' => $a->provider,
+                        'embed_url' => $a->embed_url,
                         'mime' => $a->mime_type,
                     ])
                     ->values()
