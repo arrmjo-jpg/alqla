@@ -18,8 +18,9 @@ import { MatchTopPerformers } from '@/components/sport/match-top-performers';
 import { MatchTrendsView } from '@/components/sport/match-trends';
 import { SportNews } from '@/components/sport/sport-news';
 import { StandingsTable } from '@/components/sport/standings-table';
-import { getCompetitionMatchList, getGameDetail, getGameStats, getH2H, getMatchTrends, getPreGameStats, getShotMap } from '@/lib/sport/games';
-import { getCompetitionMeta, getStandings } from '@/lib/sport/stats';
+import { getGameStats, getH2H, getMatchTrends, getPreGameStats, getShotMap } from '@/lib/sport/games';
+import { getCompetitionMatchList, getCompetitionMeta, getGameDetail } from '@/lib/sport/match';
+import { getStandings } from '@/lib/sport/stats';
 
 // صفحة تفاصيل المباراة (نمط 365 game-center) — عمودان: يمين شريط مباريات الدوري (`CompetitionMatchesSidebar` نفسه،
 // بكلّ تبويباته) + يسار تفاصيل المباراة: ترويسة متدرّجة + **كلّ التبويبات** (المباراة/التشكيلة المتوقعة/الإحصائيات/

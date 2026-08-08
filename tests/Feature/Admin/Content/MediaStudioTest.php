@@ -3,12 +3,16 @@
 declare(strict_types=1);
 
 use App\Actions\Admin\Media\StoreMediaAssetAction;
+use App\Jobs\RevalidateFrontendCacheJob;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\MediaAsset;
 use App\Models\User;
+use App\Support\Cache\ArticleCacheTags;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
@@ -16,6 +20,8 @@ uses(RefreshDatabase::class);
 beforeEach(function (): void {
     seedRoles();
     Storage::fake('uploads');
+    config(['services.frontend_revalidate.url' => 'https://example.test/api/revalidate']);
+    config(['services.frontend_revalidate.secret' => 'test-secret']);
 });
 
 function studioEditor(): array
@@ -177,4 +183,55 @@ it('replaces the cover when a second cover is uploaded', function (): void {
     expect(
         $a->fresh()->mediaAssets()->wherePivot('collection', 'cover')->count()
     )->toBe(1);
+});
+
+// ─── Cache invalidation (Content Module Audit 2026-08-08 §C1) ──────────
+// قبل هذا الإصلاح: رفع/حذف/إعادة ترتيب وسائط مقال لا يُبطِل أي كاش — لا الخلفيّ (Redis)
+// ولا الواجهة (Next.js/CDN عبر RevalidateFrontendCacheJob) — فتبقى الصورة القديمة معروضة
+// حتى انتهاء الـTTL الطبيعي (٣٠ دقيقة Backend / ١٠ ساعات Next.js).
+
+it('invalidates the article cache and notifies the frontend when media is uploaded', function (): void {
+    [$u, $token] = studioEditor();
+    $a = studioArticle($u->id);
+    Cache::tags(ArticleCacheTags::writeTags($a->fresh()))->put('probe', 'x', 600);
+    Queue::fake();
+
+    $this->withToken($token)->post("/api/v1/admin/articles/{$a->id}/media", [
+        'collection' => 'cover',
+        'file' => UploadedFile::fake()->image('cover.jpg'),
+    ], ['Accept' => 'application/json'])->assertCreated();
+
+    expect(Cache::tags(ArticleCacheTags::writeTags($a->fresh()))->get('probe'))->toBeNull();
+    Queue::assertPushed(RevalidateFrontendCacheJob::class);
+});
+
+it('invalidates the article cache and notifies the frontend when media is deleted', function (): void {
+    [$u, $token] = studioEditor();
+    $a = studioArticle($u->id);
+    $m = studioAttach($a, 'gallery', UploadedFile::fake()->image('g.jpg', 340, 240), $u);
+    Cache::tags(ArticleCacheTags::writeTags($a->fresh()))->put('probe', 'x', 600);
+    Queue::fake();
+
+    $this->withToken($token)->deleteJson("/api/v1/admin/articles/{$a->id}/media/{$m->id}")
+        ->assertOk();
+
+    expect(Cache::tags(ArticleCacheTags::writeTags($a->fresh()))->get('probe'))->toBeNull();
+    Queue::assertPushed(RevalidateFrontendCacheJob::class);
+});
+
+it('invalidates the article cache and notifies the frontend when media is reordered', function (): void {
+    [$u, $token] = studioEditor();
+    $a = studioArticle($u->id);
+    $m1 = studioAttach($a, 'gallery', UploadedFile::fake()->image('a.jpg', 350, 240), $u);
+    $m2 = studioAttach($a, 'gallery', UploadedFile::fake()->image('b.jpg', 351, 240), $u);
+    Cache::tags(ArticleCacheTags::writeTags($a->fresh()))->put('probe', 'x', 600);
+    Queue::fake();
+
+    $this->withToken($token)->patchJson(
+        "/api/v1/admin/articles/{$a->id}/media/reorder",
+        ['collection' => 'gallery', 'ids' => [$m2->id, $m1->id]],
+    )->assertOk();
+
+    expect(Cache::tags(ArticleCacheTags::writeTags($a->fresh()))->get('probe'))->toBeNull();
+    Queue::assertPushed(RevalidateFrontendCacheJob::class);
 });

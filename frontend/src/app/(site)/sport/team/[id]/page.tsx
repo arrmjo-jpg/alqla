@@ -6,7 +6,7 @@ import { Container } from '@/components/layout/container';
 import { EntityListBlock } from '@/components/sport/entity-list-block';
 import { FollowButton } from '@/components/sport/follow-button';
 import { StandingsTable } from '@/components/sport/standings-table';
-import { getStandings, getTeam } from '@/lib/sport/stats';
+import { getStandings, getTeam } from '@/lib/sport/team';
 
 // صفحة الفريق `/sport/team/[id]` (مثل 365 `/team/{id}`) — ترويسة + ترتيب دوريه الرئيس (صفّ الفريق مُميَّز) + بطولاته
 // (روابط لصفحة البطولة). لا fixtures (نقطة مباريات الفريق لا تعمل) ⇒ لا تلفيق. الثابت «team» يسبق `[sport]`.
@@ -24,7 +24,9 @@ export default async function TeamPage({ params }: { params: Promise<{ id: strin
   if (!Number.isInteger(tid) || tid <= 0) notFound();
   const team = await getTeam(tid);
   if (!team) notFound();
-  const standings = team.mainCompetitionId ? await getStandings(team.mainCompetitionId) : null;
+  // team.id لا team.mainCompetitionId: عقد TeamProvider.getStandings بمعرّف الفريق (راجع providers.ts) —
+  // TeamAggregateService يضمّ الترتيب ضمن نفس نداء الفريق، فكلا المزوّدَين يحلّان mainCompetitionId داخلياً.
+  const standings = team.mainCompetitionId ? await getStandings(team.id) : null;
 
   return (
     <div className="bg-surface-2">

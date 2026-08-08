@@ -19,7 +19,7 @@ export const editorialTypography = {
   body: 'font-serif text-[19px] leading-[1.9] text-fg/95 antialiased font-normal',
   
   // caption: Media details, photographer and source
-  caption: 'font-sans text-xs text-muted leading-relaxed p-3 bg-surface border-t border-border border-r-4 border-primary flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2',
+  caption: 'font-sans text-xs text-muted leading-relaxed p-3 bg-[#d7d7d7] border-t border-border flex flex-col items-center text-center gap-2',
   
   // meta: Publishing details, time stamps, sections, author names
   meta: 'font-sans text-xs sm:text-sm font-bold text-muted/80 tracking-wide flex flex-wrap items-center gap-1.5',

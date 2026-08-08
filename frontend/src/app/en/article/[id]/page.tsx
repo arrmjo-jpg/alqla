@@ -185,6 +185,8 @@ export default async function EnArticlePage({ params }: { params: Promise<{ id: 
                     featured={article.flags.featured}
                     hasVideo={article.hasVideo}
                     videoUrl={article.video[0]?.url}
+                    videoKind={article.video[0]?.kind}
+                    videoEmbedUrl={article.video[0]?.embedUrl}
                   />
                 ) : (
                   <OpinionFlags isLive={isLive} breaking={article.flags.breaking} featured={article.flags.featured} />

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Play } from 'lucide-react';
 
+import { MediaVideo } from '@/components/videos/media-video';
 import { LivePulse } from '@/components/ui/live-pulse';
 import type { ArticleImage } from '@/lib/articles';
 
@@ -19,6 +20,8 @@ interface EnArticleHeroProps {
   featured?: boolean;
   hasVideo?: boolean;
   videoUrl?: string;
+  videoKind?: string | null;
+  videoEmbedUrl?: string | null;
 }
 
 export function EnArticleHero({
@@ -30,6 +33,8 @@ export function EnArticleHero({
   featured = false,
   hasVideo = false,
   videoUrl = '',
+  videoKind = null,
+  videoEmbedUrl = null,
 }: EnArticleHeroProps) {
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -58,7 +63,15 @@ export function EnArticleHero({
     >
       <div className="en-hero-figure__frame" style={{ paddingBottom: `${padPercentage}%` }}>
         {isPlaying && videoUrl ? (
-          <video src={videoUrl} controls autoPlay className="en-hero-figure__video" />
+          <MediaVideo
+            kind={videoKind}
+            src={videoUrl}
+            embedUrl={videoEmbedUrl}
+            title={defaultTitle}
+            autoPlay
+            controls
+            className="en-hero-figure__video"
+          />
         ) : (
           <>
             <div className="en-hero-figure__skeleton" aria-hidden />

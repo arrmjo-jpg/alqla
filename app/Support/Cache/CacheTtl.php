@@ -35,4 +35,16 @@ final class CacheTtl
     public const LISTS = self::SHORT;
 
     public const METADATA = self::LONG;
+
+    // بيانات لاعب مُجمَّعة من 365Scores (مسيرة/ألقاب/آخر مباريات) — لا تتغيّر خلال الساعة، LONG=٦س كافٍ
+    // وأبعد بكثير من ثانية واحدة (خطأ الحادثة الأصلي). راجع PlayerAggregateService.
+    public const SPORT_PLAYER = self::LONG;
+
+    // profile=base لمباراة — يضمّ تفاصيل المباراة نفسها (كانت 30s بالواجهة الأصليّة، حسّاسة للنتيجة
+    // الحيّة) — REALTIME=٦٠ث أقرب قيمة موجودة، لا يزال أبعد من ثانية واحدة. راجع MatchAggregateService.
+    public const SPORT_MATCH_BASE = self::REALTIME;
+
+    // بيانات فريق مُجمَّعة (ملف + بطولات + ترتيب دوريه الرئيس) — مثل SPORT_PLAYER: لا تتغيّر خلال
+    // الساعة، LONG=٦س كافٍ. راجع TeamAggregateService.
+    public const SPORT_TEAM = self::LONG;
 }

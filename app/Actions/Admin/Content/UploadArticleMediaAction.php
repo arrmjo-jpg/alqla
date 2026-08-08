@@ -8,9 +8,12 @@ use App\Actions\Admin\Media\StoreMediaAssetAction;
 use App\Http\Resources\Admin\Content\ArticleResource;
 use App\Models\Article;
 use App\Models\User;
+use App\Support\Cache\ArticleCacheTags;
+use App\Support\Content\ArticleCdnPurge;
 use App\Support\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -21,6 +24,9 @@ use Illuminate\Support\Facades\DB;
  * - dedupe بالـ checksum يُدار في StoreMediaAssetAction.
  * - المشتقّات (thumb/medium/watermarked) تُولَّد في StoreMediaAssetAction
  *   عبر GenerateMediaAssetConversionsJob — لا علامة مائية خاصة بالمقال.
+ * - إبطال الكاش (Content Module Audit 2026-08-08 §C1): الغلاف يظهر بالقوائم العامة أيضاً
+ *   (PublicArticleListItemResource::coverItem)، فيبطُل نفس نطاق UpdateArticleAction —
+ *   Backend (ArticleCacheTags::writeTags) + Next.js/CDN (ArticleCdnPurge) معاً، لا Backend فقط.
  */
 class UploadArticleMediaAction
 {
@@ -53,10 +59,14 @@ class UploadArticleMediaAction
             ]);
         });
 
+        $fresh = $article->fresh();
+        Cache::tags(ArticleCacheTags::writeTags($fresh))->flush();
+        ArticleCdnPurge::purge($fresh);
+
         return ApiResponse::success(
             __('media.uploaded'),
             new ArticleResource(
-                $article->fresh()->load([
+                $fresh->load([
                     'author:id,name',
                     'primaryCategory:id,name,slug',
                     'categories:id,name,slug',

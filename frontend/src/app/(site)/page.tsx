@@ -11,6 +11,7 @@ import { IncidentsSection } from '@/components/home/incidents-section';
 import { LatestUpdates } from '@/components/home/latest-updates';
 import { ObituariesSection } from '@/components/home/obituaries-section';
 import { ReelsCarousel } from '@/components/home/reels-carousel';
+import { SectionDivider } from '@/components/home/section-divider';
 import { TrendingLatestMostRead } from '@/components/home/trending-latest-mostread';
 import { SubscribeBox } from '@/components/public-forms/subscribe-box';
 import { SportsShowcase } from '@/components/sport/sports-showcase';
@@ -75,6 +76,8 @@ export default async function Home() {
         <LatestUpdates categoryId={2} fallbackTitle="أخبار محلية" />
       </Suspense>
 
+      <SectionDivider />
+
       {/* برلمانيات — 8 أخبار (كبير + 7 صغار، بلا سكرول جوّال) (#36) بخلفية صورة شفافة. */}
       <Suspense fallback={<SectionLoader />}>
         <CategoryFeatureQuad
@@ -85,10 +88,14 @@ export default async function Home() {
         />
       </Suspense>
 
+      <SectionDivider />
+
       {/* أخبار الديوان الملكي — تحت البرلمانيات مباشرةً: 4 أخبار (كبير + 3 صغار، بلا سكرول) (#38). */}
       <Suspense fallback={<SectionLoader />}>
         <CategoryFeatureQuad categoryId={38} fallbackTitle="أخبار الديوان الملكي" />
       </Suspense>
+
+      <SectionDivider />
 
       {/* أخبار ثقافية — تحت أخبار الديوان الملكي مباشرةً: 10 أخبار (كبير + 9 صغار، بلا سكرول) (#56) بخلفية صورة شفافة. */}
       <Suspense fallback={<SectionLoader />}>
@@ -100,10 +107,14 @@ export default async function Home() {
         />
       </Suspense>
 
+      <SectionDivider />
+
       {/* ودجت 3 أعمدة: تريندينغ + آخر المستجدات + الأكثر قراءة — تحت أخبار ثقافية مباشرةً. */}
       <Suspense fallback={<SectionLoader />}>
         <TrendingLatestMostRead editorsPick={editorsPick} />
       </Suspense>
+
+      <SectionDivider />
 
       {/* زوج إعلانات فوق الريلز. */}
       <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-2 px-4 sm:flex-row sm:px-6 lg:px-8">
@@ -120,18 +131,26 @@ export default async function Home() {
         />
       </Suspense>
 
+      <SectionDivider />
+
       {/* شريط الاشتراك في واتساب. */}
       <SubscribeBox variant="bar" />
+
+      <SectionDivider />
 
       {/* عربي دولي — 8 أخبار بتصميم الـ 3 أعمدة (#43). */}
       <Suspense fallback={<SectionLoader />}>
         <CategoryThreeCol categoryId={43} fallbackTitle="عربي دولي" count={8} />
       </Suspense>
 
+      <SectionDivider />
+
       {/* قسم الاقتصاد (تصميم خاصّ: بورصة + ذهب) — فوق ضيف الأسبوع مباشرةً. */}
       <Suspense fallback={<SectionLoader />}>
         <EconomyShowcase />
       </Suspense>
+
+      <SectionDivider />
 
       {/* حوادث + جامعات — تحت الاقتصاد مباشرةً: خبر أوّل بصورة + 3 عناوين فقط لكلّ عمود (#52/#42). */}
       <Suspense fallback={<SectionLoader />}>
@@ -141,23 +160,32 @@ export default async function Home() {
         />
       </Suspense>
 
-      {/* مختارات + زاوية خاصة — عناوين فقط بلا صور (#34/#32)، بترويسة حمراء موحّدة. */}
+      <SectionDivider />
+
+      {/* مختارات + زاوية خاصة — عناوين فقط بلا صور (#59/#32)، بترويسة حمراء موحّدة.
+          (2026-08-07: كان #34 — تصنيف "مختارات" مكرّر شبه مهجور؛ التصنيف الفعلي هو #59/mukhtarat). */}
       <Suspense fallback={<SectionLoader />}>
         <TwoColumnCategoryRow
-          right={{ categoryId: 34, fallbackTitle: 'مختارات', showLead: false }}
+          right={{ categoryId: 59, fallbackTitle: 'مختارات', showLead: false }}
           left={{ categoryId: 32, fallbackTitle: 'زاوية خاصة', showLead: false }}
         />
       </Suspense>
+
+      <SectionDivider />
 
       {/* ضيف الأسبوع — تصنيف #58: 8 أخبار بنمط بطاقات عائمة. */}
       <Suspense fallback={<SectionLoader />}>
         <IncidentsSection categoryId={58} headingId="week-stories-heading" fallbackTitle="ضيف الأسبوع" count={8} />
       </Suspense>
 
+      <SectionDivider />
+
       {/* قسم الوفيات/التعزية — تصميم خاصّ مع آية قرآنيّة. */}
       <Suspense fallback={<SectionLoader />}>
         <ObituariesSection categoryId={49} fallbackTitle="الوفيات" count={8} />
       </Suspense>
+
+      <SectionDivider />
 
       {/* إعلان كبير فوق بقيّة الأقسام. */}
       <AdZone
@@ -170,18 +198,26 @@ export default async function Home() {
         <EditorialCategorySection categoryId={31} headingId="people-news-heading" fallbackTitle="اخبار الناس" />
       </Suspense>
 
+      <SectionDivider />
+
       {/* أخبار الفن — بتصميم القسم (شبكة بطاقات عائمة)، محلّ «حوادث» سابقًا. */}
       <Suspense fallback={<SectionLoader />}>
         <IncidentsSection categoryId={37} headingId="art-heading" fallbackTitle="أخبار الفن" />
       </Suspense>
+
+      <SectionDivider />
 
       {/* قسم الرياضة — نظير الاقتصاد بطابعٍ رياضيّ + جدول ترتيب الدوري مباشرةً من 365Scores (محلّ كروسل رياضة). */}
       <Suspense fallback={<SectionLoader />}>
         <SportsShowcase />
       </Suspense>
 
+      <SectionDivider />
+
       {/* قسم الطقس السينمائيّ — أسفل الرياضة: بطاقة «اليوم» الكبيرة (حرارة + إحساس + رطوبة/رياح + شروق/غروب) + الأسبوع. */}
       <WeatherWrapper />
+
+      <SectionDivider />
 
       {/* 3 أعمدة جنب بعض — النصف الآخر + منوعات + صحة وجمال — تحت الطقس (بدل شبكة 2×2 السابقة). */}
       <Suspense fallback={<SectionLoader />}>
@@ -194,12 +230,16 @@ export default async function Home() {
         />
       </Suspense>
 
+      <SectionDivider />
+
       {/* بقيّة أقسام الأخبار — كروسلات. */}
       <Suspense fallback={<SectionLoader />}>
         {CATEGORY_CAROUSELS.map((s) => (
           <CategoryCarousel key={s.categoryId} categoryId={s.categoryId} fallbackTitle={s.fallbackTitle} />
         ))}
       </Suspense>
+
+      <SectionDivider />
 
       {/* قسم الفيديو — آخر شيء فوق الفوتر. */}
       <Suspense fallback={<SectionLoader />}>

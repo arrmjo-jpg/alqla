@@ -28,12 +28,15 @@ use App\Http\Controllers\Api\V1\Public\Content\WriterReelController;
 use App\Http\Controllers\Api\V1\Public\Content\WriterVideoController;
 use App\Http\Controllers\Api\V1\Public\Follow\FollowController;
 use App\Http\Controllers\Api\V1\Public\MatchBarController;
-use App\Http\Controllers\Api\V1\Public\SportsHomeBarController;
 use App\Http\Controllers\Api\V1\Public\Media\WriterMediaController;
 use App\Http\Controllers\Api\V1\Public\NotificationController;
 use App\Http\Controllers\Api\V1\Public\Polls\PollController;
 use App\Http\Controllers\Api\V1\Public\SiteController;
+use App\Http\Controllers\Api\V1\Public\Sport\MatchController as SportMatchController;
+use App\Http\Controllers\Api\V1\Public\Sport\PlayerController as SportPlayerController;
+use App\Http\Controllers\Api\V1\Public\Sport\TeamController as SportTeamController;
 use App\Http\Controllers\Api\V1\Public\SportMenuController;
+use App\Http\Controllers\Api\V1\Public\SportsHomeBarController;
 use App\Http\Controllers\Api\V1\Public\Team\TeamMemberController;
 use App\Http\Controllers\Api\V1\Public\VideoLibrary\PlaylistController;
 use App\Http\Controllers\Api\V1\Public\VideoLibrary\VideoController;
@@ -61,6 +64,29 @@ Route::middleware(['public.cache', 'throttle:public.read'])
 // ListPublicSportMenuAction لسبب فصلها عن نظيرتها الإداريّة.
 Route::middleware(['public.cache', 'throttle:public.read'])
     ->get('/sport-menu', [SportMenuController::class, 'index']);
+
+// ─── لاعب رياضة مُجمَّع (365Scores) — بدون بادئة locale (بيانات المزوّد غير مرتبطة بلغة الموقع،
+// نفس نمط /sport-menu أعلاه). نداء داخلي واحد يجمّع الملف + مسيرة كل المواسم + الألقاب + آخر
+// المباريات بدل حتى ٣٠ نداء fetch متفرّق كانت الواجهة تطلقها مباشرة لـ365Scores (كل واحد يخزَّن
+// كملف Next.js fetch-cache منفصل بلا حد أقصى — راجع STORAGE_DEEPDIVE_5.5GB_SOURCE_2026-08-07.md
+// وPlayerAggregateService). throttle:public.read مؤقّتاً بنفس نمط باقي القراءة العامة — تذكرة
+// منفصلة (أولوية عالية) لإضافة طبقة throttle مخصّصة أشد لمسارات الرياضة تحديداً.
+Route::middleware(['public.cache', 'throttle:public.read'])
+    ->where(['id' => '[0-9]+'])
+    ->get('/sports/players/{id}', [SportPlayerController::class, 'show']);
+
+// ─── مباراة رياضة مُجمَّعة (365Scores) — profile=base فقط حالياً (المُجلَب دائماً بغضّ النظر عن
+// التبويب: تفاصيل المباراة + معلومات البطولة + قائمة مباريات البطولة). overview/stats/trends
+// (مشروطة بالتبويب النشط بالواجهة) تُضاف بخطوة تالية منفصلة — راجع MatchAggregateService.
+Route::middleware(['public.cache', 'throttle:public.read'])
+    ->where(['id' => '[0-9]+'])
+    ->get('/sports/matches/{id}', [SportMatchController::class, 'show']);
+
+// ─── فريق رياضة مُجمَّع (365Scores) — لا Profiles (الصفحة بلا تبويبات، كل شيء يُحمَّل بأول Render:
+// ملف الفريق + بطولاته + ترتيب دوريه الرئيس) — راجع TeamAggregateService.
+Route::middleware(['public.cache', 'throttle:public.read'])
+    ->where(['id' => '[0-9]+'])
+    ->get('/sports/teams/{id}', [SportTeamController::class, 'show']);
 
 // ─── Guest — قراءة عامة بادئة {locale} للتوجيه ومفاتيح الكاش الموحّدة ──
 // throttle:public.read — حارس إساءة/DoS لكل عميل/دقيقة على كامل سطح القراءة العام.

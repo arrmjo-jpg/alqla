@@ -13,6 +13,11 @@ return [
     // معاملات مشتركة ثابتة (نوع التطبيق/اللغة/التوقيت/الدولة) — كنمط الواجهة.
     'api_common' => 'appTypeId=3&langId=27&timezoneName=Asia/Amman&userCountryId=6',
 
+    // نفس الفكرة لكن appTypeId=5 — قيمة الواجهة الأصليّة لكل نقاط اللاعب (athletes/*) تحديداً
+    // (frontend/src/lib/sport/player.ts، stats.ts) قبل نقلها لـPlayerAggregateService. لا نُوحِّدها
+    // مع api_common أعلاه لأن appTypeId=3 مخصَّص لنقاط المباريات (games.ts) — قيمتان مختلفتان مقصودتان.
+    'api_common_athlete' => 'appTypeId=5&langId=27&timezoneName=Asia/Amman&userCountryId=6',
+
     // مهلة طلب 365 (ثوانٍ).
     'http_timeout' => env('SPORT_365_TIMEOUT', 8),
 

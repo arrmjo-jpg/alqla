@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Cache;
 
+use App\Support\Sport\MatchProfile;
+
 /**
  * باني مفاتيح الكاش — مصدر الحقيقة الوحيد لبنية المفاتيح.
  *
@@ -246,5 +248,33 @@ final class CacheKeys
     public static function accountStats(int $userId): string
     {
         return self::make('account', 'stats', (string) $userId);
+    }
+
+    // ─── Sport (365Scores aggregate) ──────────────────────────────────────
+    /**
+     * تجميع لاعب واحد (ملف + مسيرة كل المواسم + ألقاب + آخر المباريات) — مفتاح واحد
+     * لكل لاعب بدل مفتاح لكل (لاعب، موسم) أو (لاعب، بطولة). راجع PlayerAggregateService.
+     */
+    public static function sportPlayerAggregate(int $athleteId): string
+    {
+        return self::make('sport', 'player', (string) $athleteId);
+    }
+
+    /**
+     * تجميع مباراة — مفتاح لكل (مباراة، Profile) لا لكل مباراة فقط، لأن كل Profile يحمل بيانات
+     * مختلفة (base/overview/stats/trends) وTTL محتمَل مختلف مستقبلاً. راجع MatchAggregateService.
+     */
+    public static function sportMatchAggregate(int $gameId, MatchProfile $profile): string
+    {
+        return self::make('sport', 'match', (string) $gameId, $profile->value);
+    }
+
+    /**
+     * تجميع فريق (ملف + بطولاته + ترتيب دوريه الرئيس) — مفتاح واحد لكل فريق، لا Profiles (الصفحة
+     * بلا تبويبات، كل شيء يُحمَّل بأول Render). راجع TeamAggregateService.
+     */
+    public static function sportTeamAggregate(int $teamId): string
+    {
+        return self::make('sport', 'team', (string) $teamId);
     }
 }
