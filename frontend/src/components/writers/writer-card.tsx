@@ -1,7 +1,6 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import type { WriterProfile } from '@/lib/writer';
-import { User, FileText, Clock } from 'lucide-react';
+import { FileText, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface WriterCardProps {
@@ -36,19 +35,12 @@ export function WriterCard({ writer }: WriterCardProps) {
       {/* Avatar Container with gradient border effect */}
       <div className="relative w-24 h-24 mb-5 rounded-full p-[3px] bg-gradient-to-br from-gray-100 to-gray-50 group-hover:from-primary/40 group-hover:to-primary/10 transition-all duration-500 shadow-inner">
         <div className="relative w-full h-full rounded-full overflow-hidden bg-white border-2 border-white">
-          {writer.avatar ? (
-            <Image
-              src={writer.avatar}
-              alt={`صورة الكاتب ${writer.name}`}
-              fill
-              className="object-cover transition-transform duration-700 group-hover:scale-110"
-              sizes="96px"
-            />
-          ) : (
-            <div className="w-full h-full bg-gray-50/80 flex items-center justify-center text-gray-300">
-              <User size={36} strokeWidth={1.5} />
-            </div>
-          )}
+          {/* eslint-disable-next-line @next/next/no-img-element -- رابط خارجي مطلق، next/image يرفضه (لا images.remotePatterns) */}
+          <img
+            src={writer.avatar || '/default-avatar.webp'}
+            alt={`صورة الكاتب ${writer.name}`}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          />
         </div>
         {/* Verified Badge */}
         {writer.verified && (

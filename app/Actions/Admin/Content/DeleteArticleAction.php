@@ -11,6 +11,11 @@ use App\Support\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * الحذف صلاحية إشرافية (Moderation) — يُحكَم فقط بصلاحية الراوت `articles.delete`
+ * (لا فحص ملكية `author_id === actor.id` كما بـUpdateArticleAction). قرار مقصود
+ * موثَّق بـDECISION-LOG.md § DEC-005 — لا تُضِف فحص ملكية هنا بلا مراجعة ذلك القرار أولاً.
+ */
 class DeleteArticleAction
 {
     public function handle(Article $article): JsonResponse

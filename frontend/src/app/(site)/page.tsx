@@ -152,10 +152,11 @@ export default async function Home() {
 
       <SectionDivider />
 
-      {/* حوادث + جامعات — تحت الاقتصاد مباشرةً: خبر أوّل بصورة + 3 عناوين فقط لكلّ عمود (#52/#42). */}
+      {/* حوادث + جامعات — تحت الاقتصاد مباشرةً: خبر أوّل بصورة + عناوين فقط لكلّ عمود (#52/#42).
+          حوادث: 5 إجمالاً (خبر أوّل + 4 عناوين) — جامعات: 4 إجمالاً (خبر أوّل + 3 عناوين، الافتراضي). */}
       <Suspense fallback={<SectionLoader />}>
         <TwoColumnCategoryRow
-          right={{ categoryId: 52, fallbackTitle: 'حوادث' }}
+          right={{ categoryId: 52, fallbackTitle: 'حوادث', headlineCount: 4 }}
           left={{ categoryId: 42, fallbackTitle: 'جامعات' }}
         />
       </Suspense>

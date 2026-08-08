@@ -15,10 +15,13 @@ class ValidTipTapDocument implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        // يُقبل المحتوى الصالح، أو القابل للتعقيم إلى صالح: مخرجات المحرّر قد تحوي عُقَدًا
-        // فارغة/روابط ملوّثة يُصلحها/يُسقِطها clean (والـ Action يخزّن الناتج النظيف).
-        // ما لا يُعقَّم (أنواع/علامات/سمات مجهولة أو خطرة) يبقى مرفوضاً (clean يُبقيها فيرفضها validate).
-        if (! is_array($value) || ! TipTapSanitizer::validate(TipTapSanitizer::clean($value))) {
+        // يتحقّق من القيمة الخام مباشرةً — لا من ناتج clean(): clean يُسقِط/يُصلِح الروابط
+        // والتضمينات والمحاذاة غير الصالحة بصمت ليجتاز ناتجه validate() دائماً (خاصّية
+        // مقصودة لتخزين نسخة نظيفة في الـ Action)، فتمرير القيمة عبر clean() قبل التحقّق
+        // يُبطِل الرفض المقصود تحديداً لهذه الحالات (P4-D1 مقفول: رفض صريح لا تعقيم صامت).
+        // التلوّث القابل للاسترداد (مسافات/اقتباسات محيطة بالرابط) يبقى مقبولاً لأنّ
+        // safeUrl() نفسها تُطبِّع الرابط قبل فحص المخطّط، حتى على القيمة الخام.
+        if (! is_array($value) || ! TipTapSanitizer::validate($value)) {
             $fail(__('article.invalid_content'));
         }
     }

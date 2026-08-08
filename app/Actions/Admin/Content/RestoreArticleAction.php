@@ -11,6 +11,11 @@ use App\Support\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * الاسترجاع صلاحية إشرافية (Moderation) — يُحكَم فقط بصلاحية الراوت `articles.restore`
+ * (لا فحص ملكية، بنفس منطق DeleteArticleAction). قرار مقصود موثَّق بـDECISION-LOG.md
+ * § DEC-005 — لا تُضِف فحص ملكية هنا بلا مراجعة ذلك القرار أولاً.
+ */
 class RestoreArticleAction
 {
     public function handle(Article $article): JsonResponse

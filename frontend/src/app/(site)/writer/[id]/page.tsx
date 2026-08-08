@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { PenLine, LayoutGrid, ChevronRight } from 'lucide-react';
+import { LayoutGrid, ChevronRight } from 'lucide-react';
 
 import { Container } from '@/components/layout/container';
 import { Pagination } from '@/components/ui/pagination';
@@ -175,14 +175,8 @@ export default async function WriterProfilePage({
         {/* Simple Writer Header */}
         <div className="mb-8 flex items-center gap-4 border-b border-border pb-6">
           <div className="size-20 sm:size-24 shrink-0 overflow-hidden rounded-full ring-2 ring-border bg-surface-2">
-            {writer.avatar ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={writer.avatar} alt={writer.name} className="size-full object-cover" />
-            ) : (
-              <div className="flex size-full items-center justify-center bg-surface-3 text-muted" aria-hidden="true">
-                <PenLine className="size-8" />
-              </div>
-            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={writer.avatar || '/default-avatar.webp'} alt={writer.name} className="size-full object-cover" />
           </div>
           <div className="flex flex-col gap-2">
             <span className="text-xs font-bold text-primary uppercase tracking-widest">{jobTitle}</span>
