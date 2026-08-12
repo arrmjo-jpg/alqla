@@ -1,0 +1,68 @@
+# ── alqalahnews-backend — independent Coolify Application ──────────────────────────────────────
+#
+# Split out of the former single docker-compose.yml, matching shaabjo's own Application split
+# (same root cause: an hourly `queue:work --max-time=3600` recycle in the SAME Application as
+# backend/frontend could climb Docker's RestartCount high enough for Coolify to StopApplication on
+# everything at once — see docker-compose.workers.yml for the fix). This Application owns ONLY the
+# Laravel API (php-fpm + nginx via docker/php/supervisord.conf, unchanged). Workers/scheduler live
+# in docker-compose.workers.yml as a separate Application.
+#
+# ⚠️ CUTOVER, NOT YET LIVE: domains below are TEMPORARY testing subdomains, deliberately different
+# from the real production domains (alpha-cms.shop / api.alpha-cms.shop) — the OLD unified
+# Application (alqla:main, docker-compose.yml) still owns those and is still serving real traffic.
+# Two Coolify Applications cannot both hold Traefik routers for the same Host() at the same time
+# without unpredictable routing. Verify this Application fully here on the test domain FIRST; the
+# swap to the real domain is a small, deliberate Git diff done only when cutting over (and only
+# once the old alqla:main Application's matching Traefik labels/service are removed at the same
+# time — never both live on the real domain simultaneously).
+#
+# Domains are LITERAL strings, not ${VAR} — Coolify does NOT interpolate environment variables
+# inside a compose file's `labels:` block (confirmed live on this exact server during the
+# alqalahnews rebrand — `docker inspect`'s Labels held the raw unresolved `${VAR}` text).
+
+services:
+  alqalahnews-app:
+    image: alqalahnews-backend:latest
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ${STORAGE_PUBLIC_HOST_PATH:-/data/storage-public}:/var/www/html/storage/app/public:rw
+      - ${UPLOADS_HOST_PATH:-/data/uploads}:/var/www/html/public/uploads:rw
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.alqalahnews-app.rule=Host(`api-new.alpha-cms.shop`)
+      - traefik.http.routers.alqalahnews-app.entrypoints=https
+      - traefik.http.routers.alqalahnews-app.tls=true
+      - traefik.http.routers.alqalahnews-app.tls.certresolver=letsencrypt
+      # صريح إلزامي: هذه الحاوية تعرّف خدمتَي Traefik (alqalahnews-app وpublic-storage)، فـTraefik
+      # يرفض ربط أي راوتر منهما تلقائيًا بأي خدمة بلا `service=` صريح على كل راوتر.
+      - traefik.http.routers.alqalahnews-app.service=alqalahnews-app
+      - traefik.http.services.alqalahnews-app.loadbalancer.server.port=80
+      # -- Public media on the SITE domain, served directly by the backend web server ------------
+      # Route `<public-site>/storage/*` to the backend nginx. NOTE: Host() below must equal the
+      # (temporary, testing) frontend domain in docker-compose.frontend.yml — both are updated
+      # together at cutover.
+      - "traefik.http.routers.public-storage.rule=Host(`new.alpha-cms.shop`) && PathPrefix(`/storage`)"
+      - traefik.http.routers.public-storage.entrypoints=https
+      - traefik.http.routers.public-storage.tls=true
+      - traefik.http.routers.public-storage.tls.certresolver=letsencrypt
+      - traefik.http.routers.public-storage.priority=100
+      - traefik.http.routers.public-storage.service=public-storage
+      - traefik.http.services.public-storage.loadbalancer.server.port=80
+
+# Database (mysql-database-z88fmsyjepgj6bnxljbn6phq) و Redis (redis-database-qrtmzw19qvf8buo0jzjw8gkn)
+# مورَدا Coolify Standalone فعليان بالفعل، متصلان بشبكة `coolify` المشتركة — accessible من هذا
+# الـApplication عبر connect_to_docker_network=true. القيم الفعلية لـDB_HOST/REDIS_HOST تصل عبر
+# متغيرات بيئة Coolify لهذا الـApplication (لم تُنشأ قاعدة/Redis جديدة، ولا migration).

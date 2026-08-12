@@ -1,0 +1,57 @@
+# ── alqalahnews-frontend — independent Coolify Application ─────────────────────────────────────
+#
+# ⚠️ CUTOVER, NOT YET LIVE: domain below is a TEMPORARY testing subdomain — see
+# docker-compose.backend.yml's header comment for the full explanation (same reason, same cutover
+# discipline: swap to the real domain only as a deliberate Git diff, done at the same time the old
+# alqla:main Application's matching service/labels are removed).
+#
+# BUILD_API_BASE_URL / API_BASE_URL: unlike shaabjo, this project's frontend does NOT need a live
+# backend reachable at build time — next.config.ts's rewrites() reads NEXT_CONFIG_API_BASE_URL
+# (a plain string, baked into routes-manifest.json, no network call), and Dockerfile deliberately
+# leaves the runtime API_BASE_URL unset during `npm run build` specifically so page-level data
+# fetching does not attempt to reach an unreachable backend mid-build (see frontend/Dockerfile's
+# own comment). So no bootstrap/chicken-and-egg compose file is needed here, unlike shaabjo.
+#
+# frontend-cache volume: bound to the EXACT SAME Docker volume the current unified
+# docker-compose.yml's `alqalahnews-frontend` service already uses (external: true, name pinned
+# below) — not a fresh empty volume. Losing this one specific cache is low-stakes (just a slower
+# first build), but pinning it costs nothing and avoids the same class of mistake meili-data is
+# protected against in docker-compose.meilisearch.yml.
+
+services:
+  alqalahnews-frontend:
+    image: alqalahnews-frontend:${CLIENT:-alqalahnews}
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        CLIENT: ${CLIENT:-alqalahnews}
+        NEXT_CONFIG_API_BASE_URL: ${API_BASE_URL:?API_BASE_URL is required — set it in .env (see .env.example)}
+    restart: unless-stopped
+    environment:
+      API_BASE_URL: ${API_BASE_URL:?API_BASE_URL is required — set it in .env (see .env.example)}
+      SITE_URL: ${SITE_URL:?SITE_URL is required — set it in .env (see .env.example)}
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:?REVALIDATE_SECRET is required — must match FRONTEND_REVALIDATE_SECRET}
+      OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY:-}
+    volumes:
+      - frontend-cache:/app/.next/cache
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://$$HOSTNAME:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.alqalahnews-frontend.rule=Host(`new.alpha-cms.shop`)
+      - traefik.http.routers.alqalahnews-frontend.entrypoints=https
+      - traefik.http.routers.alqalahnews-frontend.tls=true
+      - traefik.http.routers.alqalahnews-frontend.tls.certresolver=letsencrypt
+      - traefik.http.services.alqalahnews-frontend.loadbalancer.server.port=3000
+
+volumes:
+  frontend-cache:
+    external: true
+    name: se1ufsuugt5wdb0iw7b40vgv_frontend-cache

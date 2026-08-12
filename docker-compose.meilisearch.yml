@@ -1,0 +1,42 @@
+# ── alqalahnews-search — independent Coolify Application ────────────────────────────────────────
+#
+# Split out for failure isolation: only the backend consumes Meilisearch (search feature) — no
+# other service does. Kept in its own Application so a Meilisearch problem degrades search only,
+# never touches backend/workers/frontend/admin.
+#
+# meili-data below is bound (external: true) to se1ufsuugt5wdb0iw7b40vgv_meili-data — the EXACT
+# real volume name confirmed live on this server (`docker volume ls`) for the current unified
+# docker-compose.yml's `alqalahnews-search` service. NOT a fresh empty volume — using anything
+# else here loses the entire search index and requires a full `scout:import` rebuild.
+#
+# NOTE (unrelated existing resource, do not confuse with this one): a separate standalone Coolify
+# "Service" resource (meilisearch-o5v6yi2akupfuvd6za2f8xnu) already runs on this server, unrelated
+# to and not used by this Application. Left untouched — out of scope here.
+#
+# How backend/workers reach this after the split: this Application must join the same Docker
+# network as alqalahnews-backend/alqalahnews-workers (Coolify's "Connect To Predefined Network"
+# option) so `http://alqalahnews-search:7700` resolves — Coolify Applications get independent
+# Docker networks by default, so this does NOT work automatically post-split.
+
+services:
+  alqalahnews-search:
+    image: getmeili/meilisearch:v1.16
+    restart: unless-stopped
+    environment:
+      MEILI_MASTER_KEY: ${MEILISEARCH_KEY:?MEILISEARCH_KEY is required (>=16 bytes)}
+      MEILI_ENV: production
+    volumes:
+      - meili-data:/meili_data
+    expose:
+      - "7700"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:7700/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  meili-data:
+    external: true
+    name: se1ufsuugt5wdb0iw7b40vgv_meili-data

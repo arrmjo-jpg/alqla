@@ -1,0 +1,89 @@
+# ── alqalahnews-workers — independent Coolify Application ───────────────────────────────────────
+#
+# alqalahnews-worker / alqalahnews-worker-media / alqalahnews-scheduler, split out of the former
+# unified docker-compose.yml.
+#
+# ROOT CAUSE this file exists to fix: previously these three ran `php artisan queue:work` /
+# `schedule:work` directly as the container's PID 1. `queue:work --max-time=3600` exits *by design*
+# every hour to guard against memory leaks (exit 0, not a crash) — but since that was the
+# container's own PID 1, the WHOLE CONTAINER exited every hour too, and Docker's native
+# RestartCount (which Coolify reads via `docker container inspect` with zero distinction between a
+# clean recycle and a real crash) climbed accordingly. Once it crossed Coolify's "Max Restarts"
+# threshold, Coolify called StopApplication on the entire Application — which, before this split,
+# was the SAME Application as backend/frontend, so intentional hourly worker recycling was capable
+# of taking down the whole production site (this is the exact class of risk shaabjo's own split
+# was built to eliminate).
+#
+# THE FIX: each container's PID 1 is now `supervisord` (see docker/php/supervisord-*.conf), which
+# manages `queue:work`/`schedule:work` as a *child* process with autorestart=true. Normal hourly
+# recycling is invisible to Docker (supervisord itself never exits, so RestartCount stays 0). A
+# GENUINE rapid, repeated crash puts the program into supervisord's FATAL state — at which point
+# supervisor-fatal-exit.py (event PROCESS_STATE_FATAL) deliberately terminates supervisord itself,
+# so the *container* exits and Docker's RestartCount DOES climb for a real failure.
+#
+# Separate Application from backend (not just a separate service in the same Application): if a
+# real, unrecoverable crash-loop happens here despite the above, Coolify's StopApplication only
+# ever touches this Application — backend/frontend/admin are structurally unable to be affected.
+
+services:
+  alqalahnews-worker:
+    image: alqalahnews-backend:latest
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    command: supervisord -c /etc/supervisor/conf.d-roles/worker.conf
+    volumes:
+      - ${STORAGE_PUBLIC_HOST_PATH:-/data/storage-public}:/var/www/html/storage/app/public:rw
+      - ${UPLOADS_HOST_PATH:-/data/uploads}:/var/www/html/public/uploads:rw
+    # الحد الأقصى الذي يمنحه Docker بين SIGTERM وSIGKILL للحاوية كلها — أعلى من stopwaitsecs=900
+    # في supervisord-worker.conf، كي يكمل supervisord مهلته الداخلية قبل أن يقطعها Docker بقسوة.
+    stop_grace_period: 930s
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "queue:work redis --queue=default"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  alqalahnews-worker-media:
+    image: alqalahnews-backend:latest
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    command: supervisord -c /etc/supervisor/conf.d-roles/worker-media.conf
+    volumes:
+      - ${STORAGE_PUBLIC_HOST_PATH:-/data/storage-public}:/var/www/html/storage/app/public:rw
+      - ${UPLOADS_HOST_PATH:-/data/uploads}:/var/www/html/public/uploads:rw
+    stop_grace_period: 2550s
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "queue:work redis-media"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  alqalahnews-scheduler:
+    image: alqalahnews-backend:latest
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    restart: unless-stopped
+    init: true
+    env_file:
+      - .env
+    command: supervisord -c /etc/supervisor/conf.d-roles/scheduler.conf
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "schedule:work"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+# Database/Redis: نفس موردَي Coolify Standalone الحاليين (لا إنشاء جديد، لا migration) — نفس
+# ملاحظة docker-compose.backend.yml.

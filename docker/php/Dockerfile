@@ -55,6 +55,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && pecl install redis imagick && docker-php-ext-enable redis imagick \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# إعدادات Supervisor الخاصّة بأدوار worker/worker-media/scheduler (alqalahnews-workers
+# Application، انظر docker-compose.workers.yml) — تعيش في مجلّد منفصل عن /etc/supervisor/conf.d/
+# عمدًا: ذاك الأخير يُحمَّل تلقائيًا بالكامل عند أيّ استدعاء `supervisord` بلا `-c` صريح (كما يحدث
+# لدور backend عبر CMD الافتراضي أدناه)، فعزلها هنا يمنع تحميل worker.conf بالخطأ داخل حاوية
+# backend أو العكس. تُستدعى صراحةً بـ`supervisord -c /etc/supervisor/conf.d-roles/<role>.conf` من
+# docker-compose.workers.yml's command:.
+RUN mkdir -p /etc/supervisor/conf.d-roles
+COPY docker/php/supervisord-worker.conf /etc/supervisor/conf.d-roles/worker.conf
+COPY docker/php/supervisord-worker-media.conf /etc/supervisor/conf.d-roles/worker-media.conf
+COPY docker/php/supervisord-scheduler.conf /etc/supervisor/conf.d-roles/scheduler.conf
+COPY docker/php/supervisor-fatal-exit.py /usr/local/bin/supervisor-fatal-exit.py
+RUN chmod +x /usr/local/bin/supervisor-fatal-exit.py
+
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-alphacms.ini
 COPY docker/php/zz-fpm.conf /usr/local/etc/php-fpm.d/zz-fpm.conf
 COPY docker/php/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
