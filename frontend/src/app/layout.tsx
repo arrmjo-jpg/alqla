@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { Cairo, Inter, Noto_Sans_Arabic, Source_Serif_4 } from 'next/font/google';
 import localFont from 'next/font/local';
 
 import './globals.css';
@@ -21,9 +20,11 @@ const aljazeera = localFont({
 });
 
 // خطّ التصميم الجديد — Cairo (يُستهلَك فقط داخل كسوة .qalah-skin عبر --font-cairo).
-const cairo = Cairo({
-  subsets: ['arabic', 'latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
+// self-hosted (variable font, Arabic+Latin) عبر next/font/local — كان يُجلَب من next/font/google
+// وقت البناء، لكن حاوية بناء Coolify فشلت في الوصول لـfonts.gstatic.com (2026-08-11)، فأسقط ذلك
+// النشر كاملاً. الملف الآن جزء من المستودع فلا يعتمد بناء الصورة على الإنترنت إطلاقاً.
+const cairo = localFont({
+  src: './fonts/Cairo-Variable.ttf',
   variable: '--font-cairo',
   display: 'swap',
 });
@@ -39,10 +40,9 @@ const awsatDigital = localFont({
   display: 'swap',
 });
 
-// خط القراءة الطويلة المريح للأخبار
-const notoArabic = Noto_Sans_Arabic({
-  subsets: ['arabic'],
-  weight: ['300', '400', '500', '600', '700', '800'],
+// خط القراءة الطويلة المريح للأخبار — self-hosted (variable font)، نفس سبب Cairo أعلاه.
+const notoArabic = localFont({
+  src: './fonts/NotoSansArabic-Variable.ttf',
   variable: '--font-noto-arabic',
   display: 'swap',
 });
@@ -50,17 +50,18 @@ const notoArabic = Noto_Sans_Arabic({
 // English edition typefaces (LTR editorial identity — /en only, consumed via .en-skin).
 // Source Serif 4 for headlines (editorial gravitas, Reuters/NYTimes-adjacent) + Inter for
 // body/UI (clean humanist sans, BBC/CNN-adjacent). Additive only — no effect outside .en-skin.
-const sourceSerif = Source_Serif_4({
-  subsets: ['latin'],
-  weight: ['400', '600', '700', '900'],
-  style: ['normal', 'italic'],
+// self-hosted (variable fonts)، نفس سبب Cairo/notoArabic أعلاه.
+const sourceSerif = localFont({
+  src: [
+    { path: './fonts/SourceSerif4-Variable.ttf', style: 'normal' },
+    { path: './fonts/SourceSerif4-Italic-Variable.ttf', style: 'italic' },
+  ],
   variable: '--font-source-serif',
   display: 'swap',
 });
 
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
+const inter = localFont({
+  src: './fonts/Inter-Variable.ttf',
   variable: '--font-inter',
   display: 'swap',
 });
