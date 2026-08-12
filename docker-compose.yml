@@ -17,7 +17,7 @@
 # relative bind mounts into the repo itself.
 
 x-backend-common: &backend-common
-  image: alphacms-backend:latest
+  image: alqalahnews-backend:latest
 
   restart: unless-stopped
   # ROOT CAUSE FIX: backend/worker/worker-media/scheduler had NEITHER env_file NOR an
@@ -49,7 +49,8 @@ x-backend-common: &backend-common
 
 services:
 
-  admin:
+  alqalahnews-admin:
+    image: alqalahnews-admin:latest
     build:
       context: ./admin-frontend
       dockerfile: Dockerfile
@@ -68,14 +69,14 @@ services:
       start_period: 10s
     labels:
       - traefik.enable=true
-      - traefik.http.routers.admin.rule=Host(`admin.alpha-cms.shop`)
-      - traefik.http.routers.admin.entrypoints=https
-      - traefik.http.routers.admin.tls=true
-      - traefik.http.routers.admin.tls.certresolver=letsencrypt
-      - traefik.http.routers.admin.service=admin
-      - traefik.http.services.admin.loadbalancer.server.port=80
+      - traefik.http.routers.alqalahnews-admin.rule=Host(`admin.alpha-cms.shop`)
+      - traefik.http.routers.alqalahnews-admin.entrypoints=https
+      - traefik.http.routers.alqalahnews-admin.tls=true
+      - traefik.http.routers.alqalahnews-admin.tls.certresolver=letsencrypt
+      - traefik.http.routers.alqalahnews-admin.service=alqalahnews-admin
+      - traefik.http.services.alqalahnews-admin.loadbalancer.server.port=80
 
-  backend:
+  alqalahnews-app:
     <<: *backend-common
     build:
       context: .
@@ -96,11 +97,23 @@ services:
     # Route `<public-site>/storage/*` to the backend nginx (-> public/storage, static + Cache-Control).
     # So branding/media resolve on the public origin and Cloudflare caches them:
     #   Browser -> Cloudflare -> Traefik -> backend nginx -> Laravel public/storage   (never via Next.js).
-    # The API domain (api.<domain> -> backend) stays as Coolify manages it; this is an extra router.
     # NOTE: the Host() below must equal the PUBLIC site domain (SITE_URL). priority beats the
     # frontend catch-all so only /storage is peeled off to the backend.
+    #
+    # api.alpha-cms.shop router added explicitly (2026-08-12, alqalahnews rebrand): previously this
+    # domain was resolved only through Coolify's automatic per-service-name FQDN binding (tied to
+    # the service key `backend`) — undocumented in this file and invisible in git. Renaming the
+    # service to `alqalahnews-app` would silently break that implicit binding, so the router is now
+    # explicit here instead, matching the pattern shaabjo's own split-Application migration settled
+    # on after finding Coolify's automatic binding unreliable across service renames.
     labels:
       - traefik.enable=true
+      - traefik.http.routers.alqalahnews-app.rule=Host(`api.alpha-cms.shop`)
+      - traefik.http.routers.alqalahnews-app.entrypoints=https
+      - traefik.http.routers.alqalahnews-app.tls=true
+      - traefik.http.routers.alqalahnews-app.tls.certresolver=letsencrypt
+      - traefik.http.routers.alqalahnews-app.service=alqalahnews-app
+      - traefik.http.services.alqalahnews-app.loadbalancer.server.port=80
       - "traefik.http.routers.public-storage.rule=Host(`alpha-cms.shop`) && PathPrefix(`/storage`)"
       - traefik.http.routers.public-storage.entrypoints=https
       - traefik.http.routers.public-storage.tls=true
@@ -109,7 +122,7 @@ services:
       - traefik.http.routers.public-storage.service=public-storage
       - traefik.http.services.public-storage.loadbalancer.server.port=80
 
-  worker:
+  alqalahnews-worker:
     <<: *backend-common
     user: www-data
     # notifications-high/notifications-low added: DispatchCampaignJob for Critical/High priority
@@ -131,7 +144,7 @@ services:
       timeout: 5s
       retries: 3
 
-  worker-media:
+  alqalahnews-worker-media:
     <<: *backend-common
     user: www-data
     command: php artisan queue:work redis-media --queue=media --tries=2 --timeout=2520 --sleep=2 --max-time=3600
@@ -145,7 +158,7 @@ services:
       timeout: 5s
       retries: 3
 
-  scheduler:
+  alqalahnews-scheduler:
     <<: *backend-common
     user: www-data
     # schedule:work runs as PID 1 with no init process, so it never reaps the child
@@ -160,14 +173,14 @@ services:
       timeout: 5s
       retries: 3
 
-  frontend:
+  alqalahnews-frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        CLIENT: ${CLIENT:-alqlahnews}
+        CLIENT: ${CLIENT:-alqalahnews}
         NEXT_CONFIG_API_BASE_URL: ${API_BASE_URL:?API_BASE_URL is required — set it in .env (see .env.example)}
-    image: alphacms-frontend:${CLIENT:-alqlahnews}
+    image: alqalahnews-frontend:${CLIENT:-alqalahnews}
     restart: unless-stopped
     environment:
       # :? بدل قيمة افتراضية فارغة صامتة — كانت هذه بالضبط سلاسل التحذير الثلاث التي ظهرت
@@ -196,10 +209,26 @@ services:
       retries: 3
       start_period: 15s
     depends_on:
-      - backend
+      - alqalahnews-app
+    # alpha-cms.shop router added explicitly (2026-08-12, alqalahnews rebrand) — same reason as
+    # alqalahnews-app's api.alpha-cms.shop router above: this domain was previously resolved only
+    # through Coolify's automatic per-service-name FQDN binding (tied to the old `frontend` service
+    # key), which a rename would silently break.
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.alqalahnews-frontend.rule=Host(`alpha-cms.shop`)
+      - traefik.http.routers.alqalahnews-frontend.entrypoints=https
+      - traefik.http.routers.alqalahnews-frontend.tls=true
+      - traefik.http.routers.alqalahnews-frontend.tls.certresolver=letsencrypt
+      - traefik.http.services.alqalahnews-frontend.loadbalancer.server.port=3000
 
 
-  meilisearch:
+  # ⚠️ يتطلّب تحديث متغيّر MEILISEARCH_HOST في إعدادات Coolify (Environment Variables) إلى
+  # http://alqalahnews-search:7700 قبل أي نشر جديد — اسم الخدمة الداخلي في شبكة Compose تغيّر من
+  # meilisearch إلى alqalahnews-search، وMEILISEARCH_HOST محفوظ مشفّرًا في قاعدة بيانات Coolify
+  # (غير قابل للتعديل من هنا)؛ القيمة الحالية على الأغلب http://meilisearch:7700 (مطابقة
+  # .env.example) وستتوقف عن الحلّ (DNS) فور هذا التغيير إن لم تُحدَّث معه في نفس الخطوة.
+  alqalahnews-search:
     image: getmeili/meilisearch:v1.16
 
     restart: unless-stopped

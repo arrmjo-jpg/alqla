@@ -104,7 +104,7 @@ services:
       retries: 30
       start_period: 10s
 
-  backend:
+  alqalahnews-app:
     <<: *dev-container-network
     volumes:
       - ./storage/app/public:/var/www/html/storage/app/public:rw
@@ -112,13 +112,13 @@ services:
     ports:
       - "8080:80"
 
-  worker:
+  alqalahnews-worker:
     <<: *dev-container-network
     volumes:
       - ./storage/app/public:/var/www/html/storage/app/public:rw
       - ./public/uploads:/var/www/html/public/uploads:rw
 
-  worker-media:
+  alqalahnews-worker-media:
     <<: *dev-container-network
     # ROOT CAUSE FIX: this service's own `volumes:` here used to omit the uploads mount, so it
     # never saw public/uploads at all despite backend having it - GenerateMediaAssetConversionsJob
@@ -142,7 +142,7 @@ services:
   # shared host directory backend/host actually serve from.
   worker-migration:
     <<: *dev-container-network
-    image: alphacms-backend:latest
+    image: alqalahnews-backend:latest
     # env_file is NOT part of the dev-container-network anchor (that anchor only adds
     # environment/extra_hosts) - backend/worker/worker-media/scheduler all get it from
     # docker-compose.yml's x-backend-common anchor instead, which this new service doesn't
@@ -158,7 +158,7 @@ services:
       - ./storage/app/public:/var/www/html/storage/app/public:rw
       - ./public/uploads:/var/www/html/public/uploads:rw
 
-  scheduler:
+  alqalahnews-scheduler:
     <<: *dev-container-network
     # ROOT CAUSE FIX: same gap as worker-media above - media:prune-orphans (runs here) calls
     # MediaFileCleaner::purge() -> deleteDirectory() on the uploads disk, which silently no-ops
@@ -169,11 +169,11 @@ services:
       - ./storage/app/public:/var/www/html/storage/app/public:rw
       - ./public/uploads:/var/www/html/public/uploads:rw
 
-  frontend:
+  alqalahnews-frontend:
     ports:
       - "3000:3000"
 
-  admin:
+  alqalahnews-admin:
     # docker-compose.yml's build.args point Vite at the production API (bakes in at BUILD time,
     # not runtime - the compiled bundle literally contains this string). Overriding just these two
     # keys here (Compose merges build.args by key) makes a LOCAL admin build talk to the local
@@ -186,7 +186,7 @@ services:
     ports:
       - "8081:80"
 
-  meilisearch:
+  alqalahnews-search:
     ports:
       - "7700:7700"
 
